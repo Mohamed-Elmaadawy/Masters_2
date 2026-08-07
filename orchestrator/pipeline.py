@@ -8,9 +8,52 @@ wires in real ones. No control-flow logic is built twice.
 
 from __future__ import annotations
 
-from typing import Optional
+from dataclasses import dataclass
+from typing import Callable, NamedTuple, Optional
 
-from design.schemas import PipelineStage, RequirementRunRecord
+from design.schemas import (
+    PipelineStage, RefinerAnswer, RefinerTurn, RequirementRunRecord, RunOutcome,
+)
+
+
+class StageCallResult(NamedTuple):
+    """One stage call's raw output, not yet validated against a schema model."""
+    raw: dict
+    prompt_tokens: int
+    completion_tokens: int
+
+
+class StageCallFailed(Exception):
+    """Transport-level failure: network error, rate limit, timeout. Raised by a stage
+    fn; never carries token counts, because the request was rejected before inference."""
+
+
+@dataclass(frozen=True)
+class StageFns:
+    """Every LLM call in the pipeline, as a parameter. A frozen dataclass, not a dict --
+    a typo'd dict key silently returns nothing and the stage gets skipped; a typo'd
+    field name here is an immediate TypeError. Each callable returns a StageCallResult
+    (or raises StageCallFailed). orchestrator/test_harness.py wires in scripted
+    fixtures; orchestrator/stages.py (next phase) wires in real LLM calls."""
+    check_consistency: Callable[..., StageCallResult]
+    map_dependencies: Callable[..., StageCallResult]
+    classify: Callable[..., StageCallResult]
+    check_quality: Callable[..., StageCallResult]
+    refine: Callable[..., StageCallResult]
+    select_strategy: Callable[..., StageCallResult]
+    generate_tests: Callable[..., StageCallResult]
+
+
+@dataclass(frozen=True)
+class HumanFns:
+    """The pipeline's two human-interaction points, as parameters. Separate from
+    StageFns because the source is categorically different (a person or a web request,
+    not an LLM call) -- RefinerTurn/RefinerAnswer were split in the schema specifically
+    so this contract works whether the caller is a CLI loop, a notebook cell, or a
+    FastAPI backend (see DESIGN_NOTES.md); a blocking input() inside the orchestrator
+    would discard that."""
+    answer_questions: Callable[[RefinerTurn], list[RefinerAnswer]]
+    decide_at_cap: Callable[[RequirementRunRecord], tuple[RunOutcome, str]]
 
 
 def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:

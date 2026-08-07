@@ -22,7 +22,9 @@ from design.schemas import (
     RequirementSet, RunOutcome, StageConfig, StageError, RunMetadata, ALL_STAGES,
     FailureKind, prompt_fingerprint,
 )
-from orchestrator.pipeline import resume_at
+from orchestrator.pipeline import (
+    resume_at, StageCallResult, StageCallFailed, StageFns, HumanFns,
+)
 
 PASSED = 0
 FAILED: list[str] = []
@@ -98,6 +100,27 @@ def _dummy_issue(n):
                 explanation="Unresolved referent.")
 
 
+class Scripted:
+    """A stage fn returning one scripted behavior per call, in order.
+
+    Each behavior is either a dict (wrapped into a successful StageCallResult) or an
+    Exception instance (raised as-is, e.g. StageCallFailed("429") or KeyError("oops")).
+    Records every call's positional args for scenarios that need to assert on them.
+    """
+    def __init__(self, behaviors: list, tokens: tuple[int, int] = (10, 5)):
+        self._behaviors = list(behaviors)
+        self._tokens = tokens
+        self.calls: list[tuple] = []
+
+    def __call__(self, *args, **kwargs) -> StageCallResult:
+        self.calls.append(args)
+        behavior = self._behaviors.pop(0)
+        if isinstance(behavior, Exception):
+            raise behavior
+        return StageCallResult(raw=behavior, prompt_tokens=self._tokens[0],
+                               completion_tokens=self._tokens[1])
+
+
 # ---------------------------------------------------------------------------
 
 def test_resume_positions() -> None:
@@ -149,11 +172,42 @@ def test_resume_positions() -> None:
                     test_strategy=strategy, test_plan=plan)) is None)
 
 
+def test_stage_fns_typo_is_a_typeerror() -> None:
+    """A typo'd field name must be an immediate TypeError, not a silently-skipped key --
+    the reason StageFns/HumanFns are dataclasses, not dicts."""
+    section("StageFns / HumanFns construction")
+    from orchestrator.pipeline import StageFns, HumanFns
+
+    def not_provided(*a, **k):
+        raise AssertionError("should never be called")
+
+    try:
+        StageFns(check_consistency=not_provided, map_dependencies=not_provided,
+                 classify=not_provided, check_quality=not_provided, refine=not_provided,
+                 select_strategy=not_provided, generate_tests=not_provided,
+                 clasify=not_provided)  # typo
+        ok("StageFns rejects an unknown field", False)
+    except TypeError:
+        ok("StageFns rejects an unknown field", True)
+
+    try:
+        HumanFns(answer_questions=not_provided, decide_at_cap=not_provided,
+                 decide_at_capp=not_provided)  # typo
+        ok("HumanFns rejects an unknown field", False)
+    except TypeError:
+        ok("HumanFns rejects an unknown field", True)
+
+    real = StageFns(check_consistency=not_provided, map_dependencies=not_provided,
+                    classify=not_provided, check_quality=not_provided, refine=not_provided,
+                    select_strategy=not_provided, generate_tests=not_provided)
+    ok("StageFns constructs with exactly the right fields", real.classify is not_provided)
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
     print("=" * 72)
-    for fn in (test_resume_positions,):
+    for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
