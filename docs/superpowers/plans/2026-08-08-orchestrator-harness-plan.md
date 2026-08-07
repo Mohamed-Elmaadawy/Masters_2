@@ -2193,18 +2193,13 @@ def test_document_stage_retry_within_run() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        # RequirementSet requires min_length=1, so there is no empty-document stand-in
+        # to isolate the document-level outcome from requirement processing -- instead
+        # classify is scripted to fail fast too, and the test only asserts on the
+        # document-level fields (outcome, errors), ignoring requirement_records.
         first_fns = StageFns(
-            check_consistency=Scripted([StageCallFailed("429")] * 3),
+            check_consistency=Scripted([StageCallFailed("429")] * 2),
             map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
-            classify=None, check_quality=None, refine=None, select_strategy=None,
-            generate_tests=None)
-        # run_document only runs the requirement loop if the classify fn is real; for
-        # this scenario we only care about the document-level outcome, so give it an
-        # empty RequirementSet-shaped stand-in is not possible (min_length=1) -- instead
-        # let requirement processing fail fast by making classify raise, and ignore the
-        # requirement_records outcome entirely.
-        first_fns = StageFns(
-            check_consistency=first_fns.check_consistency, map_dependencies=first_fns.map_dependencies,
             classify=Scripted([StageCallFailed("429")] * 2),
             check_quality=None, refine=None, select_strategy=None, generate_tests=None)
         metadata = make_metadata()
