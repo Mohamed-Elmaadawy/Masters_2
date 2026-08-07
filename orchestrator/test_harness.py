@@ -107,11 +107,18 @@ def test_resume_positions() -> None:
                                     retry_count=3)]
     mid_round = mk_round(1, T0, passed=False)                        # no rewrite yet
     rewritten = mk_round(1, T0, passed=False, rewrite_to=T1)
-    from design.schemas import Classification, SystemType, TestStrategy, TestTechnique
+    from design.schemas import (
+        Classification, SystemType, TestCase, TestPlan, TestStrategy, TestTechnique,
+    )
     cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
     strategy = TestStrategy(requirement_id=REQ_A.id, system_type=SystemType.OTHER,
                             techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
     rounds_refined = [rewritten, mk_round(2, T1, passed=True)]
+    plan = TestPlan(requirement_id=REQ_A.id, test_cases=[
+        TestCase(id="TC1", requirement_ids=[REQ_A.id],
+                 technique_used=TestTechnique.BOUNDARY_VALUE_ANALYSIS,
+                 title="Temperature at limit", steps=["Set temperature to the limit value."],
+                 expected_result="Value is output for subsequent processing.")])
 
     cases = [
         ("classifier failed", dict(errors=err(PipelineStage.CLASSIFIER)), PipelineStage.CLASSIFIER),
@@ -136,6 +143,10 @@ def test_resume_positions() -> None:
         ok(f"{label} -> resume at {expected.value}", got is expected)
 
     ok("an interrupted record resumes at the classifier", resume_at(rec()) is PipelineStage.CLASSIFIER)
+
+    ok("a finished record resumes nowhere",
+       resume_at(rec(outcome=RunOutcome.COMPLETED, classification=cls, rounds=rounds_refined,
+                    test_strategy=strategy, test_plan=plan)) is None)
 
 
 def main() -> int:
