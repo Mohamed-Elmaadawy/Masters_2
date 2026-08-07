@@ -498,8 +498,10 @@ computed by the caller.
 
 - [ ] **Step 7: Commit**
 
+Step 5 regenerated the `.mermaid` files — they're deliberately tracked (not gitignored), so the diagram diff belongs in this commit too:
+
 ```bash
-git add design/schemas.py design/test_schemas.py design/ORCHESTRATOR_CONTRACT.md
+git add design/schemas.py design/test_schemas.py design/ORCHESTRATOR_CONTRACT.md design/*.mermaid
 git commit -m "$(cat <<'EOF'
 Add token usage tracking to RequirementRunRecord and DocumentRunRecord
 
