@@ -38,3 +38,4 @@ __MACOSX/
 #   design/*.mermaid -- generated, but committed so a diff shows which arrows or fields
 #     a schema change moved.
 #   datasets/ -- the evaluation inputs are part of the record, and small.
+.worktrees/
