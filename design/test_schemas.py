@@ -31,7 +31,7 @@ from pydantic import ValidationError
 from design.schemas import (
     ALL_STAGES, Classification, ELIGIBLE_TECHNIQUES, ClarifyingQuestion, ConsistencyConflict,
     ConsistencyReport, DependencyLink, DependencyReport, DocumentOutcome,
-    DocumentRunRecord, DocumentStage, DocumentStageError, Issue, IssueCategory,
+    DocumentRunRecord, DocumentStage, DocumentStageError, FailureKind, Issue, IssueCategory,
     PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
     RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunMetadata,
     RunOutcome, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
@@ -159,6 +159,7 @@ VALID_RECORDS: dict[RunOutcome, dict] = {
     RunOutcome.CAP_STOPPED: dict(classification=CLS, rounds=ROUNDS_CAPPED,
                                  cap_reason="Too defective to test meaningfully."),
     RunOutcome.ERROR: dict(errors=[StageError(stage=PipelineStage.CLASSIFIER,
+                                              kind=FailureKind.TRANSPORT,
                                               message="429 rate limit", retry_count=3)]),
 }
 RECORD_EXTRAS = {"cap_reason": "x", "classification": CLS,
@@ -174,8 +175,10 @@ CONS = ConsistencyReport(doc_id=REQ_SET.doc_id, conflicts=[ConsistencyConflict(
 DEP = DependencyReport(doc_id=REQ_SET.doc_id, dependencies=[DependencyLink(
     from_requirement_id="THEMAS-REQ-D", to_requirement_id="THEMAS-REQ-B",
     explanation="D's limits are defined by B.")])
-CE = DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, message="429", retry_count=2)
-DE = DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, message="malformed JSON")
+CE = DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, kind=FailureKind.TRANSPORT,
+                        message="429", retry_count=2)
+DE = DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, kind=FailureKind.VALIDATION,
+                        message="malformed JSON")
 
 VALID_DOCS: dict[DocumentOutcome, dict] = {
     DocumentOutcome.IN_PROGRESS: dict(),
@@ -276,10 +279,12 @@ def test_gap2_requirement_outcomes() -> None:
         accepts(f"valid {outcome.value} record", lambda o=outcome, k=kw: rec(outcome=o, **k))
     ok("bare record defaults to IN_PROGRESS", rec().outcome is RunOutcome.IN_PROGRESS)
     ok("classifier failure is persistable", rec(outcome=RunOutcome.ERROR,
-        errors=[StageError(stage=PipelineStage.CLASSIFIER, message="429")]).errors[0].stage
+        errors=[StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.TRANSPORT,
+                           message="429")]).errors[0].stage
         is PipelineStage.CLASSIFIER)
     rejects("negative retry_count",
-            lambda: StageError(stage=PipelineStage.REFINER, message="x", retry_count=-1))
+            lambda: StageError(stage=PipelineStage.REFINER, kind=FailureKind.TRANSPORT,
+                               message="x", retry_count=-1))
 
     override_rounds = [
         mk_round(1, T0, [VAGUE], [("Q1", VAGUE)],
@@ -317,6 +322,25 @@ def test_gap2_requirement_outcomes() -> None:
                     lambda o=outcome, b=base, w=wrong: rec(outcome=o, **{**b, "rounds": w}))
             checked += 1
     print(f"    ({checked} rules enumerated from _OUTCOME_RULES)")
+
+
+def test_failure_kind() -> None:
+    """FailureKind distinguishes why a stage call failed -- see the design doc."""
+    section("FailureKind")
+    rejects("StageError without kind",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, message="x"))
+    accepts("StageError with kind=TRANSPORT",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.TRANSPORT,
+                               message="429"))
+    accepts("StageError with kind=VALIDATION",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.VALIDATION,
+                               message="schema rejected"))
+    accepts("StageError with kind=OTHER",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.OTHER,
+                               message="KeyError: 'foo'"))
+    accepts("DocumentStageError with kind",
+            lambda: DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER,
+                                       kind=FailureKind.TRANSPORT, message="429"))
 
 
 def test_gap5_refinement_trajectory() -> None:
@@ -452,6 +476,7 @@ def test_gap3_document_record() -> None:
     rejects("a missing report with no failure explaining it",
             lambda: doc(outcome=DocumentOutcome.DEGRADED,
                         errors=[DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER,
+                                                   kind=FailureKind.TRANSPORT,
                                                    message="x")]))
     rejects("same document stage failing twice",
             lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, CE], dependency_report=DEP))
@@ -466,9 +491,11 @@ def test_gap3_document_record() -> None:
                                         source_doc_id="themas-fischbach2022"),
                 run_id=META.run_id)]))
     rejects("StageError cannot name a document stage",
-            lambda: StageError(stage=DocumentStage.CONSISTENCY_CHECKER, message="x"))
+            lambda: StageError(stage=DocumentStage.CONSISTENCY_CHECKER,
+                               kind=FailureKind.TRANSPORT, message="x"))
     rejects("DocumentStageError cannot name a requirement stage",
-            lambda: DocumentStageError(stage=PipelineStage.CLASSIFIER, message="x"))
+            lambda: DocumentStageError(stage=PipelineStage.CLASSIFIER,
+                                       kind=FailureKind.TRANSPORT, message="x"))
 
     ok("fresh document: everything pending",
        doc().pending_requirement_ids == [REQ_D.id, REQ_G.id, REQ_B.id])
@@ -478,7 +505,8 @@ def test_gap3_document_record() -> None:
     # The three states that must STAY pending, so a resume pass picks them up again.
     ok("an errored requirement stays pending",
        doc(requirement_records=[rec(outcome=RunOutcome.ERROR, errors=[StageError(
-           stage=PipelineStage.TEST_GENERATOR, message="429", retry_count=3)])]
+           stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
+           message="429", retry_count=3)])]
            ).pending_requirement_ids == [REQ_D.id, REQ_G.id, REQ_B.id])
     ok("an interrupted (IN_PROGRESS) requirement stays pending",
        doc(requirement_records=[rec()]).pending_requirement_ids
@@ -993,7 +1021,8 @@ def test_retry_without_redoing_everything() -> None:
        [r.requirement.id for r in retried.requirement_records] == [REQ_D.id])
 
     errored = rec(outcome=RunOutcome.ERROR,
-                  errors=[StageError(stage=PipelineStage.TEST_GENERATOR, message="429")])
+                  errors=[StageError(stage=PipelineStage.TEST_GENERATOR,
+                                     kind=FailureKind.TRANSPORT, message="429")])
     ok("an errored requirement is offered for retry",
        REQ_D.id in doc(requirement_records=[errored]).pending_requirement_ids)
     ok("retrying it in place is accepted",
@@ -1001,7 +1030,8 @@ def test_retry_without_redoing_everything() -> None:
 
     # Symmetry with the document record: a requirement-level failure survives a
     # successful retry too, so "how many requirements needed a retry" stays countable.
-    gen_failed = StageError(stage=PipelineStage.TEST_GENERATOR, message="429", retry_count=3)
+    gen_failed = StageError(stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
+                            message="429", retry_count=3)
     accepts("COMPLETED keeping an earlier stage failure",
             lambda: rec(outcome=RunOutcome.COMPLETED,
                         errors=[gen_failed], **VALID_RECORDS[RunOutcome.COMPLETED]))
@@ -1010,7 +1040,8 @@ def test_retry_without_redoing_everything() -> None:
     rejects("ERROR with no error recorded", lambda: rec(outcome=RunOutcome.ERROR))
     # The Quality Checker and Refiner run once per round, so unlike a document-level
     # stage the same stage can legitimately fail more than once for one requirement.
-    qc = lambda msg: StageError(stage=PipelineStage.QUALITY_CHECKER, message=msg)
+    qc = lambda msg: StageError(stage=PipelineStage.QUALITY_CHECKER, kind=FailureKind.TRANSPORT,
+                                message=msg)
     accepts("the same stage failing in two different rounds",
             lambda: rec(outcome=RunOutcome.ERROR,
                         errors=[qc("429 in round 1"), qc("429 in round 3")]))
@@ -1018,11 +1049,13 @@ def test_retry_without_redoing_everything() -> None:
             lambda: rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS,
                         rounds=ROUNDS_CAPPED, cap_reason="x",
                         errors=[StageError(stage=PipelineStage.TEST_GENERATOR,
+                                           kind=FailureKind.TRANSPORT,
                                            message="429")]))
     accepts("CAP_STOPPED recording a failure in a stage that did run",
             lambda: rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS,
                         rounds=ROUNDS_CAPPED, cap_reason="x",
                         errors=[StageError(stage=PipelineStage.QUALITY_CHECKER,
+                                           kind=FailureKind.TRANSPORT,
                                            message="429")]))
     rejects("ERROR when every stage produced its output",
             lambda: rec(outcome=RunOutcome.ERROR, errors=[gen_failed],
@@ -1062,7 +1095,8 @@ def resume_at(rec):
 def test_resume_positions() -> None:
     """A failure at any stage must resume at that stage -- nothing earlier redone."""
     section("Resume positions")
-    err = lambda stage: [StageError(stage=stage, message="429", retry_count=3)]
+    err = lambda stage: [StageError(stage=stage, kind=FailureKind.TRANSPORT,
+                                    message="429", retry_count=3)]
     mid_round = mk_round(1, T0, [VAGUE], [("Q1", VAGUE)], [A1])            # no rewrite yet
     rewritten = mk_round(1, T0, [VAGUE], [("Q1", VAGUE)], [A1], rewrite_to=T1)
 
@@ -1176,7 +1210,7 @@ def main() -> int:
     print("schemas.py regression")
     print("=" * 72)
     for fn in (test_non_empty_guards, test_gap1_both_paths_converge,
-               test_gap2_requirement_outcomes, test_gap5_refinement_trajectory,
+               test_gap2_requirement_outcomes, test_failure_kind, test_gap5_refinement_trajectory,
                test_gap3_document_record, test_gap4_provenance,
                test_cross_field_agreement, test_duplicate_keys,
                test_denormalised_fields_agree, test_technique_eligibility,

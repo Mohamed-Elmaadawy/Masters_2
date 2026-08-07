@@ -709,10 +709,31 @@ class DocumentStage(str, Enum):
     DEPENDENCY_MAPPER = "dependency_mapper"
 
 
+class FailureKind(str, Enum):
+    """Why a stage call ultimately failed. Distinguishes three cases that mean
+    different things for retry policy and for the thesis's LLM-reliability numbers:
+    a rejected request (retry usually helps), a schema-rejected model output (retrying
+    may help, but "how often does this model produce invalid output" is itself a
+    finding), and anything else caught but not anticipated. See
+    docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.
+
+    Not exhaustive of every possible mistake by construction, which is exactly why
+    OTHER exists -- a two-value enum would force a 500 or an SDK bug into one of the
+    other two buckets, corrupting both counts silently. OTHER is for a caught stage-call
+    failure of unanticipated type; it is NOT for bugs in the orchestrator's own control
+    flow, which must still crash rather than be filed here (see
+    orchestrator/pipeline.py's call_stage).
+    """
+    TRANSPORT = "transport"
+    VALIDATION = "validation"
+    OTHER = "other"
+
+
 class StageError(BaseModel):
     # An enum rather than a free string so "which stage fails most" stays countable --
     # "classifier" vs "Classifier" would silently split the tally. See DESIGN_NOTES.md.
     stage: PipelineStage
+    kind: FailureKind
     message: NonEmptyStr
     # Retries attempted *before* giving up and recording this error, so 0 means it
     # failed on the first attempt with no retry. A StageError only ever exists for a
@@ -730,6 +751,7 @@ class DocumentStageError(BaseModel):
     # which is the exact thing the split exists to prevent. Two duplicated fields is a
     # cheaper price than that hole. See DESIGN_NOTES.md.
     stage: DocumentStage
+    kind: FailureKind
     message: NonEmptyStr
     retry_count: int = Field(0, ge=0)
 

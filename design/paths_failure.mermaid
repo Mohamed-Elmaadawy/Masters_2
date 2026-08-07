@@ -7,7 +7,7 @@ flowchart LR
     FRETRY["Retry with backoff<br/><i>free-tier rate limits are the normal case</i>"]
     FOK["Continue normally"]
     FGONE["<i>no trace kept</i><br/>a successful retry is not recorded --<br/>retry_count only ever describes a call that FAILED"]
-    FERR["<b>ERROR</b><br/>StageError: stage · message · retry_count<br/><i>partial record still persisted</i>"]
+    FERR["<b>ERROR</b><br/>StageError: stage · kind · message · retry_count<br/><i>partial record still persisted</i>"]
     FKILL["Record already on disk<br/><i>written incrementally</i>"]
     FIP["<b>IN_PROGRESS</b><br/><i>not a failure -- the resume marker</i>"]
     FRES["Resume position derived from<br/>which fields are populated<br/><i>no stored pointer</i>"]

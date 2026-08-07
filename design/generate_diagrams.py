@@ -208,7 +208,7 @@ FAILURE_NODES = {
     "FRETRY": ('Retry with backoff<br/><i>free-tier rate limits are the normal case</i>', "req"),
     "FOK":    ('Continue normally', "req"),
     "FGONE":  ('<i>no trace kept</i><br/>a successful retry is not recorded --<br/>retry_count only ever describes a call that FAILED', "note"),
-    "FERR":   ('<b>ERROR</b><br/>StageError: stage · message · retry_count<br/><i>partial record still persisted</i>', "term"),
+    "FERR":   ('<b>ERROR</b><br/>StageError: stage · kind · message · retry_count<br/><i>partial record still persisted</i>', "term"),
     "FKILL":  ('Record already on disk<br/><i>written incrementally</i>', "io"),
     "FIP":    ('<b>IN_PROGRESS</b><br/><i>not a failure -- the resume marker</i>', "term"),
     "FRES":   ('Resume position derived from<br/>which fields are populated<br/><i>no stored pointer</i>', "io"),

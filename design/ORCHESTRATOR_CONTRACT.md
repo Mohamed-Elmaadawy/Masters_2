@@ -182,6 +182,14 @@ denominator is not in the schema.
 *(DESIGN_NOTES: "`StageError.retry_count`", "Retry without redoing everything",
 "Requirement-level errors made symmetric".)*
 
+**`FailureKind`** (added 2026-08-08, see
+`docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md`): every `StageError`
+and `DocumentStageError` now carries `kind: TRANSPORT | VALIDATION | OTHER`. `TRANSPORT`
+is a rejected request (retry usually helps); `VALIDATION` is a model output that failed
+schema validation (the call succeeded, tokens were spent, retrying may help since LLM
+output is nondeterministic); `OTHER` is a caught-but-unanticipated failure and must never
+be used for a bug in the orchestrator's own control flow, which should crash instead.
+
 ## 8. Document-level failure policy (D1=b)
 
 If the Consistency Checker or Dependency Mapper fails, **continue** without it and mark
