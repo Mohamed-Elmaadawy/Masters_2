@@ -16,8 +16,9 @@ from typing import Callable, NamedTuple, Optional
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    FailureKind, PipelineStage, RefinerAnswer, RefinerTurn, RequirementRunRecord,
-    RunOutcome, TokenUsage,
+    ConsistencyReport, DependencyReport, DocumentStage, DocumentStageError,
+    DocumentTokenUsage, FailureKind, PipelineStage, RefinerAnswer, RefinerTurn,
+    RequirementRunRecord, RequirementSet, RunOutcome, StageConfig, TokenUsage,
 )
 
 
@@ -149,6 +150,85 @@ def call_stage(
             throttle.sleep_fn(backoff_seconds(attempt))
 
     raise StageFailed(last_kind, last_message, retry_count=max_attempts - 1)
+
+
+def call_document_stage(
+    stage_fn: Callable[..., StageCallResult],
+    args: tuple,
+    model_cls: type[BaseModel],
+    stage: DocumentStage,
+    model_name: str,
+    throttle: Throttle,
+    usage_sink: list[DocumentTokenUsage],
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> BaseModel:
+    """Structurally identical to call_stage apart from the stage/usage types -- same
+    reasoning as the StageError/DocumentStageError split: a shared implementation
+    parameterised by a PipelineStage | DocumentStage union would let a call meant for
+    one level accidentally target the other."""
+    last_kind: FailureKind = FailureKind.OTHER
+    last_message = "call_document_stage was invoked with max_attempts < 1"
+
+    for attempt in range(max_attempts):
+        throttle.wait_for_slot(model_name)
+        try:
+            result = stage_fn(*args)
+        except StageCallFailed as e:
+            last_kind, last_message = FailureKind.TRANSPORT, str(e)
+        except Exception as e:
+            last_kind, last_message = FailureKind.OTHER, f"{type(e).__name__}: {e}"
+        else:
+            usage_sink.append(DocumentTokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
+                                                 completion_tokens=result.completion_tokens))
+            try:
+                return model_cls.model_validate(result.raw)
+            except ValidationError as e:
+                last_kind, last_message = FailureKind.VALIDATION, str(e)
+
+        if attempt < max_attempts - 1:
+            throttle.sleep_fn(backoff_seconds(attempt))
+
+    raise StageFailed(last_kind, last_message, retry_count=max_attempts - 1)
+
+
+def run_document_stages(
+    requirement_set: RequirementSet,
+    stage_configs: dict[str, StageConfig],
+    stage_fns: StageFns,
+    throttle: Throttle,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> tuple[Optional[ConsistencyReport], Optional[DependencyReport],
+           list[DocumentStageError], list[DocumentTokenUsage]]:
+    """Runs the two document-level stages independently -- one failing must not stop
+    the other from running (contract item 8, D1=b)."""
+    errors: list[DocumentStageError] = []
+    usage: list[DocumentTokenUsage] = []
+
+    consistency_report: Optional[ConsistencyReport] = None
+    try:
+        consistency_report = call_document_stage(
+            stage_fns.check_consistency, (requirement_set,), ConsistencyReport,
+            DocumentStage.CONSISTENCY_CHECKER,
+            stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, usage,
+            max_attempts, backoff_seconds)
+    except StageFailed as f:
+        errors.append(DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, kind=f.kind,
+                                         message=f.message, retry_count=f.retry_count))
+
+    dependency_report: Optional[DependencyReport] = None
+    try:
+        dependency_report = call_document_stage(
+            stage_fns.map_dependencies, (requirement_set,), DependencyReport,
+            DocumentStage.DEPENDENCY_MAPPER,
+            stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, usage,
+            max_attempts, backoff_seconds)
+    except StageFailed as f:
+        errors.append(DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, kind=f.kind,
+                                         message=f.message, retry_count=f.retry_count))
+
+    return consistency_report, dependency_report, errors, usage
 
 
 def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:

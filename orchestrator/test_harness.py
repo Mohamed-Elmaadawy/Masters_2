@@ -278,6 +278,34 @@ def test_call_stage() -> None:
         ok("a caller bug (outside call_stage's guarded line) still crashes", True)
 
 
+def test_document_stages_degraded() -> None:
+    """Scenario 7: consistency checker and dependency mapper fail independently; the
+    run continues without whichever one failed, per contract D1=b."""
+    section("Scenario 7 -- DEGRADED document")
+    from orchestrator.pipeline import run_document_stages, Throttle
+    from design.schemas import DocumentOutcome, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    stage_fns = StageFns(
+        check_consistency=Scripted([StageCallFailed("429"), StageCallFailed("429"),
+                                    StageCallFailed("429")]),
+        map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+        classify=None, check_quality=None, refine=None, select_strategy=None,
+        generate_tests=None,
+    )
+    cons, deps, errors, usage = run_document_stages(
+        DOC, STAGE_CONFIGS, stage_fns, throttle, max_attempts=3, backoff_seconds=lambda a: 0.0)
+    ok("consistency checker failure leaves consistency_report None", cons is None)
+    ok("dependency mapper still succeeds independently", deps is not None)
+    ok("exactly one DocumentStageError recorded", len(errors) == 1)
+    ok("the error names the failed stage", errors[0].stage.value == "consistency_checker")
+    ok("the error's kind is TRANSPORT", errors[0].kind is FailureKind.TRANSPORT)
+    ok("dependency mapper's success recorded usage", len(usage) == 1)
+
+    outcome = DocumentOutcome.COMPLETED if cons is not None and deps is not None else DocumentOutcome.DEGRADED
+    ok("both-independent-failures-considered outcome is DEGRADED", outcome is DocumentOutcome.DEGRADED)
+
+
 def test_throttle() -> None:
     """Scenario: the throttle enforces a minimum interval PER MODEL, and asserts the
     actual recorded delay -- not just that a delay happened -- since a no-op sleep_fn
@@ -320,7 +348,7 @@ def main() -> int:
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage):
+              test_call_stage, test_document_stages_degraded):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
