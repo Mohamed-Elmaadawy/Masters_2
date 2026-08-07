@@ -8,7 +8,9 @@ wires in real ones. No control-flow logic is built twice.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Callable, NamedTuple, Optional
 
 from design.schemas import (
@@ -54,6 +56,40 @@ class HumanFns:
     would discard that."""
     answer_questions: Callable[[RefinerTurn], list[RefinerAnswer]]
     decide_at_cap: Callable[[RequirementRunRecord], tuple[RunOutcome, str]]
+
+
+@dataclass
+class Throttle:
+    """Paces stage calls, per model, so a tight per-minute quota mostly never gets hit
+    in the first place -- backoff (see call_stage) then handles the rare exception
+    rather than the normal case. Not frozen, unlike StageFns/HumanFns: it owns
+    last_call_at as mutable state, since something has to hold it and threading a
+    separate dict through every call site is worse. sleep_fn/now_fn are injected so
+    production uses time.sleep/datetime.now(timezone.utc) and tests use a no-op
+    recorder and a fake clock -- deterministic, and never actually wait.
+
+    Keyed by model, not global: RunMetadata.stages[stage].model already allows
+    different stages to use different models (e.g. a cheap classifier, a stronger
+    generator), and those are separate quotas -- a single global interval is either
+    too slow for one or too fast for the other. No default interval is hardcoded:
+    neither Gemini's nor Groq's official docs expose a static free-tier RPM number,
+    both defer to a live per-account dashboard. min_interval_seconds must be filled in
+    from that dashboard for a real run.
+    """
+    sleep_fn: Callable[[float], None] = time.sleep
+    now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
+    min_interval_seconds: dict[str, float] = field(default_factory=dict)
+    last_call_at: dict[str, datetime] = field(default_factory=dict, init=False)
+
+    def wait_for_slot(self, model: str) -> None:
+        interval = self.min_interval_seconds.get(model, 0.0)
+        last = self.last_call_at.get(model)
+        now = self.now_fn()
+        if last is not None:
+            elapsed = (now - last).total_seconds()
+            if elapsed < interval:
+                self.sleep_fn(interval - elapsed)
+        self.last_call_at[model] = self.now_fn()
 
 
 def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:

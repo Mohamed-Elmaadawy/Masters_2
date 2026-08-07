@@ -203,11 +203,48 @@ def test_stage_fns_typo_is_a_typeerror() -> None:
     ok("StageFns constructs with exactly the right fields", real.classify is not_provided)
 
 
+def test_throttle() -> None:
+    """Scenario: the throttle enforces a minimum interval PER MODEL, and asserts the
+    actual recorded delay -- not just that a delay happened -- since a no-op sleep_fn
+    makes it easy to test that retries occur without testing that backoff is correct."""
+    section("Throttle")
+    from orchestrator.pipeline import Throttle
+
+    slept: list[float] = []
+    clock = [0.0]
+
+    def fake_now():
+        return datetime(2026, 1, 1, tzinfo=timezone.utc).fromtimestamp(
+            clock[0], tz=timezone.utc)
+
+    def fake_sleep(seconds: float) -> None:
+        slept.append(seconds)
+        clock[0] += seconds
+
+    throttle = Throttle(sleep_fn=fake_sleep, now_fn=fake_now,
+                        min_interval_seconds={"cheap-model": 10.0, "strong-model": 0.0})
+
+    throttle.wait_for_slot("cheap-model")
+    ok("first call on a model never waits", slept == [])
+
+    clock[0] += 3.0  # only 3s elapsed, need 10s
+    throttle.wait_for_slot("cheap-model")
+    ok("second call within the interval sleeps exactly the remainder", slept == [7.0])
+
+    throttle.wait_for_slot("strong-model")
+    ok("a model with 0.0 min_interval never waits", slept == [7.0])
+
+    slept.clear()
+    clock[0] += 100.0  # plenty of time passed
+    throttle.wait_for_slot("cheap-model")
+    ok("a call after the interval has elapsed does not wait", slept == [])
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
     print("=" * 72)
-    for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror):
+    for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
