@@ -376,12 +376,316 @@ def test_on_disk_round_trip() -> None:
            [r.requirement.id for r in reloaded.requirement_records] == [REQ_A.id])
 
 
+def test_happy_path() -> None:
+    """Scenario 1: one clean requirement, one refined-once requirement, straight
+    through all 7 stages. Explicitly asserts contract item 2: the Requirement handed
+    to stage 3/4 has .text equal to the original (clean) or refined_text (refined) --
+    never read from record.final_text."""
+    section("Scenario 1 -- happy path, both paths converge (contract item 2)")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    strategy_calls = []
+    generate_calls = []
+
+    def select_strategy(req, *a):
+        strategy_calls.append(req.text)
+        return StageCallResult(raw={"requirement_id": req.id, "system_type": "other",
+                                    "techniques": ["boundary_value_analysis"], "rationale": "r"},
+                               prompt_tokens=10, completion_tokens=5)
+
+    def generate_tests(req, *a):
+        generate_calls.append(req.text)
+        return StageCallResult(raw={"requirement_id": req.id, "test_cases": [{
+            "id": f"TC-{req.id}-1", "requirement_ids": [req.id],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]}, prompt_tokens=10, completion_tokens=5)
+
+    # -- Clean path: passes on the first quality check --
+    clean_fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+        refine=None, select_strategy=select_strategy, generate_tests=generate_tests)
+    human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
+    clean_record = run_requirement(
+        rec(requirement=REQ_A), DOC, None, None, clean_fns, human_fns, throttle,
+        max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("clean path completes", clean_record.outcome is RunOutcome.COMPLETED)
+    ok("clean path never refined", clean_record.final_requirement is None)
+    ok("stage 3/4 saw the original text (contract item 2)",
+       strategy_calls == [REQ_A.text] and generate_calls == [REQ_A.text])
+
+    # -- Refined path: fails once, one round of Q&A, then passes --
+    refined_text = "Temperatures within the valid range defined in DOC-REQ-B shall be output."
+    strategy_calls.clear(); generate_calls.clear()
+    refined_fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "these limits",
+                "explanation": "Unresolved referent."}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "What limits?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text,
+             "refined_text": refined_text, "revision_number": 1,
+             "answers_used": [{"question_id": "Q1", "answer_text": "DOC-REQ-B's range."}]},
+        ]),
+        select_strategy=select_strategy, generate_tests=generate_tests)
+    human_fns2 = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="DOC-REQ-B's range.")],
+        decide_at_cap=lambda rec: (None, None))
+    refined_record = run_requirement(
+        rec(requirement=REQ_A), DOC, None, None, refined_fns, human_fns2, throttle,
+        max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("refined path completes", refined_record.outcome is RunOutcome.COMPLETED)
+    ok("refined path recorded exactly one rewrite",
+       refined_record.final_requirement is not None
+       and refined_record.final_requirement.refined_text == refined_text)
+    ok("stage 3/4 saw the refined text, not the original (contract item 2)",
+       strategy_calls == [refined_text] and generate_calls == [refined_text])
+
+
+def test_revision_cap() -> None:
+    """Scenario 2: quality check fails every round up to the cap; decide_at_cap is
+    invoked; both CAP_GENERATED and CAP_STOPPED produce the matching outcome."""
+    section("Scenario 2 -- revision cap")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def always_fails_quality():
+        return Scripted([{"requirement_id": REQ_A.id, "passed": False, "issues": [{
+            "id": "I1", "category": "vague_pronoun", "span": "these limits",
+            "explanation": "Unresolved."}]}] * 5)
+
+    def refine_forever():
+        return Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1,
+             "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ] * 5)
+
+    for decision, expected in ((RunOutcome.CAP_GENERATED, RunOutcome.CAP_GENERATED),
+                               (RunOutcome.CAP_STOPPED, RunOutcome.CAP_STOPPED)):
+        fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=always_fails_quality(), refine=refine_forever(),
+            select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+        human_fns = HumanFns(
+            answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+            decide_at_cap=lambda rec, d=decision: (d, f"cap reached, chose {d.value}"))
+        result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns,
+                                 throttle, max_revisions=2, stage_configs=STAGE_CONFIGS)
+        ok(f"cap decision {decision.value} produces outcome {expected.value}",
+           result.outcome is expected)
+        ok(f"{decision.value} record has a cap_reason", result.cap_reason is not None)
+
+    ok("decide_at_cap returning a nonsense outcome raises ValueError",
+       _cap_returns_nonsense_raises())
+
+
+def _cap_returns_nonsense_raises() -> bool:
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": False, "issues": [{
+            "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "e"}]}] * 3),
+        refine=Scripted([{"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+            "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]}] * 3),
+        select_strategy=None, generate_tests=None)
+    human_fns = HumanFns(answer_questions=lambda turn: [],
+                         decide_at_cap=lambda rec: (RunOutcome.COMPLETED, "nonsense"))
+    try:
+        run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                        max_revisions=1, stage_configs=STAGE_CONFIGS)
+        return False
+    except ValueError:
+        return True
+
+
+def test_issue_identity_reuse() -> None:
+    """Scenario 3: two rounds produce an issue at the same (category, span); the
+    orchestrator reuses the same Issue.id, per contract item 4.
+
+    Round 2's scripted RefinerTurn question deliberately references "FRESH-1", the
+    id the orchestrator reconciled round 1's issue to -- not the fresh "FRESH-2" id the
+    round 2 Quality Checker call minted. A real (LLM) refiner is shown the *already
+    reconciled* QualityReport (see _run_refine_loop: the refine call's `quality_report`
+    argument is the reconciled one, built before the refine call happens), so it would
+    naturally echo "FRESH-1" back; a Scripted mock has to be told to do the same, or the
+    resulting RefinementRound fails RefinementRound._round_is_coherent's check that
+    every question's issue_id names an issue actually present in that round's
+    quality_report -- which after reconciliation no longer contains "FRESH-2" at all.
+    """
+    section("Scenario 3 -- issue identity across rounds")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "FRESH-1", "category": "vague_pronoun", "span": "these limits",
+                 "explanation": "e1"}]},
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "FRESH-2", "category": "vague_pronoun", "span": "these limits",
+                 "explanation": "e1, still there"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "FRESH-1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+            {"requirement_id": REQ_A.id, "revision_number": 2, "questions": [{
+                "id": "Q2", "issue_id": "FRESH-1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": T1, "refined_text": T1 + " ",
+             "revision_number": 2, "answers_used": [{"question_id": "Q2", "answer_text": "a"}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id=turn.questions[0].id, answer_text="a")],
+        decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ids_seen = [r.quality_report.issues[0].id for r in result.rounds if r.quality_report.issues]
+    ok("the LLM's fresh ids were replaced with the reused id",
+       ids_seen == ["FRESH-1", "FRESH-1"])
+
+
+def test_suppression_persists() -> None:
+    """Scenario 4: user_confirms_resolved=True on one round's answer is present in
+    suppressed_issue_ids on every LATER round, not just the next one."""
+    section("Scenario 4 -- suppression persists across rounds")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"},
+                {"id": "I2", "category": "non_verifiable", "span": "subsequent processing",
+                 "explanation": "e2"}]},
+            # I1 suppressed by the human after round 1; only I2 should still show up.
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "I2b", "category": "non_verifiable", "span": "subsequent processing",
+                 "explanation": "e2 still there"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
+                {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"},
+                {"id": "Q2", "issue_id": "I2", "issue_category": "non_verifiable", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [
+                 {"question_id": "Q1", "answer_text": "confirmed fine", "user_confirms_resolved": True},
+                 {"question_id": "Q2", "answer_text": "a"}]},
+            {"requirement_id": REQ_A.id, "revision_number": 2, "questions": [
+                {"id": "Q3", "issue_id": "I2", "issue_category": "non_verifiable", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": T1, "refined_text": T1 + " ",
+             "revision_number": 2, "answers_used": [{"question_id": "Q3", "answer_text": "a"}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(
+        answer_questions=lambda turn: [
+            RefinerAnswer(question_id=q.id, answer_text="confirmed fine" if q.issue_id == "I1" else "a",
+                         user_confirms_resolved=(q.issue_id == "I1"))
+            for q in turn.questions],
+        decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("round 2 suppresses I1", "I1" in result.rounds[1].suppressed_issue_ids)
+    ok("round 3 (final passing round) still suppresses I1",
+       "I1" in result.rounds[2].suppressed_issue_ids)
+
+
+def test_resume_skips_finished_refine_loop() -> None:
+    """Regression test for a bug found while implementing run_requirement (not one of
+    the four scenarios in the harness design doc): resume_at can legitimately return
+    STRATEGY_SELECTOR or TEST_GENERATOR for a record whose refine loop already finished
+    (e.g. retrying after the Strategy Selector hit a rate limit). run_requirement must
+    NOT re-enter _run_refine_loop in that case -- the last round already passed and so
+    has no rewrite (RefinementRound forbids a rewrite on a passed round), and the loop's
+    fresh-round branch unconditionally reads `rounds[-1].rewrite.refined_text`, which
+    would raise AttributeError on a resumed, already-finished record.
+    """
+    section("Regression -- resuming at STRATEGY_SELECTOR must not re-run the refine loop")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, RunOutcome, SystemType
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    passed_round = mk_round(1, REQ_A.text, passed=True)
+    resuming_record = rec(requirement=REQ_A, classification=cls, rounds=[passed_round])
+    ok("fixture actually resumes at the strategy selector (sanity check)",
+       resume_at(resuming_record) is PipelineStage.STRATEGY_SELECTOR)
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=None, check_quality=None, refine=None,  # must never be called
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=lambda turn: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+    def _run():
+        return run_requirement(resuming_record, DOC, None, None, fns, human_fns, throttle,
+                               max_revisions=3, stage_configs=STAGE_CONFIGS)
+
+    try:
+        result = _run()
+        ok("resuming at the strategy selector does not crash", True)
+        ok("resuming at the strategy selector still completes", result.outcome is RunOutcome.COMPLETED)
+    except AttributeError:
+        ok("resuming at the strategy selector does not crash", False)
+        ok("resuming at the strategy selector still completes", False)
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage, test_document_stages_degraded, test_on_disk_round_trip):
+              test_call_stage, test_document_stages_degraded, test_on_disk_round_trip,
+              test_happy_path, test_revision_cap, test_issue_identity_reuse,
+              test_suppression_persists, test_resume_skips_finished_refine_loop):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

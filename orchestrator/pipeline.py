@@ -18,10 +18,11 @@ from typing import Callable, NamedTuple, Optional
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    ConsistencyReport, DependencyReport, DocumentRunRecord, DocumentStage,
-    DocumentStageError, DocumentTokenUsage, FailureKind, PipelineStage, RefinerAnswer,
-    RefinerTurn, RequirementRunRecord, RequirementSet, RunOutcome, StageConfig,
-    TokenUsage,
+    Classification, ConsistencyReport, DependencyReport, DocumentRunRecord,
+    DocumentStage, DocumentStageError, DocumentTokenUsage, FailureKind, Issue,
+    PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
+    RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunOutcome,
+    StageConfig, StageError, TestPlan, TestStrategy, TokenUsage,
 )
 
 
@@ -257,6 +258,275 @@ def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:
     if rec.test_plan is None:
         return PipelineStage.TEST_GENERATOR
     return None
+
+
+def _reconcile_issue_ids(new_issues: list[Issue], previous_round: Optional[RefinementRound]) -> list[Issue]:
+    """Matches this round's issues against the previous round's on (category, span) and
+    reuses the id when it's the same defect -- the orchestrator's job per contract item
+    4, not the LLM's: each round's QualityReport is a fresh call minting its own ids."""
+    if previous_round is None:
+        return new_issues
+    available = {(i.category, i.span): i.id for i in previous_round.quality_report.issues}
+    used_ids: set[str] = set()
+    reconciled = []
+    for issue in new_issues:
+        reused_id = available.get((issue.category, issue.span))
+        if reused_id is not None and reused_id not in used_ids:
+            used_ids.add(reused_id)
+            reconciled.append(issue.model_copy(update={"id": reused_id}))
+        else:
+            reconciled.append(issue)
+    return reconciled
+
+
+def _confirmed_issue_ids(rounds: list[RefinementRound]) -> set[str]:
+    """Every issue id the human has ever confirmed resolved (user_confirms_resolved),
+    recomputed from the rounds already on the record -- same shape as schemas.py's own
+    _issue_identity_is_stable validator, so resuming mid-refinement doesn't need to
+    track this separately from what's already persisted."""
+    confirmed: set[str] = set()
+    for rnd in rounds:
+        if rnd.turn is None:
+            continue
+        issue_of = {q.id: q.issue_id for q in rnd.turn.questions}
+        for ans in rnd.answers:
+            if ans.user_confirms_resolved:
+                confirmed.add(issue_of[ans.question_id])
+    return confirmed
+
+
+def _run_refine_loop(
+    record: RequirementRunRecord,
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    stage_configs: dict,
+    max_attempts: int,
+    backoff_seconds: Callable[[int], float],
+) -> tuple[RequirementRunRecord, Optional[StageError]]:
+    """Runs quality-check/refine rounds until one passes, the cap is hit, or a stage
+    call fails outright. Returns the updated record and, on failure, the StageError to
+    append -- the caller sets outcome=ERROR, since only it knows the full error list.
+    """
+    req = record.requirement
+    rounds = list(record.rounds)
+
+    # Resuming mid-round: the last round already has a quality_report but no rewrite
+    # yet (REFINER position) -- pick up from there instead of starting a new round.
+    pending_round = None
+    if rounds and not rounds[-1].quality_report.passed and rounds[-1].rewrite is None:
+        pending_round = rounds[-1]
+        rounds = rounds[:-1]
+
+    while True:
+        if pending_round is not None:
+            n = pending_round.revision_number
+            text_checked = pending_round.text_checked
+            quality_report = pending_round.quality_report
+            suppressed_ids = pending_round.suppressed_issue_ids
+            turn = pending_round.turn
+            answers = pending_round.answers
+        else:
+            n = len(rounds) + 1
+            text_checked = rounds[-1].rewrite.refined_text if rounds else req.text
+            suppressed_ids = sorted(_confirmed_issue_ids(rounds))
+            current = Requirement(id=req.id, text=text_checked, source_doc_id=req.source_doc_id)
+            usage = list(record.usage)
+            try:
+                raw_report = call_stage(
+                    stage_fns.check_quality, (current, record.classification, suppressed_ids),
+                    QualityReport, PipelineStage.QUALITY_CHECKER,
+                    stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, usage,
+                    max_attempts, backoff_seconds)
+            except StageFailed as f:
+                record = record.model_copy(update={"rounds": rounds, "usage": usage})
+                return record, StageError(stage=PipelineStage.QUALITY_CHECKER, kind=f.kind,
+                                          message=f.message, retry_count=f.retry_count)
+            record = record.model_copy(update={"usage": usage})
+            reconciled = _reconcile_issue_ids(raw_report.issues, rounds[-1] if rounds else None)
+            quality_report = QualityReport(requirement_id=req.id, passed=raw_report.passed,
+                                           issues=reconciled)
+            turn, answers = None, []
+
+        if quality_report.passed:
+            rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
+                                          quality_report=quality_report,
+                                          suppressed_issue_ids=suppressed_ids))
+            return record.model_copy(update={"rounds": rounds}), None
+
+        if n >= max_revisions:
+            # Cap reached this round: record what we have (turn/answers if we got that
+            # far while resuming, otherwise none yet) and stop -- the caller decides.
+            rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
+                                          quality_report=quality_report, turn=turn,
+                                          answers=answers, suppressed_issue_ids=suppressed_ids))
+            return record.model_copy(update={"rounds": rounds}), None
+
+        current = Requirement(id=req.id, text=text_checked, source_doc_id=req.source_doc_id)
+        usage = list(record.usage)
+        if turn is None:
+            try:
+                turn = call_stage(
+                    stage_fns.refine, (current, quality_report), RefinerTurn,
+                    PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
+                    throttle, usage, max_attempts, backoff_seconds)
+            except StageFailed as f:
+                record = record.model_copy(update={"usage": usage})
+                rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
+                                              quality_report=quality_report,
+                                              suppressed_issue_ids=suppressed_ids))
+                return record.model_copy(update={"rounds": rounds}), StageError(
+                    stage=PipelineStage.REFINER, kind=f.kind, message=f.message,
+                    retry_count=f.retry_count)
+            record = record.model_copy(update={"usage": usage})
+            answers = human_fns.answer_questions(turn)
+
+        usage = list(record.usage)
+        try:
+            rewrite = call_stage(
+                stage_fns.refine, (current, answers), RefinedRequirement,
+                PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
+                throttle, usage, max_attempts, backoff_seconds)
+        except StageFailed as f:
+            record = record.model_copy(update={"usage": usage})
+            rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
+                                          quality_report=quality_report, turn=turn,
+                                          answers=answers, suppressed_issue_ids=suppressed_ids))
+            return record.model_copy(update={"rounds": rounds}), StageError(
+                stage=PipelineStage.REFINER, kind=f.kind, message=f.message,
+                retry_count=f.retry_count)
+        record = record.model_copy(update={"usage": usage})
+
+        rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
+                                      quality_report=quality_report, turn=turn,
+                                      answers=answers, rewrite=rewrite,
+                                      suppressed_issue_ids=suppressed_ids))
+        pending_round = None
+
+
+def run_requirement(
+    record: RequirementRunRecord,
+    requirement_set: RequirementSet,
+    consistency_report: Optional[ConsistencyReport],
+    dependency_report: Optional[DependencyReport],
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    stage_configs: dict,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> RequirementRunRecord:
+    """The full per-requirement pipeline: classifier, quality-check/refine loop
+    (delegated to _run_refine_loop), the revision cap, strategy selector, test
+    generator. Resumable: resume_at(record) says where to pick up, and every stage
+    already done is skipped.
+
+    consistency_report/dependency_report are accepted (Task 11 threads them through
+    from run_document_stages) but not yet consumed by any per-requirement stage call --
+    no stage_fns signature in this task's scenarios takes them. Wiring them into the
+    quality checker / strategy selector is future work, not silently invented here.
+    """
+    stage = resume_at(record)
+    if stage is None:
+        return record
+
+    req = record.requirement
+
+    if stage is PipelineStage.CLASSIFIER:
+        usage = list(record.usage)
+        try:
+            classification = call_stage(
+                stage_fns.classify, (req, requirement_set), Classification,
+                PipelineStage.CLASSIFIER, stage_configs[PipelineStage.CLASSIFIER.value].model,
+                throttle, usage, max_attempts, backoff_seconds)
+        except StageFailed as f:
+            errors = list(record.errors) + [StageError(
+                stage=PipelineStage.CLASSIFIER, kind=f.kind, message=f.message,
+                retry_count=f.retry_count)]
+            return RequirementRunRecord.model_validate({
+                **record.model_dump(mode="json"), "outcome": "error",
+                "errors": [e.model_dump(mode="json") for e in errors],
+                "usage": [u.model_dump(mode="json") for u in usage]})
+        record = record.model_copy(update={"classification": classification, "usage": usage})
+
+    # Only CLASSIFIER/QUALITY_CHECKER/REFINER positions need the refine loop at all --
+    # STRATEGY_SELECTOR and TEST_GENERATOR mean the loop already finished (the last
+    # round passed, or the cap already fired on an earlier call to this function) and
+    # calling it again would try to start a phantom next round: the last round has no
+    # rewrite in that case (a passed round never gets one -- RefinementRound rejects it),
+    # so `rounds[-1].rewrite.refined_text` would raise AttributeError. This was a real
+    # bug in the initial draft -- caught because it is exactly the resume path Task 11
+    # depends on, not because any of the four scenario tests below exercise it.
+    if stage in (PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER, PipelineStage.REFINER):
+        record, refine_error = _run_refine_loop(
+            record, stage_fns, human_fns, throttle, max_revisions, stage_configs,
+            max_attempts, backoff_seconds)
+        if refine_error is not None:
+            errors = list(record.errors) + [refine_error]
+            return RequirementRunRecord.model_validate(
+                {**record.model_dump(mode="json"), "outcome": "error",
+                 "errors": [e.model_dump(mode="json") for e in errors]})
+
+    last_round = record.rounds[-1]
+    if not last_round.quality_report.passed:
+        # The cap fired: ask the human whether to generate anyway or stop.
+        outcome, cap_reason = human_fns.decide_at_cap(record)
+        if outcome not in (RunOutcome.CAP_GENERATED, RunOutcome.CAP_STOPPED):
+            raise ValueError(
+                f"decide_at_cap returned {outcome!r}, must be CAP_GENERATED or CAP_STOPPED")
+        if outcome is RunOutcome.CAP_STOPPED:
+            return RequirementRunRecord.model_validate(
+                {**record.model_dump(mode="json"), "outcome": outcome.value,
+                 "cap_reason": cap_reason})
+        record = record.model_copy(update={"cap_reason": cap_reason})
+        final_outcome = RunOutcome.CAP_GENERATED
+    else:
+        final_outcome = RunOutcome.COMPLETED
+
+    # Contract item 2 / gap 1: stages 3/4 take a plain Requirement whose text is
+    # whichever text stages 1-2c actually settled on. record.final_text is safe to read
+    # here specifically -- not in general (see design/ORCHESTRATOR_CONTRACT.md item 2)
+    # -- because the refine loop above has just finished (passed or capped), so `rounds`
+    # is guaranteed non-empty and its last entry is exactly what was checked/rewritten.
+    current = Requirement(id=req.id, text=record.final_text, source_doc_id=req.source_doc_id)
+
+    usage = list(record.usage)
+    try:
+        strategy = call_stage(
+            stage_fns.select_strategy, (current, record.classification), TestStrategy,
+            PipelineStage.STRATEGY_SELECTOR,
+            stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, usage,
+            max_attempts, backoff_seconds)
+    except StageFailed as f:
+        errors = list(record.errors) + [StageError(
+            stage=PipelineStage.STRATEGY_SELECTOR, kind=f.kind, message=f.message,
+            retry_count=f.retry_count)]
+        return RequirementRunRecord.model_validate(
+            {**record.model_dump(mode="json"), "outcome": "error",
+             "errors": [e.model_dump(mode="json") for e in errors],
+             "usage": [u.model_dump(mode="json") for u in usage]})
+    record = record.model_copy(update={"test_strategy": strategy, "usage": usage})
+
+    usage = list(record.usage)
+    try:
+        plan = call_stage(
+            stage_fns.generate_tests, (current, strategy), TestPlan,
+            PipelineStage.TEST_GENERATOR, stage_configs[PipelineStage.TEST_GENERATOR.value].model,
+            throttle, usage, max_attempts, backoff_seconds)
+    except StageFailed as f:
+        errors = list(record.errors) + [StageError(
+            stage=PipelineStage.TEST_GENERATOR, kind=f.kind, message=f.message,
+            retry_count=f.retry_count)]
+        return RequirementRunRecord.model_validate(
+            {**record.model_dump(mode="json"), "outcome": "error",
+             "errors": [e.model_dump(mode="json") for e in errors],
+             "usage": [u.model_dump(mode="json") for u in usage]})
+    record = record.model_copy(update={"test_plan": plan, "usage": usage})
+
+    return RequirementRunRecord.model_validate(
+        {**record.model_dump(mode="json"), "outcome": final_outcome.value})
 
 
 def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
