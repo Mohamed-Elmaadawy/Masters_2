@@ -519,6 +519,7 @@ EOF
 - Create: `orchestrator/test_harness.py` (fixtures + `resume_at` tests, first content in this file)
 - Modify: `orchestrator/pipeline.py` (create, with just `resume_at` for now)
 - Modify: `design/test_schemas.py` (remove `resume_at`, `test_resume_positions`, its entry in `main()`, and its now-unused `err` lambda / fixtures if nothing else uses them)
+- Modify: `CLAUDE.md` ("Rules learned the hard way" section — the `test_resume_positions` citation moves with the test)
 
 **Interfaces:**
 - Consumes: `design.schemas.{PipelineStage, RequirementRunRecord}`
@@ -744,10 +745,26 @@ Delete the `resume_at` function (the copy, not the one just created in `orchestr
 Run: `python -m design.test_schemas`
 Expected: ends with `M checks passed, 0 failed`, where `M` = (Task 3's count) − 8 (the `test_resume_positions` checks: 6 case rows + 1 interrupted + 1 finished-record check that also gets deleted along with it — count the actual `ok(...)` calls removed to get the exact number)
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Update the stale citation in `CLAUDE.md`**
+
+`CLAUDE.md`'s "Rules learned the hard way" section says:
+
+> **A spec nobody executes drifts.** The resume rule lived only in prose and was wrong for
+> one case. It is now executed by `test_schemas.py::test_resume_positions`. If a document
+> describes logic, test the logic.
+
+The test just moved. Update the citation:
+
+```markdown
+**A spec nobody executes drifts.** The resume rule lived only in prose and was wrong for
+one case. It is now executed by `orchestrator/test_harness.py::test_resume_positions`. If
+a document describes logic, test the logic.
+```
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add orchestrator/pipeline.py orchestrator/test_harness.py design/test_schemas.py
+git add orchestrator/pipeline.py orchestrator/test_harness.py design/test_schemas.py CLAUDE.md
 git commit -m "$(cat <<'EOF'
 Move resume_at from design/test_schemas.py to orchestrator/pipeline.py
 
