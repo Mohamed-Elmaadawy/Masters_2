@@ -35,7 +35,8 @@ from design.schemas import (
     PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
     RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunMetadata,
     RunOutcome, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
-    TestTechnique, fields_carrying_requirement_id, prompt_fingerprint,
+    TestTechnique, TokenUsage, DocumentTokenUsage, fields_carrying_requirement_id,
+    prompt_fingerprint,
 )
 from design.schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES
 
@@ -341,6 +342,39 @@ def test_failure_kind() -> None:
     accepts("DocumentStageError with kind",
             lambda: DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER,
                                        kind=FailureKind.TRANSPORT, message="429"))
+
+
+def test_token_usage() -> None:
+    """TokenUsage is a log mirroring StageError/DocumentStageError -- see the design doc."""
+    section("Token usage")
+    u1 = TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=100, completion_tokens=20)
+    u2 = TokenUsage(stage=PipelineStage.QUALITY_CHECKER, prompt_tokens=50, completion_tokens=10)
+    r = rec(usage=[u1, u2])
+    ok("total_tokens sums all entries", r.total_tokens == 180)
+    ok("empty usage sums to zero", rec().total_tokens == 0)
+    rejects("TokenUsage rejects negative prompt_tokens",
+            lambda: TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=-1, completion_tokens=0))
+    rejects("TokenUsage rejects negative completion_tokens",
+            lambda: TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=0, completion_tokens=-1))
+
+    du1 = DocumentTokenUsage(stage=DocumentStage.CONSISTENCY_CHECKER, prompt_tokens=200, completion_tokens=40)
+    du2 = DocumentTokenUsage(stage=DocumentStage.DEPENDENCY_MAPPER, prompt_tokens=300, completion_tokens=60)
+    d = doc(usage=[du1, du2])
+    ok("document_stage_tokens sums only document-level usage", d.document_stage_tokens == 600)
+    ok("document_stage_tokens ignores requirement_records",
+       doc(usage=[du1], requirement_records=[rec(usage=[u1])]).document_stage_tokens == 240)
+    ok("total_tokens is read-only",
+       _raises_attribute_error_total_tokens(r))
+    ok("usage round trips through JSON",
+       RequirementRunRecord.model_validate_json(r.model_dump_json()).total_tokens == 180)
+
+
+def _raises_attribute_error_total_tokens(record) -> bool:
+    try:
+        record.total_tokens = 999
+        return False
+    except AttributeError:
+        return True
 
 
 def test_gap5_refinement_trajectory() -> None:
@@ -1210,7 +1244,8 @@ def main() -> int:
     print("schemas.py regression")
     print("=" * 72)
     for fn in (test_non_empty_guards, test_gap1_both_paths_converge,
-               test_gap2_requirement_outcomes, test_failure_kind, test_gap5_refinement_trajectory,
+               test_gap2_requirement_outcomes, test_failure_kind, test_token_usage,
+               test_gap5_refinement_trajectory,
                test_gap3_document_record, test_gap4_provenance,
                test_cross_field_agreement, test_duplicate_keys,
                test_denormalised_fields_agree, test_technique_eligibility,

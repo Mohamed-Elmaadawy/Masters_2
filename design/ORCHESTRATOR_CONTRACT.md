@@ -265,6 +265,25 @@ If the exact prompt text needs recovering later, save each unique prompt once as
 
 ---
 
+## 13. Token usage
+
+Every stage call that *returns* (success or a validation failure — both mean inference
+happened) gets one `TokenUsage`/`DocumentTokenUsage` entry appended, via
+`orchestrator.pipeline.call_stage`/`call_document_stage`. A `StageCallFailed` (transport
+failure) never gets one — the request was rejected before inference, so no tokens were
+spent, and the stage fn raises in that case with no result to carry counts.
+
+`RequirementRunRecord.total_tokens` and `DocumentRunRecord.document_stage_tokens` are
+computed, never stored directly — the latter is deliberately not named `total_tokens`,
+since it can only ever sum the two document-level stages, never the requirement records
+(which arrive empty in `document.json` under D2b). Whole-document cost is
+`doc.document_stage_tokens + sum(r.total_tokens for r in doc.requirement_records)`,
+computed by the caller.
+
+*(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.)*
+
+---
+
 ## Things the schema does NOT check, by design
 
 Worth knowing so they are not assumed handled:

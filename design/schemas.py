@@ -729,6 +729,32 @@ class FailureKind(str, Enum):
     OTHER = "other"
 
 
+class TokenUsage(BaseModel):
+    """One entry per API call that returned, whether it validated or not.
+
+    Tokens, not cost: prices change, a stored cost freezes today's price into a record
+    read months later. Tokens x a price table kept separately gives cost at whatever
+    price is current. No model field: RunMetadata.stages[stage].model already says
+    which model served this stage for the whole run -- repeating it here would be a
+    denormalised copy requiring agreement, the exact pattern behind most bugs in this
+    project. Never recorded for a StageCallFailed (transport failure): the request was
+    rejected before inference, so no tokens were spent. See
+    docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.
+    """
+    stage: PipelineStage
+    prompt_tokens: int = Field(..., ge=0)
+    completion_tokens: int = Field(..., ge=0)
+
+
+class DocumentTokenUsage(BaseModel):
+    """Structurally identical to TokenUsage apart from the stage type -- same reasoning
+    as the StageError/DocumentStageError split: a shared PipelineStage | DocumentStage
+    union would let a RequirementRunRecord's usage list name a document stage again."""
+    stage: DocumentStage
+    prompt_tokens: int = Field(..., ge=0)
+    completion_tokens: int = Field(..., ge=0)
+
+
 class StageError(BaseModel):
     # An enum rather than a free string so "which stage fails most" stays countable --
     # "classifier" vs "Classifier" would silently split the tally. See DESIGN_NOTES.md.
@@ -897,6 +923,7 @@ class RequirementRunRecord(BaseModel):
     rounds: list[RefinementRound] = Field(default_factory=list)
     test_strategy: Optional[TestStrategy] = None
     test_plan: Optional[TestPlan] = None
+    usage: list[TokenUsage] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _outcome_matches_contents(self) -> "RequirementRunRecord":
@@ -1191,6 +1218,14 @@ class RequirementRunRecord(BaseModel):
                 history.setdefault(issue.id, []).append(rnd.revision_number)
         return history
 
+    # Cost at any price table, at any point: tokens x price, computed by the caller.
+    # A stage retried twice then succeeded shows 3 entries here -- once per call that
+    # returned, including the two that failed validation and got thrown away.
+    @computed_field
+    @property
+    def total_tokens(self) -> int:
+        return sum(u.prompt_tokens + u.completion_tokens for u in self.usage)
+
 
 # ---------------------------------------------------------------------------
 # Document-level run record -- see DESIGN_NOTES.md
@@ -1341,6 +1376,7 @@ class DocumentRunRecord(BaseModel):
     consistency_report: Optional[ConsistencyReport] = None
     dependency_report: Optional[DependencyReport] = None
     requirement_records: list[RequirementRunRecord] = Field(default_factory=list)
+    usage: list[DocumentTokenUsage] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _outcome_matches_contents(self) -> "DocumentRunRecord":
@@ -1482,3 +1518,15 @@ class DocumentRunRecord(BaseModel):
         finished = {r.requirement.id for r in self.requirement_records
                     if r.outcome in TERMINAL_OUTCOMES}
         return [r.id for r in self.requirement_set.requirements if r.id not in finished]
+
+    # Deliberately NOT named total_tokens. Under D2b, requirement_records arrives
+    # empty in the on-disk document.json and is only populated after assembly from
+    # requirements/*.json -- a field named total_tokens would silently return near-zero
+    # on disk and a large number post-assembly, same name, two different answers
+    # depending on when it's read. This sums only the two document-level stages.
+    # Whole-document cost is document_stage_tokens + sum(r.total_tokens for r in
+    # requirement_records), computed by the caller -- not implied by a field name.
+    @computed_field
+    @property
+    def document_stage_tokens(self) -> int:
+        return sum(u.prompt_tokens + u.completion_tokens for u in self.usage)

@@ -164,6 +164,16 @@ classDiagram
         +str requirement_id*
         +list~TestCase~ test_cases*
     }
+    class TokenUsage {
+        +PipelineStage stage*
+        +int prompt_tokens*
+        +int completion_tokens*
+    }
+    class DocumentTokenUsage {
+        +DocumentStage stage*
+        +int prompt_tokens*
+        +int completion_tokens*
+    }
     class StageError {
         +PipelineStage stage*
         +FailureKind kind*
@@ -186,11 +196,13 @@ classDiagram
         +list~RefinementRound~ rounds
         +Optional~TestStrategy~ test_strategy
         +Optional~TestPlan~ test_plan
+        +list~TokenUsage~ usage
         +str final_text $computed$
         +Optional~RefinedRequirement~ final_requirement $computed$
         +bool used_human_override $computed$
         +list~int~ issues_per_round $computed$
         +dict~str,list~int~~ issue_history $computed$
+        +int total_tokens $computed$
     }
     class StageConfig {
         +str model*
@@ -212,7 +224,9 @@ classDiagram
         +Optional~ConsistencyReport~ consistency_report
         +Optional~DependencyReport~ dependency_report
         +list~RequirementRunRecord~ requirement_records
+        +list~DocumentTokenUsage~ usage
         +list~str~ pending_requirement_ids $computed$
+        +int document_stage_tokens $computed$
     }
 
     ClarifyingQuestion "1" --> IssueCategory : issue_category
@@ -225,9 +239,11 @@ classDiagram
     DocumentRunRecord "1" *-- RunMetadata : metadata
     DocumentRunRecord "1" --> DocumentOutcome : outcome
     DocumentRunRecord "1..*" *-- DocumentStageError : errors
+    DocumentRunRecord "1..*" *-- DocumentTokenUsage : usage
     DocumentRunRecord "1..*" *-- RequirementRunRecord : requirement_records
     DocumentStageError "1" --> DocumentStage : stage
     DocumentStageError "1" --> FailureKind : kind
+    DocumentTokenUsage "1" --> DocumentStage : stage
     Issue "1" --> IssueCategory : category
     QualityReport "1..*" *-- Issue : issues
     RefinedRequirement "1..*" *-- RefinerAnswer : answers_used
@@ -243,6 +259,7 @@ classDiagram
     RequirementRunRecord "1" --> RunOutcome : outcome
     RequirementRunRecord "1..*" *-- RefinementRound : rounds
     RequirementRunRecord "1..*" *-- StageError : errors
+    RequirementRunRecord "1..*" *-- TokenUsage : usage
     RequirementSet "1..*" *-- Requirement : requirements
     RunMetadata "1" *-- StageConfig : stages
     StageError "1" --> FailureKind : kind
@@ -251,5 +268,6 @@ classDiagram
     TestPlan "1..*" *-- TestCase : test_cases
     TestStrategy "1" --> SystemType : system_type
     TestStrategy "1..*" --> TestTechnique : techniques
+    TokenUsage "1" --> PipelineStage : stage
 
     note "* = required field · $computed$ = derived, not stored (Pydantic @computed_field)"
