@@ -13,8 +13,11 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Callable, NamedTuple, Optional
 
+from pydantic import BaseModel, ValidationError
+
 from design.schemas import (
-    PipelineStage, RefinerAnswer, RefinerTurn, RequirementRunRecord, RunOutcome,
+    FailureKind, PipelineStage, RefinerAnswer, RefinerTurn, RequirementRunRecord,
+    RunOutcome, TokenUsage,
 )
 
 
@@ -90,6 +93,62 @@ class Throttle:
             if elapsed < interval:
                 self.sleep_fn(interval - elapsed)
         self.last_call_at[model] = self.now_fn()
+
+
+class StageFailed(Exception):
+    """Raised by call_stage once retries are exhausted. Carries what a StageError
+    needs: kind, message, and retry_count (attempts before giving up, 0 meaning it
+    failed on the first try with no retry -- see StageError's own docstring)."""
+    def __init__(self, kind: FailureKind, message: str, retry_count: int):
+        self.kind = kind
+        self.message = message
+        self.retry_count = retry_count
+        super().__init__(message)
+
+
+def call_stage(
+    stage_fn: Callable[..., StageCallResult],
+    args: tuple,
+    model_cls: type[BaseModel],
+    stage: PipelineStage,
+    model_name: str,
+    throttle: Throttle,
+    usage_sink: list[TokenUsage],
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> BaseModel:
+    """Call one stage, validate its output, retry on failure, record usage.
+
+    Only the stage_fn call itself is wrapped in `except Exception` -- not the
+    validation that follows, and not any surrounding orchestrator code. A bug in the
+    orchestrator's own loop must still crash instead of being filed as kind=OTHER,
+    which would otherwise be an enum member with no real producer (CLAUDE.md: "don't
+    write a check that can't fire"). See design/ORCHESTRATOR_CONTRACT.md item 7 and
+    the FailureKind docstring in design/schemas.py.
+    """
+    last_kind: FailureKind = FailureKind.OTHER
+    last_message = "call_stage was invoked with max_attempts < 1"
+
+    for attempt in range(max_attempts):
+        throttle.wait_for_slot(model_name)
+        try:
+            result = stage_fn(*args)
+        except StageCallFailed as e:
+            last_kind, last_message = FailureKind.TRANSPORT, str(e)
+        except Exception as e:
+            last_kind, last_message = FailureKind.OTHER, f"{type(e).__name__}: {e}"
+        else:
+            usage_sink.append(TokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
+                                         completion_tokens=result.completion_tokens))
+            try:
+                return model_cls.model_validate(result.raw)
+            except ValidationError as e:
+                last_kind, last_message = FailureKind.VALIDATION, str(e)
+
+        if attempt < max_attempts - 1:
+            throttle.sleep_fn(backoff_seconds(attempt))
+
+    raise StageFailed(last_kind, last_message, retry_count=max_attempts - 1)
 
 
 def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:

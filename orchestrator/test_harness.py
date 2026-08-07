@@ -203,6 +203,81 @@ def test_stage_fns_typo_is_a_typeerror() -> None:
     ok("StageFns constructs with exactly the right fields", real.classify is not_provided)
 
 
+def test_call_stage() -> None:
+    """The narrow-except wrapper: success, TRANSPORT, VALIDATION, and scenario 14 --
+    OTHER, the one branch that must actually fire, not just be documented as possible."""
+    section("call_stage")
+    from orchestrator.pipeline import call_stage, StageFailed, Throttle
+    from design.schemas import Classification, SystemType, FailureKind, TokenUsage
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    # -- success --
+    usage: list[TokenUsage] = []
+    fn = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER,
+                        "fake-model", throttle, usage)
+    ok("call_stage returns a validated model", isinstance(result, Classification))
+    ok("a successful call records one usage entry", len(usage) == 1)
+    ok("usage entry carries the right stage", usage[0].stage is PipelineStage.CLASSIFIER)
+
+    # -- TRANSPORT: exhausts retries, no usage recorded --
+    usage2: list[TokenUsage] = []
+    fn2 = Scripted([StageCallFailed("429"), StageCallFailed("429"), StageCallFailed("429")])
+    try:
+        call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                  throttle, usage2, max_attempts=3, backoff_seconds=lambda a: 0.0)
+        ok("TRANSPORT exhaustion raises StageFailed", False)
+    except StageFailed as f:
+        ok("TRANSPORT exhaustion raises StageFailed", True)
+        ok("StageFailed.kind is TRANSPORT", f.kind is FailureKind.TRANSPORT)
+        ok("retry_count is attempts-1", f.retry_count == 2)
+    ok("no usage recorded for pure transport failures", usage2 == [])
+
+    # -- VALIDATION: the call succeeded, tokens were spent on rejected output --
+    usage3: list[TokenUsage] = []
+    fn3 = Scripted([{"requirement_id": "R1"}])  # missing system_type, rationale
+    try:
+        call_stage(fn3, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                  throttle, usage3, max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("VALIDATION failure raises StageFailed", False)
+    except StageFailed as f:
+        ok("VALIDATION failure raises StageFailed", True)
+        ok("StageFailed.kind is VALIDATION", f.kind is FailureKind.VALIDATION)
+    ok("a validation failure still records usage (tokens were spent)", len(usage3) == 1)
+
+    # -- Scenario 14: OTHER, and the negative it's paired with --
+    usage4: list[TokenUsage] = []
+    fn4 = Scripted([KeyError("unexpected")])
+    try:
+        call_stage(fn4, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                  throttle, usage4, max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("an unexpected exception type raises StageFailed(OTHER)", False)
+    except StageFailed as f:
+        ok("an unexpected exception type raises StageFailed(OTHER)", True)
+        ok("StageFailed.kind is OTHER", f.kind is FailureKind.OTHER)
+        ok("message names the exception class", "KeyError" in f.message)
+    ok("no usage recorded for OTHER (never reached the model)", usage4 == [])
+
+    # Negative: a bug in code CALLING call_stage (outside the guarded line) still
+    # crashes, rather than being caught and filed as OTHER. call_stage itself has no
+    # surrounding try/except beyond the one line that calls stage_fn -- demonstrated by
+    # confirming a bug in the *test's own* orchestration crashes as a real exception.
+    # Uses a fresh Scripted (fn's one behavior was already consumed above) so the
+    # call_stage call itself succeeds -- the AttributeError must come from the
+    # caller's own code, not from stage_fn running dry.
+    fn5 = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
+    def broken_caller():
+        result = call_stage(fn5, ("R1",), Classification, PipelineStage.CLASSIFIER,
+                            "fake-model", throttle, usage)
+        return result.nonexistent_attribute  # AttributeError, not from inside call_stage
+    try:
+        broken_caller()
+        ok("a caller bug (outside call_stage's guarded line) still crashes", False)
+    except AttributeError:
+        ok("a caller bug (outside call_stage's guarded line) still crashes", True)
+
+
 def test_throttle() -> None:
     """Scenario: the throttle enforces a minimum interval PER MODEL, and asserts the
     actual recorded delay -- not just that a delay happened -- since a no-op sleep_fn
@@ -244,7 +319,8 @@ def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
     print("=" * 72)
-    for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle):
+    for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
+              test_call_stage):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
