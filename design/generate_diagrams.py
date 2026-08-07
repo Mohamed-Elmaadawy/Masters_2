@@ -32,7 +32,6 @@ which is worth revisiting once the orchestrator is written.
 
 from __future__ import annotations
 
-import sys
 import types
 import typing
 from enum import Enum
@@ -40,8 +39,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-sys.path.insert(0, str(Path(__file__).parent))
-import schemas  # noqa: E402
+import design.schemas as schemas
 
 OUT_DIR = Path(__file__).parent
 

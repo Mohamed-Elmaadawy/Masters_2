@@ -12,11 +12,13 @@ stages, and their prompts.
 
 ## After any change to `design/schemas.py`
 
+`design/` became a package (`design/__init__.py`) as part of the orchestrator work in `docs/superpowers/plans/2026-08-08-orchestrator-harness-plan.md`, so both scripts are now run as modules from the repo root rather than as bare file paths.
+
 Both, every time:
 
 ```bash
-python design/test_schemas.py        # must end "N checks passed, 0 failed"
-python design/generate_diagrams.py   # rewrites the five .mermaid files
+python -m design.test_schemas        # must end "N checks passed, 0 failed"
+python -m design.generate_diagrams   # rewrites the five .mermaid files
 ```
 
 The diagram generator also **validates**: it fails if the pipeline declaration names a

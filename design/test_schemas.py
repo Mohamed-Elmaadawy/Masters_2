@@ -24,15 +24,11 @@ Three layers, each catching what the others cannot:
 
 from __future__ import annotations
 
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+from pydantic import ValidationError
 
-from pydantic import ValidationError  # noqa: E402
-
-from schemas import (  # noqa: E402
+from design.schemas import (
     ALL_STAGES, Classification, ELIGIBLE_TECHNIQUES, ClarifyingQuestion, ConsistencyConflict,
     ConsistencyReport, DependencyLink, DependencyReport, DocumentOutcome,
     DocumentRunRecord, DocumentStage, DocumentStageError, Issue, IssueCategory,
@@ -41,7 +37,7 @@ from schemas import (  # noqa: E402
     RunOutcome, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
     TestTechnique, fields_carrying_requirement_id, prompt_fingerprint,
 )
-from schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES  # noqa: E402
+from design.schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES
 
 PASSED = 0
 FAILED: list[str] = []
