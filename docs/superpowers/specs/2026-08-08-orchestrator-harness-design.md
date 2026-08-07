@@ -153,8 +153,20 @@ a CLI loop, a notebook cell, or a FastAPI backend" (`DESIGN_NOTES.md`) — a blo
 dataclass from `StageFns` because the source is categorically different (a person or a
 web request, not an LLM call), not because the injection mechanism differs.
 
-No new `CapAction` enum: `decide_at_cap` returns the existing `RunOutcome` members,
-narrowed with `Literal` so it structurally cannot return `COMPLETED` or anything else.
+No new `CapAction` enum: `decide_at_cap` returns the existing `RunOutcome` members. The
+`Literal` annotation is a static hint only — there is no type checker in
+`requirements.txt`, so nothing stops a misbehaving `decide_at_cap` from returning
+`COMPLETED` at runtime and producing a nonsense record. Enforced with an explicit check
+where the value is consumed:
+
+```python
+outcome, cap_reason = human_fns.decide_at_cap(record)
+if outcome not in (RunOutcome.CAP_GENERATED, RunOutcome.CAP_STOPPED):
+    raise ValueError(f"decide_at_cap returned {outcome!r}, must be CAP_GENERATED or CAP_STOPPED")
+```
+
+Matches this project's habit of making wrong states unrepresentable rather than merely
+discouraged — the `Literal` alone claimed more than it enforced.
 
 ### Failure handling — narrow `except`, so every branch has a producer
 
@@ -193,24 +205,6 @@ Two distinct mechanisms, both necessary:
   RPM limit, backoff alone means spending most of a multi-requirement run re-hitting the
   same limit. A minimum interval between calls avoids most 429s outright.
 
-```python
-@dataclass(frozen=True)
-class Throttle:
-    sleep_fn: Callable[[float], None] = time.sleep
-    now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
-    min_interval_seconds: dict[str, float] = field(default_factory=dict)  # keyed by model
-
-def wait_for_slot(throttle: Throttle, model: str, last_call_at: dict[str, datetime]) -> None:
-    interval = throttle.min_interval_seconds.get(model, 0.0)
-    last = last_call_at.get(model)
-    now = throttle.now_fn()
-    if last is not None:
-        elapsed = (now - last).total_seconds()
-        if elapsed < interval:
-            throttle.sleep_fn(interval - elapsed)
-    last_call_at[model] = throttle.now_fn()
-```
-
 Bundled into one dataclass because it's three runtime-plumbing pieces working together
 (pacing calls), distinct from the business-logic callables in `StageFns`/`HumanFns`.
 `sleep_fn` and `now_fn` are both injected: production defaults to `time.sleep` /
@@ -218,6 +212,30 @@ Bundled into one dataclass because it's three runtime-plumbing pieces working to
 so tests are deterministic and never actually wait. `now_fn` also supplies
 `RunMetadata.started_at`, which must be timezone-aware — previously that would have been
 a real timestamp captured inside a test.
+
+`Throttle` is **not** frozen, unlike `StageFns`/`HumanFns` — it owns `last_call_at`
+internally as mutable state, rather than threading a separate dict through every call
+site. Config (`sleep_fn`, `now_fn`, `min_interval_seconds`) is still set once at
+construction; only the per-model last-call bookkeeping mutates:
+
+```python
+@dataclass
+class Throttle:
+    sleep_fn: Callable[[float], None] = time.sleep
+    now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
+    min_interval_seconds: dict[str, float] = field(default_factory=dict)  # keyed by model
+    last_call_at: dict[str, datetime] = field(default_factory=dict, init=False)
+
+    def wait_for_slot(self, model: str) -> None:
+        interval = self.min_interval_seconds.get(model, 0.0)
+        last = self.last_call_at.get(model)
+        now = self.now_fn()
+        if last is not None:
+            elapsed = (now - last).total_seconds()
+            if elapsed < interval:
+                self.sleep_fn(interval - elapsed)
+        self.last_call_at[model] = self.now_fn()
+```
 
 Keyed **by model**, not global: `RunMetadata.stages[stage].model` already allows
 different stages to use different models (e.g. a cheap classifier, a stronger
@@ -238,6 +256,25 @@ tests the throttle itself.
 delay schedule to be tuned once real dashboard limits are read, since a 1s/2s/4s
 schedule is meaningless against a per-minute quota. Not fixed as a number in this doc for
 the same reason `min_interval_seconds` isn't.
+
+## The revision cap
+
+Contract item 3 makes a maximum refinement-round count mandatory, but no signature
+above carries it. It is an explicit parameter to `run_document`, not a module constant:
+
+```python
+def run_document(
+    doc: RequirementSet,
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    ...
+) -> DocumentRunRecord: ...
+```
+
+A constant would force editing source to test a 2-round cap versus a 5-round cap;
+scenario 2 needs both without touching `pipeline.py`.
 
 ## `resume_at`
 
@@ -298,14 +335,25 @@ contract item so a failure points at the decision it belongs to.
     it were always specified.
 11. **Prompt provenance** — every stage in `RunMetadata.stages` carries a
     `prompt_hash` produced by `prompt_fingerprint`.
-12a. **Token usage — validation failures.** Two calls to the same stage return
+12. **Token usage — validation failures.** Two calls to the same stage return
     validation-failing output, the third succeeds → **3** `TokenUsage` entries (every
     call returned, so every call is metered), `total_tokens` sums all three.
-12b. **Token usage — transport failures.** Two calls raise `StageCallFailed`, the third
-    succeeds → **1** `TokenUsage` entry (the two 429s never reached the model). Scenarios
-    12a/12b are kept separate deliberately: a shared scenario would hide a wrong
+13. **Token usage — transport failures.** Two calls raise `StageCallFailed`, the third
+    succeeds → **1** `TokenUsage` entry (the two 429s never reached the model). Kept
+    separate from scenario 12 deliberately: a shared scenario would hide a wrong
     assumption about *where* usage gets appended, since the two failure kinds behave
     oppositely.
+14. **`OTHER` failure kind.** A stage fn raises an unexpected exception type (e.g.
+    `KeyError`, not `StageCallFailed`) → `StageError(kind=OTHER)`, `message` containing
+    the exception class name. Without this scenario, `OTHER` is a documented producer
+    that no test proves fires — the same shape as the unreachable checks `CLAUDE.md`
+    warns about, just one level up (an untested branch instead of an untestable one).
+    Paired with the negative: a bug in the orchestrator's *own* loop (not inside the
+    guarded stage-call line) still propagates as an uncaught exception and fails the
+    run, rather than being swallowed and filed as `kind=OTHER`. This is the boundary the
+    narrow `except` around only `stage_fns.classify(...)` (not the surrounding code)
+    exists to draw, and it is exactly the boundary a later refactor could erase by
+    widening the `try` by one line.
 
 ## Out of scope for this phase
 
