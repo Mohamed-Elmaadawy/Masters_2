@@ -14,13 +14,15 @@ Each scenario is numbered to match docs/superpowers/specs/2026-08-08-orchestrato
 
 from __future__ import annotations
 
+import tempfile
 from datetime import datetime, timezone
+from pathlib import Path
 
 from design.schemas import (
-    ClarifyingQuestion, PipelineStage, QualityReport, RefinedRequirement,
-    RefinementRound, RefinerAnswer, RefinerTurn, Requirement, RequirementRunRecord,
-    RequirementSet, RunOutcome, StageConfig, StageError, RunMetadata, ALL_STAGES,
-    FailureKind, prompt_fingerprint,
+    ClarifyingQuestion, DocumentRunRecord, PipelineStage, QualityReport,
+    RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn, Requirement,
+    RequirementRunRecord, RequirementSet, RunOutcome, StageConfig, StageError,
+    RunMetadata, ALL_STAGES, FailureKind, prompt_fingerprint,
 )
 from orchestrator.pipeline import (
     resume_at, StageCallResult, StageCallFailed, StageFns, HumanFns,
@@ -343,12 +345,43 @@ def test_throttle() -> None:
     ok("a call after the interval has elapsed does not wait", slept == [])
 
 
+def test_on_disk_round_trip() -> None:
+    """Contract items 9 and 10: document.json is written with requirement_records=[],
+    each requirement gets its own file, and everything re-validates before persisting."""
+    section("On-disk layout round trip")
+    from orchestrator.pipeline import write_document_run, write_requirement_run, read_document_run
+    from design.schemas import DocumentOutcome, RunOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+
+        metadata = make_metadata()
+        record = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                   outcome=DocumentOutcome.IN_PROGRESS)
+        write_document_run(tmp_path, record)
+        ok("document.json was written", (tmp_path / "document.json").exists())
+
+        on_disk_raw = (tmp_path / "document.json").read_text()
+        ok("requirement_records is empty on disk",
+           '"requirement_records": []' in on_disk_raw)
+
+        req_record = rec(requirement=REQ_A, outcome=RunOutcome.IN_PROGRESS)
+        write_requirement_run(tmp_path, req_record)
+        ok("the requirement file was written",
+           (tmp_path / "requirements" / f"{REQ_A.id}.json").exists())
+
+        reloaded = read_document_run(tmp_path)
+        ok("reloaded document keeps its metadata", reloaded.metadata.run_id == metadata.run_id)
+        ok("reloaded document reassembles requirement_records",
+           [r.requirement.id for r in reloaded.requirement_records] == [REQ_A.id])
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage, test_document_stages_degraded):
+              test_call_stage, test_document_stages_degraded, test_on_disk_round_trip):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

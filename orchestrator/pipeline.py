@@ -8,17 +8,20 @@ wires in real ones. No control-flow logic is built twice.
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Callable, NamedTuple, Optional
 
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    ConsistencyReport, DependencyReport, DocumentStage, DocumentStageError,
-    DocumentTokenUsage, FailureKind, PipelineStage, RefinerAnswer, RefinerTurn,
-    RequirementRunRecord, RequirementSet, RunOutcome, StageConfig, TokenUsage,
+    ConsistencyReport, DependencyReport, DocumentRunRecord, DocumentStage,
+    DocumentStageError, DocumentTokenUsage, FailureKind, PipelineStage, RefinerAnswer,
+    RefinerTurn, RequirementRunRecord, RequirementSet, RunOutcome, StageConfig,
+    TokenUsage,
 )
 
 
@@ -254,3 +257,34 @@ def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:
     if rec.test_plan is None:
         return PipelineStage.TEST_GENERATOR
     return None
+
+
+def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
+    """Writes document.json with an EMPTY requirement_records list (decision D2b) --
+    each requirement is its own file, written separately by write_requirement_run.
+    Re-validates before persisting (contract item 10): mutation after construction
+    bypasses Pydantic's checks, so this re-runs them right before the bytes hit disk."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "requirements").mkdir(exist_ok=True)
+    on_disk = DocumentRunRecord.model_validate(
+        {**record.model_dump(mode="json"), "requirement_records": []})
+    (run_dir / "document.json").write_text(on_disk.model_dump_json(indent=2))
+
+
+def write_requirement_run(run_dir: Path, record: RequirementRunRecord) -> None:
+    (run_dir / "requirements").mkdir(parents=True, exist_ok=True)
+    validated = RequirementRunRecord.model_validate(record.model_dump(mode="json"))
+    (run_dir / "requirements" / f"{record.requirement.id}.json").write_text(
+        validated.model_dump_json(indent=2))
+
+
+def read_document_run(run_dir: Path) -> DocumentRunRecord:
+    """Reassembles the document from document.json (empty requirement_records) plus
+    every requirements/*.json file -- the inverse of write_document_run/
+    write_requirement_run under D2b."""
+    doc_data = json.loads((run_dir / "document.json").read_text())
+    req_dir = run_dir / "requirements"
+    records = [RequirementRunRecord.model_validate_json(path.read_text())
+               for path in sorted(req_dir.glob("*.json"))]
+    return DocumentRunRecord.model_validate(
+        {**doc_data, "requirement_records": [r.model_dump(mode="json") for r in records]})
