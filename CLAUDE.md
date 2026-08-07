@@ -89,8 +89,8 @@ only mutation runs prove the tests discriminate — and that layer has caught we
 the other two could not, three times.
 
 **A spec nobody executes drifts.** The resume rule lived only in prose and was wrong for
-one case. It is now executed by `test_schemas.py::test_resume_positions`. If a document
-describes logic, test the logic.
+one case. It is now executed by `orchestrator/test_harness.py::test_resume_positions`. If
+a document describes logic, test the logic.
 
 ---
 

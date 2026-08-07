@@ -1101,69 +1101,6 @@ def test_retry_without_redoing_everything() -> None:
        == ["classification", "rounds", "test_strategy"])
 
 
-def resume_at(rec):
-    """The resume rule from ORCHESTRATOR_CONTRACT.md, kept here so it stays honest.
-
-    The schema deliberately does not contain this -- it encodes pipeline *ordering*,
-    which belongs to the orchestrator. But a spec nobody executes drifts: the first
-    version of this rule was wrong for one case (see the `last.rewrite` branch), and
-    nothing caught it until the records were constructed by hand. Testing the documented
-    rule against real records is the cheapest way to keep the document true.
-    """
-    if rec.classification is None:
-        return PipelineStage.CLASSIFIER
-    if not rec.rounds:
-        return PipelineStage.QUALITY_CHECKER
-    last = rec.rounds[-1]
-    if not last.quality_report.passed:
-        # A round whose check failed but which already rewrote has finished refining;
-        # the next step is checking that rewrite, i.e. the next round.
-        return PipelineStage.REFINER if last.rewrite is None else PipelineStage.QUALITY_CHECKER
-    if rec.test_strategy is None:
-        return PipelineStage.STRATEGY_SELECTOR
-    if rec.test_plan is None:
-        return PipelineStage.TEST_GENERATOR
-    return None
-
-
-def test_resume_positions() -> None:
-    """A failure at any stage must resume at that stage -- nothing earlier redone."""
-    section("Resume positions")
-    err = lambda stage: [StageError(stage=stage, kind=FailureKind.TRANSPORT,
-                                    message="429", retry_count=3)]
-    mid_round = mk_round(1, T0, [VAGUE], [("Q1", VAGUE)], [A1])            # no rewrite yet
-    rewritten = mk_round(1, T0, [VAGUE], [("Q1", VAGUE)], [A1], rewrite_to=T1)
-
-    cases = [
-        ("classifier failed",
-         dict(errors=err(PipelineStage.CLASSIFIER)), PipelineStage.CLASSIFIER),
-        ("quality checker failed on round 1",
-         dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=CLS),
-         PipelineStage.QUALITY_CHECKER),
-        ("refiner failed mid-round, nothing rewritten yet",
-         dict(errors=err(PipelineStage.REFINER), classification=CLS, rounds=[mid_round]),
-         PipelineStage.REFINER),
-        ("quality checker failed on round 2, round 1 already rewrote",
-         dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=CLS,
-              rounds=[rewritten]), PipelineStage.QUALITY_CHECKER),
-        ("strategy selector failed",
-         dict(errors=err(PipelineStage.STRATEGY_SELECTOR), classification=CLS,
-              rounds=ROUNDS_REFINED), PipelineStage.STRATEGY_SELECTOR),
-        ("test generator failed",
-         dict(errors=err(PipelineStage.TEST_GENERATOR), classification=CLS,
-              rounds=ROUNDS_REFINED, test_strategy=STRATEGY), PipelineStage.TEST_GENERATOR),
-    ]
-    for label, kw, expected in cases:
-        got = resume_at(rec(outcome=RunOutcome.ERROR, **kw))
-        ok(f"{label} -> resume at {expected.value}", got is expected)
-
-    ok("an interrupted record resumes at the classifier",
-       resume_at(rec()) is PipelineStage.CLASSIFIER)
-    ok("a finished record resumes nowhere",
-       resume_at(rec(outcome=RunOutcome.COMPLETED,
-                     **VALID_RECORDS[RunOutcome.COMPLETED])) is None)
-
-
 def test_rule_table_anchors() -> None:
     """Pin the rules that came from real bugs, so deleting one fails loudly.
 
@@ -1251,7 +1188,7 @@ def main() -> int:
                test_denormalised_fields_agree, test_technique_eligibility,
                test_references_resolve, test_gap6_issue_identity,
                test_self_review_sweep, test_retry_without_redoing_everything,
-               test_resume_positions, test_rule_table_anchors,
+               test_rule_table_anchors,
                test_helpers_and_round_trip):
         fn()
     print("\n" + "=" * 72)
