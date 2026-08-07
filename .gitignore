@@ -1,0 +1,40 @@
+# NOTE: this folder is not currently a git repository -- this file does nothing until
+# `git init` is run. Written now so the first commit doesn't pick up build artefacts.
+
+__pycache__/
+*.py[cod]
+.Python
+venv/
+.venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Tooling scratch
+.playwright-mcp/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Run outputs -- these are generated data, not source. Keep the ones that back a
+# result in the thesis somewhere deliberate rather than by accident.
+runs/
+*.log
+
+# Reference PDFs -- ~320 MB, and nothing in the code reads them. Committing them would
+# make every clone slow forever, and redistributing published papers is legally murky.
+# Keep them locally; they are reading material, not source.
+papers/
+
+# macOS zip artefacts -- an unzipped archive brought 19 of these in once.
+__MACOSX/
+._*
+
+# NOT ignored, deliberately:
+#   design/*.mermaid -- generated, but committed so a diff shows which arrows or fields
+#     a schema change moved.
+#   datasets/ -- the evaluation inputs are part of the record, and small.

@@ -1,0 +1,322 @@
+[
+  {
+    "doc_id": "themas-fischbach2022",
+    "requirements": [
+      {
+        "id": "THEMAS-REQ-A",
+        "text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-B",
+        "text": "If the current temperature value is strictly less than the lower value of the valid temperature range or if the received temperature value is strictly greater than the upper value of the valid temperature range, then the THEMAS system shall identify the current temperature value as an invalid temperature and shall output an invalid temperature status.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-C",
+        "text": "The THEMAS system shall maintain the ON/OFF status of each heating and cooling unit.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-D",
+        "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-E",
+        "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-F",
+        "text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-G",
+        "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-H",
+        "text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "source_doc_id": "themas-fischbach2022"
+      }
+    ]
+  },
+  {
+    "doc_id": "illustrative-luitel2024",
+    "requirements": [
+      {
+        "id": "LUITEL-R1",
+        "text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R2",
+        "text": "The system shall maintain operations logs for quality assurance and audit purposes.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R3",
+        "text": "The system shall provide a warning if a connectivity issue causes three or more users to simultaneously lose service.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R4",
+        "text": "The system shall be able to monitor network traffic for individual applications.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R5",
+        "text": "The system shall comply with the applicable privacy and security standards.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R6",
+        "text": "If stability issues are detected, the system shall perform an emergency restart.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R7",
+        "text": "The system shall generate reports on inventory levels, product movement, and sales history.",
+        "source_doc_id": "illustrative-luitel2024"
+      },
+      {
+        "id": "LUITEL-R8",
+        "text": "The system shall provide a programmable interface to support system integration.",
+        "source_doc_id": "illustrative-luitel2024"
+      }
+    ]
+  },
+  {
+    "doc_id": "actapp-arora2024",
+    "requirements": [
+      {
+        "id": "ACTAPP-R1",
+        "text": "The patients should receive a notification to stand up and move around if they have been sitting for long.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R2",
+        "text": "The patients should not receive notifications when busy.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R1.1",
+        "text": "As a user, I want to receive a notification to move if I have been sitting for 60 minutes, so that I will be active.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R1.2",
+        "text": "As a carer, I want ActApp to notify me if the patient continues to remain inactive after receiving a notification to move, so that I can intervene.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-NFR1.1",
+        "text": "The app shall encrypt all data during transmission and storage to ensure patient privacy and comply with GDPR guidelines.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R1.1-AC1",
+        "text": "Accurately detect when the user has been sitting for 60 continuous minutes.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R1.1-AC2",
+        "text": "Notifications can be toggled on or off by user.",
+        "source_doc_id": "actapp-arora2024"
+      },
+      {
+        "id": "ACTAPP-R2-AC1",
+        "text": "Accurately identifies when the user is driving.",
+        "source_doc_id": "actapp-arora2024"
+      }
+    ]
+  },
+  {
+    "doc_id": "promise-alhoshan2023",
+    "requirements": [
+      {
+        "id": "ALHOSHAN-REQ1",
+        "text": "CNG shall support mechanisms for secure authentication and communication with the remote management system.",
+        "source_doc_id": "promise-alhoshan2023"
+      }
+    ]
+  },
+  {
+    "doc_id": "promise-fr-hey2020",
+    "requirements": [
+      {
+        "id": "HEY-REQ1",
+        "text": "The system shall allow a real estate agent to query MLS information.",
+        "source_doc_id": "promise-fr-hey2020"
+      },
+      {
+        "id": "HEY-REQ2",
+        "text": "The audit report shall include the total number of recycled parts used in the estimate.",
+        "source_doc_id": "promise-fr-hey2020"
+      },
+      {
+        "id": "HEY-REQ3",
+        "text": "If the shot was marked as a hit the product shall allow the offensive player to define a shot.",
+        "source_doc_id": "promise-fr-hey2020"
+      }
+    ]
+  },
+  {
+    "doc_id": "domain-corpora-ezzini",
+    "requirements": [
+      {
+        "id": "EZZINI-R1",
+        "text": "Service availability shall measure the outage of LEO satellites and terminals.",
+        "source_doc_id": "domain-corpora-ezzini"
+      },
+      {
+        "id": "EZZINI-R2",
+        "text": "The outage management platform shall provide administrators with the ability to categorize outages with discrete tags.",
+        "source_doc_id": "domain-corpora-ezzini"
+      }
+    ]
+  },
+  {
+    "doc_id": "autogen-wu2024",
+    "requirements": [
+      {
+        "id": "AUTOGEN-US1",
+        "text": "As a user, I want a product that is easy to navigate so that I can find what I need quickly.",
+        "source_doc_id": "autogen-wu2024"
+      },
+      {
+        "id": "AUTOGEN-US2",
+        "text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "source_doc_id": "autogen-wu2024"
+      },
+      {
+        "id": "AUTOGEN-US3",
+        "text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "source_doc_id": "autogen-wu2024"
+      },
+      {
+        "id": "AUTOGEN-US4",
+        "text": "As a user, I want a product that is constantly updated and improved so that I can enjoy the best features.",
+        "source_doc_id": "autogen-wu2024"
+      },
+      {
+        "id": "AUTOGEN-US5",
+        "text": "As a user, I want a product that offers good customer support so that I can get help when I need it.",
+        "source_doc_id": "autogen-wu2024"
+      }
+    ]
+  },
+  {
+    "doc_id": "metagpt-hong2024",
+    "requirements": [
+      {
+        "id": "METAGPT-US1",
+        "text": "As a user, I want to select any color on the screen, so that I can get its RGB values.",
+        "source_doc_id": "metagpt-hong2024"
+      },
+      {
+        "id": "METAGPT-US2",
+        "text": "As a user, I want the RGB values to update in real-time as I move the color meter, so that I can get accurate color information.",
+        "source_doc_id": "metagpt-hong2024"
+      },
+      {
+        "id": "METAGPT-US3",
+        "text": "As a user, I want a simple and intuitive interface, so that I can easily use the color meter.",
+        "source_doc_id": "metagpt-hong2024"
+      }
+    ]
+  },
+  {
+    "doc_id": "pure-themas-1998-full",
+    "requirements": [
+      {
+        "id": "PURE-THEMAS-R1",
+        "text": "The thermostats shall only provide temperature values and temperature settings.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R2",
+        "text": "The THEMAS system shall be designed to run on the Microsoft Windows NT operating system.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R3",
+        "text": "The system shall read this file and the definitions shall be derived from the initialization data in the file.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R4",
+        "text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R5",
+        "text": "The trigger value is used in combination with the current temperature to determine when a heating or cooling unit shall be turned on or off.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R6",
+        "text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R7",
+        "text": "The THEMAS system shall only respond to temperatures that are within a reasonable value.",
+        "source_doc_id": "pure-themas-1998-full"
+      },
+      {
+        "id": "PURE-THEMAS-R8",
+        "text": "Two types of temperature data shall be recognized from the thermostats: 1) the temperature setting and 2) the current temperature.",
+        "source_doc_id": "pure-themas-1998-full"
+      }
+    ]
+  },
+  {
+    "doc_id": "pure-ertms-2007",
+    "requirements": [
+      {
+        "id": "PURE-ERTMS-R1",
+        "text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R2",
+        "text": "ETCS shall be able to supervise train and shunting movements.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R3",
+        "text": "The current application level shall be indicated on the DMI.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R4",
+        "text": "The driver shall acknowledge the level transitions, if requested from trackside.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R5",
+        "text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R6",
+        "text": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R7",
+        "text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+        "source_doc_id": "pure-ertms-2007"
+      },
+      {
+        "id": "PURE-ERTMS-R8",
+        "text": "The DMI shall indicate the result of the self-test.",
+        "source_doc_id": "pure-ertms-2007"
+      }
+    ]
+  }
+]
