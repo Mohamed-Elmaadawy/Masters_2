@@ -25,14 +25,15 @@ domain-specific abbreviations like "LO = T_LT" -- was investigated and deliberat
 1b. Dependency Mapper       (RequirementSet -> DependencyReport)
 2. Per requirement:
    a. Classifier            (Requirement, RequirementSet -> Classification)
-   b. Quality Checker       (Requirement, Classification, ConsistencyReport, DependencyReport -> QualityReport)
+   b. Quality Checker       (Requirement, Classification, ConsistencyReport.conflicts_for(id),
+                              DependencyReport.dependencies_for(id) -> QualityReport)
    c. Refiner (only if QualityReport.passed is False)
         (Requirement, QualityReport -> RefinerTurn)     -- questions to human
         (RefinerAnswer[] -> RefinedRequirement)          -- human's answers back in
         loops back to Quality Checker
-3. Test Design Strategy Selector (RefinedRequirement, Classification,
+3. Test Design Strategy Selector (Requirement, Classification,
                                    DependencyReport.dependencies_for(id) -> TestStrategy)
-4. Test Case Generator            (RefinedRequirement, TestStrategy,
+4. Test Case Generator            (Requirement, TestStrategy,
                                    DependencyReport.dependencies_for(id) -> TestPlan)
 ```
 
@@ -203,10 +204,20 @@ To avoid re-asking a question the user believes they already answered correctly:
   (e.g. 3 rounds) per requirement, so a genuinely stuck disagreement between the
   checker and the human terminates instead of looping indefinitely.
 
+**2026-08-08 addendum:** the Quality Checker now also receives this requirement's own
+filtered document-level context — `ConsistencyReport.conflicts_for(id)` and
+`DependencyReport.dependencies_for(id)`, never the whole report, same shape as §3/4
+below. `None` (the document-level stage failed) and `[]` (it ran, nothing named this
+requirement) are kept distinct, not collapsed. See
+`docs/superpowers/specs/2026-08-08-document-context-wiring-design.md` for the reasoning
+and `design/ORCHESTRATOR_CONTRACT.md` for the orchestrator-level contract this creates.
+
 ## 3/4. Test Design Strategy Selector & Test Case Generator — per-requirement, with targeted dependency context
 
-Both stay per-requirement: one `RefinedRequirement` in, one `TestStrategy` or
-`TestPlan` out — never bulk across the whole document. But each is now also given
+Both stay per-requirement: one `Requirement` in (not `RefinedRequirement` — see
+`design/schemas.py`'s module docstring, "stages 3 and 4 ... take a plain `Requirement`,
+NOT a `RefinedRequirement`"), one `TestStrategy` or `TestPlan` out — never bulk across
+the whole document. But each is now also given
 that one requirement's own dependency links (`DependencyReport.dependencies_for(id)`),
 not the whole `DependencyReport` and not the whole document. This is the same shape as
 the Classifier fix: widen the *input context* for a single requirement without

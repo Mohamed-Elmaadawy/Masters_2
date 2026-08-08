@@ -157,24 +157,50 @@ everything".)*
 
 ### Retrying a failed document-level stage
 
-Do **not** start a new run to repair one failed document stage — completed requirement
-records cannot be carried across runs (their `run_id` would not match), so every
-requirement would be reprocessed.
+**Only while no requirement has been processed yet under this run's document
+context (rewritten 2026-08-08, see
+`docs/superpowers/specs/2026-08-08-document-context-wiring-design.md`).**
+`retry_document_stage` checks `record.requirement_records` (reconstructed from disk by
+`read_document_run`, no new field needed) and raises `ValueError` immediately — before
+calling the stage fn at all, so no API quota is spent on a result that would be
+discarded — the moment it is non-empty.
 
-Instead, retry the stage within the same run and write the report into the existing
-record. Keep the earlier `DocumentStageError` where it is: `errors` is a log of failed
-attempts, not a statement of current state, so a stage may hold both an earlier failure
-and a later report. The outcome then moves from `DEGRADED` to `COMPLETED` on its own,
-because no report is missing any more.
+**Why this changed.** Once item 16's filtered document context is wired into every
+per-requirement call, a retry that succeeds *after* some requirements have already run
+would let those already-processed requirements and any still-pending ones see different
+consistency/dependency context within the same `run_id` — an accident of retry timing,
+not a methodological choice. It is also not something the schema can represent as
+"fixed but still degraded": `DocumentOutcome.COMPLETED` requires both reports present
+and `DEGRADED` forbids both being present at once, so a successful retry that is written
+into `consistency_report`/`dependency_report` cannot coexist with an outcome that stays
+`DEGRADED` — there is no way to keep the *fields* current while freezing the *label*.
+The only schema-legal way to keep every requirement in a run under one consistent
+context is to stop a late retry from changing anything at all, once it could matter.
 
-**Changed 2026-08-08** (see
-`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md`): a manual
-retry is a new invocation and mints its own `invocation_id`. If it fails again, it
-appends a **new, independent** `DocumentStageError` linked to that invocation —
-`retry_document_stage` no longer looks up and bumps an existing entry's `retry_count`.
-This makes document-level and requirement-level failure recording symmetric (see item 7
-below) and removes the old asymmetry where `DocumentRunRecord.errors` allowed at most
-one entry per stage while `RequirementRunRecord.errors` did not.
+**While it's still legal (no requirement has run yet)** — the original policy stands
+unchanged: retry the stage within the same run and write the report into the existing
+record, rather than starting a new run (which would be wasteful here too, but for a
+smaller reason — no completed requirement work exists yet to orphan). Keep the earlier
+`DocumentStageError` where it is: `errors` is a log of failed attempts, not a statement
+of current state, so a stage may hold both an earlier failure and a later report. The
+outcome then moves from `DEGRADED` to `COMPLETED` on its own, because no report is
+missing any more.
+
+**Once it's not legal (any requirement has run)** — recovering a failed document-level
+stage requires starting a new run. This does mean reprocessing every requirement (their
+`run_id` would not match the old run's, so completed records cannot be carried across),
+which is the cost `retry_document_stage` originally existed to avoid — but that cost is
+smaller than the alternative of a `document.json` whose `outcome`/reports claim more
+context-consistency than what actually reached some of that run's per-requirement calls.
+
+**Unchanged from 2026-08-08 (per-attempt observability):** when a retry is still legal
+and it fails, it's a new invocation with its own `invocation_id`; a second failure
+appends a **new, independent** `DocumentStageError` linked to that invocation rather
+than bumping an existing entry's `retry_count`. This makes document-level and
+requirement-level failure recording symmetric (see item 7 below) and removes the old
+asymmetry where `DocumentRunRecord.errors` allowed at most one entry per stage while
+`RequirementRunRecord.errors` did not. See
+`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md`.
 
 *(DESIGN_NOTES: "Retry without redoing everything".)*
 
@@ -459,6 +485,50 @@ one a default left every other check in the suite green.
 
 *(Added 2026-08-08, see
 docs/superpowers/plans/2026-08-08-orchestrator-harness-fixes-and-changes.md section 5.)*
+
+## 16. Filtered document context, and `None` vs. `[]`
+
+The Quality Checker, Strategy Selector, and Test Generator each receive this
+requirement's own slice of the document-level analysis —
+`ConsistencyReport.conflicts_for(req.id)` (Quality Checker only) and
+`DependencyReport.dependencies_for(req.id)` (all three) — never the whole
+`ConsistencyReport`/`DependencyReport`. Handing a whole report to a per-requirement call
+would leak another requirement's conflicts/dependencies into this one's prompt and cost
+tokens on context this requirement has no stake in.
+
+`relevant_conflicts`/`relevant_dependencies` are computed once per `run_requirement`
+call and threaded, unchanged, into every stage call that needs them (including every
+round of the quality-check/refine loop) — not recomputed per call site, which would risk
+the two computations drifting apart, the "two things that must agree" shape CLAUDE.md
+names as this project's biggest bug source.
+
+**`None` and `[]` are not interchangeable, and the schema cannot enforce the
+difference** — this is purely an orchestrator-level guarantee, the kind of thing only a
+human reading this contract, or a test, can catch a future regression on:
+
+- `None` means the document-level stage that would have produced this report failed —
+  this requirement has no consistency/dependency context available at all, and that
+  absence is itself information (a `DEGRADED` document, item 8).
+- `[]` means the stage ran successfully and this requirement is not named in any
+  conflict/dependency.
+
+Collapsing the two (e.g. defaulting a failed stage to `[]`) would make a `DEGRADED`
+document's Quality Checker output indistinguishable from a clean one that genuinely has
+no conflicts — the model would report "no consistency issues" for a reason invisible in
+its own output: nobody actually checked. `StageFns.check_quality`/`select_strategy`/
+`generate_tests` are `Callable[..., StageCallResult]` — untyped, like every other
+`StageFns` field — so the type system cannot force a future stage-fn implementation to
+tell the two apart; a `Callable` accepts `None` or `[]` equally happily. The distinction
+is enforced by the invocation contract stated here (`run_requirement` always passes one
+or the other, never a stand-in) and by the tests in `orchestrator/test_harness.py`
+(`test_document_context_none_vs_empty` and its mirror) that fail if a future change to
+`run_requirement` ever collapses them — not by anything Python's type checker verifies.
+
+*(See `docs/superpowers/specs/2026-08-08-document-context-wiring-design.md`. Item 6's
+"Retrying a failed document-level stage" subsection states the consequence for
+`retry_document_stage`: once wired, a document-level retry that succeeds after any
+requirement has consumed the pre-retry context can no longer be allowed to change what
+that run's requirements see.)*
 
 ---
 

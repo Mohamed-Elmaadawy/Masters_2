@@ -1743,39 +1743,324 @@ def test_run_document_happy_path() -> None:
        result.metadata is metadata)
 
 
-def test_document_stage_retry_within_run() -> None:
-    """Scenario 6: a failed document-level stage is retried within the SAME run (not a
-    new one), the original failure stays in errors, outcome climbs DEGRADED ->
-    COMPLETED once the retry succeeds, and (rev 2: no more merging) a second failure
-    appends its OWN new DocumentStageError -- symmetric with the requirement-level
-    "same stage failing in two different rounds" case -- rather than bumping the
-    existing entry's retry_count. See
-    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
-    section("Scenario 6 -- document-level stage retried within the same run")
-    from orchestrator.pipeline import run_document, retry_document_stage, Throttle
-    from design.schemas import DocumentStage, DocumentOutcome
+def test_document_context_no_leakage_three_requirements() -> None:
+    """Design test plan item 1 (docs/superpowers/specs/2026-08-08-document-context-
+    wiring-design.md): filtered context, verified with THREE requirements, not two.
+    ConsistencyConflict.requirement_ids requires min_length=2, so with only two
+    requirements in the whole document any conflict necessarily names both of them --
+    there is no way to construct an "unrelated bystander" with just two. B here is a
+    genuine bystander: real conflicts/dependencies exist in the document, correctly
+    absent from B's own call."""
+    section("Document context: filtered, no leakage (three requirements)")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import (
+        ConsistencyConflict, ConsistencyReport, DependencyLink, DependencyReport, RunOutcome,
+    )
+
+    req_c = Requirement(id="DOC-REQ-C", source_doc_id="harness-doc",
+                        text="The system shall log every login attempt.")
+    doc3 = RequirementSet(doc_id="harness-doc", requirements=[REQ_A, REQ_B, req_c])
+    consistency = ConsistencyReport(doc_id="harness-doc", conflicts=[
+        ConsistencyConflict(requirement_ids=[REQ_A.id, req_c.id], explanation="A and C disagree")])
+    dependency = DependencyReport(doc_id="harness-doc", dependencies=[
+        DependencyLink(from_requirement_id=REQ_A.id, to_requirement_id=req_c.id,
+                       explanation="C must exist before A")])
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+
+    def run_one(req):
+        quality_fn = Scripted([{"requirement_id": req.id, "passed": True, "issues": []}])
+        strategy_fn = Scripted([{"requirement_id": req.id, "system_type": "other",
+                                 "techniques": ["boundary_value_analysis"], "rationale": "r"}])
+        fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([{"requirement_id": req.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
+            select_strategy=strategy_fn,
+            generate_tests=Scripted([{"requirement_id": req.id, "test_cases": [{
+                "id": f"TC-{req.id}-1", "requirement_ids": [req.id],
+                "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                "expected_result": "e"}]}]))
+        result = run_requirement(
+            rec(requirement=req), doc3, consistency, dependency, fns, human_fns, throttle,
+            max_revisions=3, stage_configs=STAGE_CONFIGS)
+        ok(f"{req.id}: reaches COMPLETED", result.outcome is RunOutcome.COMPLETED)
+        return quality_fn.calls[0], strategy_fn.calls[0]
+
+    qc_a, ss_a = run_one(REQ_A)
+    qc_b, ss_b = run_one(REQ_B)
+    qc_c, ss_c = run_one(req_c)
+
+    ok("A's check_quality call carries the conflict naming A and C",
+       len(qc_a[2]) == 1 and qc_a[2][0].requirement_ids == [REQ_A.id, req_c.id])
+    ok("C's check_quality call carries the same conflict",
+       len(qc_c[2]) == 1 and qc_c[2][0].requirement_ids == [REQ_A.id, req_c.id])
+    ok("B is a genuine bystander: relevant_conflicts=[] despite a real conflict "
+       "existing in the document",
+       qc_b[2] == [])
+    ok("A's check_quality call carries the dependency",
+       len(qc_a[3]) == 1 and qc_a[3][0].from_requirement_id == REQ_A.id)
+    ok("C's check_quality call carries the same A->C dependency",
+       len(qc_c[3]) == 1 and qc_c[3][0].from_requirement_id == REQ_A.id
+       and qc_c[3][0].to_requirement_id == req_c.id)
+    ok("B's check_quality call carries relevant_dependencies=[]", qc_b[3] == [])
+    ok("A's select_strategy call carries the identical filtered dependency list "
+       "as its check_quality call", ss_a[2] == qc_a[3])
+    ok("C's select_strategy call carries the identical filtered dependency list "
+       "as its check_quality call", ss_c[2] == qc_c[3])
+    ok("B's select_strategy call carries relevant_dependencies=[]", ss_b[2] == [])
+
+
+def test_document_context_none_vs_empty() -> None:
+    """Design test plan item 2: None (the document-level stage failed) and [] (it ran
+    and found nothing for this requirement) are never collapsed into each other."""
+    section("Document context: None vs [] preserved")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import DependencyReport, RunOutcome
+
+    dependency = DependencyReport(doc_id="harness-doc", dependencies=[])
+    quality_fn = Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}])
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, dependency, fns, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("reaches COMPLETED", result.outcome is RunOutcome.COMPLETED)
+    args = quality_fn.calls[0]
+    ok("relevant_conflicts is None (consistency checker failed)", args[2] is None)
+    ok("relevant_dependencies is [] (dependency mapper ran, found nothing)", args[3] == [])
+
+
+def test_document_context_independent_failure_mirror() -> None:
+    """Design test plan item 3: the mirror of item 2 -- dependency mapper failed,
+    consistency checker succeeded. One side being None never forces the other to None."""
+    section("Document context: independent failure, mirrored")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import ConsistencyConflict, ConsistencyReport, RunOutcome
+
+    consistency = ConsistencyReport(doc_id="harness-doc", conflicts=[
+        ConsistencyConflict(requirement_ids=[REQ_A.id, REQ_B.id], explanation="A and B disagree")])
+    quality_fn = Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}])
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    result = run_requirement(rec(requirement=REQ_A), DOC, consistency, None, fns, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("reaches COMPLETED", result.outcome is RunOutcome.COMPLETED)
+    args = quality_fn.calls[0]
+    ok("relevant_conflicts is populated (consistency checker ran)",
+       len(args[2]) == 1 and args[2][0].requirement_ids == [REQ_A.id, REQ_B.id])
+    ok("relevant_dependencies is None (dependency mapper failed)", args[3] is None)
+
+
+def test_document_context_dependencies_reach_both_stages() -> None:
+    """Design test plan item 4: Strategy Selector and Test Generator both receive the
+    same filtered dependency list."""
+    section("Document context: dependencies reach both Strategy Selector and Test Generator")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import DependencyLink, DependencyReport, RunOutcome
+
+    dependency = DependencyReport(doc_id="harness-doc", dependencies=[
+        DependencyLink(from_requirement_id=REQ_A.id, to_requirement_id=REQ_B.id,
+                       explanation="A depends on B")])
+    strategy_fn = Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                             "techniques": ["boundary_value_analysis"], "rationale": "r"}])
+    generate_fn = Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+        "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+        "title": "t", "steps": ["s"], "expected_result": "e"}]}])
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+        refine_questioner=None, refine_rewriter=None,
+        select_strategy=strategy_fn, generate_tests=generate_fn)
+    human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, dependency, fns, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("reaches COMPLETED", result.outcome is RunOutcome.COMPLETED)
+    strategy_deps = strategy_fn.calls[0][2]
+    generate_deps = generate_fn.calls[0][2]
+    ok("select_strategy receives the dependency",
+       len(strategy_deps) == 1 and strategy_deps[0].to_requirement_id == REQ_B.id)
+    ok("generate_tests receives the identical filtered list", generate_deps == strategy_deps)
+
+
+def test_document_context_survives_resume() -> None:
+    """Design test plan item 5: a document interrupted after the document-level stages
+    but before any requirement finishes, resumed with NO retry_document_stage call in
+    between -- the resumed requirement's check_quality call receives the same filtered
+    context an uninterrupted run would, not None or [] by default."""
+    section("Document context: survives resume (no retry in between)")
+    from orchestrator.pipeline import (
+        run_document_stages, write_document_run, read_document_run, resume_document, Throttle,
+    )
+    from design.schemas import (
+        ConsistencyConflict, ConsistencyReport, DocumentOutcome, RunOutcome,
+    )
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
-        # RequirementSet requires min_length=1, so there is no empty-document stand-in
-        # to isolate the document-level outcome from requirement processing -- instead
-        # classify is scripted to fail fast too, and the test only asserts on the
-        # document-level fields (outcome, errors), ignoring requirement_records.
-        first_fns = StageFns(
-            check_consistency=Scripted([StageCallFailed("429")] * 2),
-            map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
-            classify=Scripted([StageCallFailed("429")] * 2),
-            check_quality=None, refine_questioner=None, refine_rewriter=None,
-            select_strategy=None, generate_tests=None)
-        metadata = make_metadata()
-        result = run_document(DOC, metadata, first_fns, HumanFns(
-            answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None)),
-            throttle, max_revisions=3, run_dir=tmp_path, max_attempts=2,
-            backoff_seconds=lambda a: 0.0)
-        ok("first run is DEGRADED", result.outcome is DocumentOutcome.DEGRADED)
-        ok("first run recorded one consistency_checker error", len(result.errors) == 1)
-        first_retry_count = result.errors[0].retry_count
+        metadata = make_metadata(run_id="run-context-resume")
+
+        cons, deps, errors, attempts = run_document_stages(
+            DOC, metadata.stages,
+            StageFns(check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": [
+                        {"requirement_ids": [REQ_A.id, REQ_B.id], "explanation": "A and B disagree"}]}]),
+                    map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+                    classify=None, check_quality=None, refine_questioner=None,
+                    refine_rewriter=None, select_strategy=None, generate_tests=None),
+            throttle)
+        partial = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                    outcome=DocumentOutcome.COMPLETED, consistency_report=cons,
+                                    dependency_report=deps, attempts=attempts)
+        write_document_run(tmp_path, partial)
+        # No requirement files written -- both requirements are pending, as if the
+        # process crashed right after the document-level stages.
+        ok("both requirements are pending on the interrupted record",
+           set(read_document_run(tmp_path).pending_requirement_ids) == {REQ_A.id, REQ_B.id})
+
+        quality_fn = Scripted([
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+            {"requirement_id": REQ_B.id, "passed": True, "issues": []}])
+
+        def classification_for(req_id):
+            return {"requirement_id": req_id, "system_type": "other", "rationale": "r"}
+
+        finishing_fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
+            check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
+            select_strategy=Scripted([
+                {"requirement_id": REQ_A.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"},
+                {"requirement_id": REQ_B.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([
+                {"requirement_id": REQ_A.id, "test_cases": [{
+                    "id": "TC-A-1", "requirement_ids": [REQ_A.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]},
+                {"requirement_id": REQ_B.id, "test_cases": [{
+                    "id": "TC-B-1", "requirement_ids": [REQ_B.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]}]))
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+        resume_document(tmp_path, finishing_fns, human_fns, throttle, max_revisions=3)
+
+        ok("both resumed check_quality calls happened", len(quality_fn.calls) == 2)
+        for call in quality_fn.calls:
+            ok(f"{call[0].id}: relevant_conflicts survives the resume, naming A and B",
+               len(call[2]) == 1 and call[2][0].requirement_ids == [REQ_A.id, REQ_B.id])
+            ok(f"{call[0].id}: relevant_dependencies survives the resume as []", call[3] == [])
+
+
+def test_document_context_persists_across_refinement_rounds() -> None:
+    """Design test plan item 6: a requirement that fails round 1 and passes round 2 --
+    both rounds' check_quality calls carry the identical filtered context (conflicts
+    AND dependencies), proving _run_refine_loop threads both through every iteration,
+    not just the first."""
+    section("Document context: persists across refinement rounds")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import (
+        ConsistencyConflict, ConsistencyReport, DependencyLink, DependencyReport, RunOutcome,
+    )
+
+    consistency = ConsistencyReport(doc_id="harness-doc", conflicts=[
+        ConsistencyConflict(requirement_ids=[REQ_A.id, REQ_B.id], explanation="A and B disagree")])
+    dependency = DependencyReport(doc_id="harness-doc", dependencies=[
+        DependencyLink(from_requirement_id=REQ_A.id, to_requirement_id=REQ_B.id,
+                       explanation="A depends on B")])
+    quality_fn = Scripted([
+        {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+            "id": "I1", "category": "vague_pronoun", "span": "these limits",
+            "explanation": "Unresolved."}]},
+        {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+    ])
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=quality_fn,
+        refine_questioner=Scripted([{"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+            "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]}]),
+        refine_rewriter=Scripted([{"requirement_id": REQ_A.id, "original_text": REQ_A.text,
+                                   "refined_text": T1, "revision_number": 1,
+                                   "answers_used": [{"question_id": "Q1", "answer_text": "a"}]}]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+                         decide_at_cap=lambda r: (None, None))
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    result = run_requirement(rec(requirement=REQ_A), DOC, consistency, dependency, fns, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("reaches COMPLETED after round 2 passes", result.outcome is RunOutcome.COMPLETED)
+    ok("two check_quality calls happened (round 1, round 2)", len(quality_fn.calls) == 2)
+    round1_conflicts, round2_conflicts = quality_fn.calls[0][2], quality_fn.calls[1][2]
+    round1_deps, round2_deps = quality_fn.calls[0][3], quality_fn.calls[1][3]
+    ok("round 1 and round 2 carry the identical relevant_dependencies list",
+       round1_deps == round2_deps
+       and len(round1_deps) == 1
+       and round1_deps[0].from_requirement_id == REQ_A.id
+       and round1_deps[0].to_requirement_id == REQ_B.id)
+    ok("round 1 and round 2 carry the identical relevant_conflicts list",
+       round1_conflicts == round2_conflicts
+       and len(round1_conflicts) == 1
+       and round1_conflicts[0].requirement_ids == [REQ_A.id, REQ_B.id])
+
+
+def test_document_stage_retry_allowed_before_any_requirement() -> None:
+    """Design test plan item 7: retry_document_stage's ALLOWED branch, happy path --
+    zero requirement records on disk (the narrow crash-window case: the process died
+    right after the document-level stages, before touching any requirement), so the
+    retry is still legal, succeeds, and outcome climbs DEGRADED -> COMPLETED."""
+    section("Retry allowed (zero requirement records), and it succeeds")
+    from orchestrator.pipeline import (
+        run_document_stages, write_document_run, retry_document_stage, Throttle,
+    )
+    from design.schemas import DocumentOutcome, DocumentStage
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-retry-allowed-succeeds")
+
+        cons, deps, errors, attempts = run_document_stages(
+            DOC, metadata.stages,
+            StageFns(check_consistency=Scripted([StageCallFailed("429")] * 2),
+                    map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+                    classify=None, check_quality=None, refine_questioner=None,
+                    refine_rewriter=None, select_strategy=None, generate_tests=None),
+            throttle, max_attempts=2, backoff_seconds=lambda a: 0.0)
+        record = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                   outcome=DocumentOutcome.DEGRADED, errors=errors,
+                                   consistency_report=cons, dependency_report=deps,
+                                   attempts=attempts)
+        write_document_run(tmp_path, record)
+        ok("fixture has zero requirement records", record.requirement_records == [])
 
         retry_fns = StageFns(
             check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
@@ -1785,32 +2070,195 @@ def test_document_stage_retry_within_run() -> None:
         retried = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER, retry_fns,
                                        throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
         ok("retry succeeds: outcome climbs to COMPLETED", retried.outcome is DocumentOutcome.COMPLETED)
+        ok("the recovered report is written", retried.consistency_report is not None)
         ok("the original failure is still on record", len(retried.errors) == 1)
         ok("no second entry was appended for a SUCCESSFUL retry",
            sum(1 for e in retried.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER) == 1)
 
-        # -- a second FAILURE appends its own new entry, a new invocation (rev 2) --
+
+def test_document_stage_retry_allowed_but_fails_before_any_requirement() -> None:
+    """Design test plan item 8: retry_document_stage's ALLOWED branch, failure path.
+    Rewriting the old single retry test into "allowed" (item 7) and "blocked" (item 9)
+    would silently drop its old coverage of a SECOND failed retry appending its own,
+    distinct-invocation_id DocumentStageError rather than merging -- that coverage
+    happened to sit in a fixture this design now makes illegal to retry in place.
+    Re-homed here in a fixture where it's still legal: zero requirement records, and
+    the retry itself fails too."""
+    section("Retry allowed (zero requirement records), but it fails too")
+    from orchestrator.pipeline import (
+        run_document_stages, write_document_run, retry_document_stage, Throttle,
+    )
+    from design.schemas import AttemptResult, DocumentOutcome, DocumentStage
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-retry-allowed-fails")
+
+        cons, deps, errors, attempts = run_document_stages(
+            DOC, metadata.stages,
+            StageFns(check_consistency=Scripted([StageCallFailed("429")] * 2),
+                    map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+                    classify=None, check_quality=None, refine_questioner=None,
+                    refine_rewriter=None, select_strategy=None, generate_tests=None),
+            throttle, max_attempts=2, backoff_seconds=lambda a: 0.0)
+        record = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                   outcome=DocumentOutcome.DEGRADED, errors=errors,
+                                   consistency_report=cons, dependency_report=deps,
+                                   attempts=attempts)
+        write_document_run(tmp_path, record)
+        first_retry_count = errors[0].retry_count
+        first_invocation_id = errors[0].invocation_id
+
         fail_again_fns = StageFns(
             check_consistency=Scripted([StageCallFailed("429")]), map_dependencies=None,
             classify=None, check_quality=None, refine_questioner=None,
-            refine_rewriter=None, select_strategy=None,
-            generate_tests=None)
-        # Reset the fixture run_dir to the post-first-run DEGRADED state to test this
-        # branch in isolation: write it back down before retrying again.
-        degraded_again = retried.model_copy(update={
-            "outcome": DocumentOutcome.DEGRADED, "consistency_report": None})
-        from orchestrator.pipeline import write_document_run
-        write_document_run(tmp_path, degraded_again)
-        retried_again = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER,
-                                             fail_again_fns, throttle, max_attempts=1,
-                                             backoff_seconds=lambda a: 0.0)
-        cc_errors = [e for e in retried_again.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER]
-        ok("a second failure appends a SECOND error entry for the stage, not a merge",
-           len(cc_errors) == 2)
-        ok("the original entry's retry_count is untouched",
+            refine_rewriter=None, select_strategy=None, generate_tests=None)
+        retried = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER,
+                                       fail_again_fns, throttle, max_attempts=1,
+                                       backoff_seconds=lambda a: 0.0)
+
+        ok("the guard did not fire (zero requirement records, so the call proceeded)",
+           len(fail_again_fns.check_consistency.calls) == 1)
+        cc_errors = [e for e in retried.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER]
+        ok("a second, independent error is appended -- not a merge", len(cc_errors) == 2)
+        ok("the first error's invocation_id is untouched",
+           cc_errors[0].invocation_id == first_invocation_id)
+        ok("the second error's invocation_id is distinct from the first",
+           cc_errors[1].invocation_id != first_invocation_id)
+        ok("the first error's retry_count is untouched (no merge/bump)",
            cc_errors[0].retry_count == first_retry_count)
-        ok("the two entries reference two distinct invocations",
-           cc_errors[0].invocation_id != cc_errors[1].invocation_id)
+        new_attempts = [a for a in retried.attempts if a.invocation_id == cc_errors[1].invocation_id]
+        ok("the new failure's attempt is recorded and linked to the new error via invocation_id",
+           len(new_attempts) == 1 and new_attempts[0].result is AttemptResult.TRANSPORT_FAILURE)
+        ok("outcome stays DEGRADED -- the retry didn't help",
+           retried.outcome is DocumentOutcome.DEGRADED)
+
+
+def test_document_stage_retry_blocked_after_requirement_processed() -> None:
+    """Design test plan item 9: retry_document_stage's BLOCKED branch. The pre-rev-2
+    test called retry_document_stage on a run where a requirement had already been
+    processed -- under this design that must now raise instead of succeeding.
+    Verified with full document-record equality before/after, not a field subset, plus
+    proof the stage fn was never even called."""
+    section("Retry blocked once a requirement has been processed")
+    from orchestrator.pipeline import run_document, retry_document_stage, read_document_run, Throttle
+    from design.schemas import DocumentStage
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        # doc_id must match REQ_A.source_doc_id -- see test_error_resume_finish for the
+        # same one-requirement workaround (RequirementSet._requirements_belong_to_this_document).
+        one_req_doc = RequirementSet(doc_id="harness-doc", requirements=[REQ_A])
+        first_fns = StageFns(
+            check_consistency=Scripted([StageCallFailed("429")] * 2),
+            map_dependencies=Scripted([{"doc_id": "harness-doc", "dependencies": []}]),
+            classify=Scripted([StageCallFailed("429")] * 2),
+            check_quality=None, refine_questioner=None, refine_rewriter=None,
+            select_strategy=None, generate_tests=None)
+        metadata = make_metadata(run_id="run-retry-blocked")
+        run_document(one_req_doc, metadata, first_fns, HumanFns(
+            answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None)),
+            throttle, max_revisions=3, run_dir=tmp_path, max_attempts=2,
+            backoff_seconds=lambda a: 0.0)
+        before = read_document_run(tmp_path)
+        ok("fixture has at least one requirement record", len(before.requirement_records) >= 1)
+
+        would_succeed_fn = Scripted([{"doc_id": "harness-doc", "conflicts": []}])
+        blocked_fns = StageFns(
+            check_consistency=would_succeed_fn, map_dependencies=None, classify=None,
+            check_quality=None, refine_questioner=None, refine_rewriter=None,
+            select_strategy=None, generate_tests=None)
+        try:
+            retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER, blocked_fns,
+                                 throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
+            ok("retrying after a requirement has run raises ValueError", False)
+        except ValueError:
+            ok("retrying after a requirement has run raises ValueError", True)
+        ok("the stage fn was never called -- the guard fires before call_document_stage",
+           would_succeed_fn.calls == [])
+        after = read_document_run(tmp_path)
+        ok("the complete document record is unchanged (full equality, not a field subset)",
+           after.model_dump(mode="json") == before.model_dump(mode="json"))
+
+
+def test_document_context_consistent_across_resume_and_retry() -> None:
+    """Design test plan item 10: the scenario Decision 7 exists to prevent, turned into
+    an assertion. Two requirements; the first is processed while the document is still
+    DEGRADED; a document-level retry is attempted (and blocked, item 9's guard) before
+    the second requirement is resumed -- the second must see the SAME None the first
+    saw, never a value that would have differed if the retry had been allowed through."""
+    section("Document context stays consistent across resume + a blocked retry")
+    from orchestrator.pipeline import (
+        run_document_stages, write_document_run, write_requirement_run, read_document_run,
+        run_requirement, resume_document, retry_document_stage, Throttle,
+    )
+    from design.schemas import DocumentOutcome, DocumentStage, RunOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-context-consistency")
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+
+        cons, deps, errors, attempts = run_document_stages(
+            DOC, metadata.stages,
+            StageFns(check_consistency=Scripted([StageCallFailed("429")] * 2),
+                    map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+                    classify=None, check_quality=None, refine_questioner=None,
+                    refine_rewriter=None, select_strategy=None, generate_tests=None),
+            throttle, max_attempts=2, backoff_seconds=lambda a: 0.0)
+        doc_record = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                       outcome=DocumentOutcome.DEGRADED, errors=errors,
+                                       consistency_report=cons, dependency_report=deps,
+                                       attempts=attempts)
+        write_document_run(tmp_path, doc_record)
+
+        quality_fn_a = Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}])
+        fns_a = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=quality_fn_a, refine_questioner=None, refine_rewriter=None,
+            select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+                "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+        req_a_record = run_requirement(
+            rec(requirement=REQ_A, run_id=metadata.run_id), DOC, doc_record.consistency_report,
+            doc_record.dependency_report, fns_a, human_fns, throttle, max_revisions=3,
+            stage_configs=metadata.stages)
+        write_requirement_run(tmp_path, req_a_record)
+        ok("A processed under relevant_conflicts=None", quality_fn_a.calls[0][2] is None)
+
+        would_recover_fn = Scripted([{"doc_id": DOC.doc_id, "conflicts": []}])
+        try:
+            retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER,
+                                 StageFns(check_consistency=would_recover_fn, map_dependencies=None,
+                                         classify=None, check_quality=None, refine_questioner=None,
+                                         refine_rewriter=None, select_strategy=None, generate_tests=None),
+                                 throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
+            ok("retry is blocked (A already ran)", False)
+        except ValueError:
+            ok("retry is blocked (A already ran)", True)
+        ok("the recovering stage fn was never called", would_recover_fn.calls == [])
+
+        quality_fn_b = Scripted([{"requirement_id": REQ_B.id, "passed": True, "issues": []}])
+        resumed = resume_document(tmp_path, StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([{"requirement_id": REQ_B.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=quality_fn_b, refine_questioner=None, refine_rewriter=None,
+            select_strategy=Scripted([{"requirement_id": REQ_B.id, "system_type": "other",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_B.id, "test_cases": [{
+                "id": "TC-B-1", "requirement_ids": [REQ_B.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}])),
+            human_fns, throttle, max_revisions=3)
+        ok("B reaches COMPLETED", any(r.requirement.id == REQ_B.id and r.outcome is RunOutcome.COMPLETED
+                                      for r in resumed.requirement_records))
+        ok("B was ALSO processed under relevant_conflicts=None -- never diverges from A",
+           quality_fn_b.calls[0][2] is None)
 
 
 def test_error_resume_finish() -> None:
@@ -2165,7 +2613,17 @@ def main() -> int:
               test_max_revisions_must_be_at_least_two,
               test_resumed_cap_generated_then_stopped_strips_stage34,
               test_run_document_happy_path,
-              test_document_stage_retry_within_run, test_error_resume_finish,
+              test_document_context_no_leakage_three_requirements,
+              test_document_context_none_vs_empty,
+              test_document_context_independent_failure_mirror,
+              test_document_context_dependencies_reach_both_stages,
+              test_document_context_survives_resume,
+              test_document_context_persists_across_refinement_rounds,
+              test_document_stage_retry_allowed_before_any_requirement,
+              test_document_stage_retry_allowed_but_fails_before_any_requirement,
+              test_document_stage_retry_blocked_after_requirement_processed,
+              test_document_context_consistent_across_resume_and_retry,
+              test_error_resume_finish,
               test_interruption_mid_document_round_trip, test_validation_failure,
               test_first_attempt_success, test_validation_then_success,
               test_wrong_id_then_success, test_mixed_failures_exhausting_retries,

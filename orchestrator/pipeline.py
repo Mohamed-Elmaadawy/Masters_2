@@ -19,12 +19,12 @@ from typing import Callable, NamedTuple, Optional
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    AttemptResult, Classification, ConsistencyReport, DependencyReport, DocumentOutcome,
-    DocumentRunRecord, DocumentStage, DocumentStageAttempt, DocumentStageError,
-    FailureKind, Issue, PipelineStage, QualityReport, RefinedRequirement,
-    RefinementRound, RefinerAnswer, RefinerTurn, Requirement, RequirementRunRecord,
-    RequirementSet, RunMetadata, RunOutcome, StageAttempt, StageConfig, StageError,
-    TestPlan, TestStrategy,
+    AttemptResult, Classification, ConsistencyConflict, ConsistencyReport, DependencyLink,
+    DependencyReport, DocumentOutcome, DocumentRunRecord, DocumentStage,
+    DocumentStageAttempt, DocumentStageError, FailureKind, Issue, PipelineStage,
+    QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn,
+    Requirement, RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome,
+    StageAttempt, StageConfig, StageError, TestPlan, TestStrategy,
 )
 
 
@@ -53,7 +53,18 @@ class StageFns:
     requirement + RefinerAnswer[] -> RefinedRequirement) shared one callable, one
     PipelineStage identity, and one model config -- neither could be configured,
     measured, or retried independently. See design/DESIGN_NOTES.md, "Refiner split
-    into REFINER_QUESTIONER / REFINER_REWRITER"."""
+    into REFINER_QUESTIONER / REFINER_REWRITER".
+
+    check_quality/select_strategy/generate_tests gained filtered document context
+    (2026-08-08, see
+    docs/superpowers/specs/2026-08-08-document-context-wiring-design.md):
+    check_quality's args are (Requirement, Classification,
+    Optional[list[ConsistencyConflict]], Optional[list[DependencyLink]],
+    suppressed_issue_ids); select_strategy's and generate_tests' each gain one trailing
+    Optional[list[DependencyLink]] argument. None means the document-level stage that
+    would have produced it failed (no context available); [] means it ran and found
+    nothing naming this requirement -- collapsing the two would make a DEGRADED run's
+    output indistinguishable from a clean one."""
     check_consistency: Callable[..., StageCallResult]
     map_dependencies: Callable[..., StageCallResult]
     classify: Callable[..., StageCallResult]
@@ -459,6 +470,8 @@ def _confirmed_issue_ids(rounds: list[RefinementRound]) -> set[str]:
 
 def _run_refine_loop(
     record: RequirementRunRecord,
+    relevant_conflicts: Optional[list[ConsistencyConflict]],
+    relevant_dependencies: Optional[list[DependencyLink]],
     stage_fns: StageFns,
     human_fns: HumanFns,
     throttle: Throttle,
@@ -470,6 +483,12 @@ def _run_refine_loop(
     """Runs quality-check/refine rounds until one passes, the cap is hit, or a stage
     call fails outright. Returns the updated record and, on failure, the StageError to
     append -- the caller sets outcome=ERROR, since only it knows the full error list.
+
+    relevant_conflicts/relevant_dependencies are the Quality Checker's filtered document
+    context (see docs/superpowers/specs/2026-08-08-document-context-wiring-design.md),
+    computed once by the caller and passed unchanged into every round's check_quality
+    call -- the document-level analysis doesn't change between rounds, so recomputing it
+    per round would be redundant, not more correct.
     """
     req = record.requirement
     rounds = list(record.rounds)
@@ -513,7 +532,9 @@ def _run_refine_loop(
             qc_invocation_id = uuid.uuid4().hex
             try:
                 raw_report = call_stage(
-                    stage_fns.check_quality, (current, record.classification, suppressed_ids),
+                    stage_fns.check_quality,
+                    (current, record.classification, relevant_conflicts, relevant_dependencies,
+                     suppressed_ids),
                     QualityReport, PipelineStage.QUALITY_CHECKER, qc_invocation_id,
                     stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, attempts,
                     req.id, max_attempts, backoff_seconds)
@@ -632,10 +653,13 @@ def run_requirement(
     generator. Resumable: resume_at(record) says where to pick up, and every stage
     already done is skipped.
 
-    consistency_report/dependency_report are accepted (Task 11 threads them through
-    from run_document_stages) but not yet consumed by any per-requirement stage call --
-    no stage_fns signature in this task's scenarios takes them. Wiring them into the
-    quality checker / strategy selector is future work, not silently invented here.
+    consistency_report/dependency_report (Task 11 threads them through from
+    run_document_stages) are filtered to this requirement's own conflicts/dependencies
+    once, below, and handed to the Quality Checker, Strategy Selector, and Test
+    Generator -- never the whole report (see
+    docs/superpowers/specs/2026-08-08-document-context-wiring-design.md). A report of
+    None (the document-level stage failed) stays None after filtering -- it is not the
+    same thing as a report that ran and found nothing for this requirement ([]).
     """
     if max_revisions < 2:
         # A cap can only be reached by exhausting revisions -- which means at least one
@@ -656,6 +680,10 @@ def run_requirement(
         return record
 
     req = record.requirement
+    relevant_conflicts = (
+        consistency_report.conflicts_for(req.id) if consistency_report is not None else None)
+    relevant_dependencies = (
+        dependency_report.dependencies_for(req.id) if dependency_report is not None else None)
 
     if stage is PipelineStage.CLASSIFIER:
         attempts = list(record.attempts)
@@ -688,8 +716,8 @@ def run_requirement(
     if stage in (PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER,
                 PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER):
         record, refine_error = _run_refine_loop(
-            record, stage_fns, human_fns, throttle, max_revisions, stage_configs,
-            max_attempts, backoff_seconds)
+            record, relevant_conflicts, relevant_dependencies, stage_fns, human_fns,
+            throttle, max_revisions, stage_configs, max_attempts, backoff_seconds)
         if refine_error is not None:
             errors = list(record.errors) + [refine_error]
             return RequirementRunRecord.model_validate(
@@ -744,7 +772,8 @@ def run_requirement(
         strategy_invocation_id = uuid.uuid4().hex
         try:
             strategy = call_stage(
-                stage_fns.select_strategy, (current, record.classification), TestStrategy,
+                stage_fns.select_strategy,
+                (current, record.classification, relevant_dependencies), TestStrategy,
                 PipelineStage.STRATEGY_SELECTOR, strategy_invocation_id,
                 stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, attempts,
                 req.id, max_attempts, backoff_seconds)
@@ -762,7 +791,7 @@ def run_requirement(
     generator_invocation_id = uuid.uuid4().hex
     try:
         plan = call_stage(
-            stage_fns.generate_tests, (current, strategy), TestPlan,
+            stage_fns.generate_tests, (current, strategy, relevant_dependencies), TestPlan,
             PipelineStage.TEST_GENERATOR, generator_invocation_id,
             stage_configs[PipelineStage.TEST_GENERATOR.value].model,
             throttle, attempts, req.id, max_attempts, backoff_seconds)
@@ -831,7 +860,8 @@ def retry_document_stage(
 ) -> DocumentRunRecord:
     """Retries ONE failed document-level stage within the same run (contract item 6,
     'Retrying a failed document-level stage') rather than starting a new run, which
-    would orphan every already-completed requirement record.
+    would orphan every already-completed requirement record -- but ONLY while no
+    requirement has been processed yet under this run's current document context.
 
     A manual retry is a new invocation, symmetric with requirement-level stage
     failures: it mints its own invocation_id and, if it fails, appends a new,
@@ -841,8 +871,25 @@ def retry_document_stage(
     one invocation, linked to it directly (invocation_id), instead of one entry
     aggregating retry_count across every manual retry of a stage. See
     docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+
+    Once conflicts_for(id)/dependencies_for(id) are wired into per-requirement calls
+    (see docs/superpowers/specs/2026-08-08-document-context-wiring-design.md), a retry
+    that succeeds AFTER some requirements already ran would let those requirements and
+    any still-pending ones see different document-level context within the same run_id
+    -- an accident of timing, not a methodological choice. So this raises, before
+    calling the stage fn at all (no API quota spent on a result that would be
+    discarded), the moment any requirement record exists for this run. Recovering a
+    failed document-level stage after that point requires starting a new run.
     """
     record = read_document_run(run_dir)
+    if record.requirement_records:
+        raise ValueError(
+            f"cannot retry {stage.value}: {len(record.requirement_records)} requirement(s) "
+            "already processed under this run's document context. Retrying now would let "
+            "some requirements see the old context and others see the recovered one, in "
+            "the same run. Start a new run to pick up corrected consistency/dependency "
+            "analysis."
+        )
     stage_fn = {DocumentStage.CONSISTENCY_CHECKER: stage_fns.check_consistency,
                DocumentStage.DEPENDENCY_MAPPER: stage_fns.map_dependencies}[stage]
     model_cls = {DocumentStage.CONSISTENCY_CHECKER: ConsistencyReport,

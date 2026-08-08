@@ -7,7 +7,8 @@ Pipeline:
     1b. Dependency Mapper       (RequirementSet -> DependencyReport)
     2. Per requirement:
          a. Classifier          (Requirement, RequirementSet -> Classification)
-         b. Quality Checker     (Requirement, Classification, ConsistencyReport, DependencyReport -> QualityReport)
+         b. Quality Checker     (Requirement, Classification, ConsistencyReport.conflicts_for(id),
+                                  DependencyReport.dependencies_for(id) -> QualityReport)
          c. Refiner (only if QualityReport.passed is False)
                 (Requirement, QualityReport -> RefinerTurn)    -- questions to human
                 (RefinerAnswer[] -> RefinedRequirement)         -- human's answers back in
