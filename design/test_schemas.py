@@ -284,7 +284,7 @@ def test_gap2_requirement_outcomes() -> None:
                            message="429")]).errors[0].stage
         is PipelineStage.CLASSIFIER)
     rejects("negative retry_count",
-            lambda: StageError(stage=PipelineStage.REFINER, kind=FailureKind.TRANSPORT,
+            lambda: StageError(stage=PipelineStage.REFINER_QUESTIONER, kind=FailureKind.TRANSPORT,
                                message="x", retry_count=-1))
 
     override_rounds = [
@@ -570,7 +570,7 @@ def test_gap4_provenance() -> None:
                                 stages=mixed, prompt_version="v3"))
     rejects("stages missing an entry",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                stages={k: v for k, v in STAGES.items() if k != "refiner"},
+                                stages={k: v for k, v in STAGES.items() if k != "refiner_questioner"},
                                 prompt_version="v3"))
     rejects("stages with an unknown name",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),

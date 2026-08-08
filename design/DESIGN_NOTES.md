@@ -1676,3 +1676,62 @@ other techniques (which are single-parameter or single-relation reasoning tasks 
 can do directly), which is why it's being deferred rather than added alongside them.
 Revisit once the rest of the pipeline (agents, orchestrator) is implemented and
 working well.
+
+## Refiner split into REFINER_QUESTIONER / REFINER_REWRITER (2026-08-08)
+
+`PipelineStage.REFINER` was one enum member covering two LLM calls with different
+inputs and outputs: `(Requirement, QualityReport) -> RefinerTurn` (ask) and
+`(requirement, RefinerAnswer[]) -> RefinedRequirement` (rewrite) -- see "2c. Refiner —
+why it's request/response instead of a blocking call" for why those were already two
+separate schemas rather than one blocking call. Sharing one stage identity meant
+sharing one `StageConfig` (model + prompt hash) and one bucket for `TokenUsage`/
+`StageError`, so the two calls could not be configured, measured, or retried
+independently -- e.g. a cheaper model for phrasing a question than for producing a
+rewrite, or "how often does the questioner fail" as a distinct number from "how often
+does the rewriter fail," were both unanswerable from the records.
+
+**Decision:** split into `REFINER_QUESTIONER` / `REFINER_REWRITER`, each with its own
+`StageFns` callable (`refine_questioner` / `refine_rewriter`), `StageConfig` entry (auto-
+derived from `ALL_STAGES`, no separate registry to maintain), and `PipelineStage` value
+passed to `call_stage`. No schema type changed: `RefinerTurn`, `RefinerAnswer`, and
+`RefinedRequirement` already had exactly the right shape for one call each, and
+`RefinementRound.turn`/`.rewrite` already recorded which half had completed
+independently of the other -- only the stage-identity/config plumbing was shared and
+needed splitting.
+
+**Resume position.** `resume_at`'s old two-way branch (`rewrite is None -> REFINER`,
+else `-> QUALITY_CHECKER`) became three-way: `last.turn is None -> REFINER_QUESTIONER`
+(nothing asked yet), `last.turn is not None and last.rewrite is None ->
+REFINER_REWRITER` (the questioner has produced a turn, rewrite outstanding -- this
+does NOT imply the human has answered yet; see the 2026-08-08 fix below), else
+`-> QUALITY_CHECKER`. See ORCHESTRATOR_CONTRACT.md item 6 for the updated pseudocode
+and the one ambiguity that survives the split unchanged (an already-capped round looks
+identical to a genuinely mid-rewrite one; both land on `REFINER_REWRITER`, harmlessly).
+
+**Missed resume state, fixed same day.** The first version of this split conflated
+`turn is not None` with "the human has already answered": `_run_refine_loop` only
+called `human_fns.answer_questions` inside the `if turn is None:` branch, so a round
+resumed with `turn` set but `answers` still empty (interrupted between the questioner's
+call and the human's answer -- schema-valid: `RefinementRound` only rejects `answers`
+non-empty with `turn is None`, never the reverse) skipped the human entirely and handed
+the rewriter an empty `answers` list. Fixed by keying the human-ask on `answers`, not
+`turn`: ask iff `not answers`, regardless of whether `turn` was just produced or was
+already on the resumed record. `resume_at` needed no change -- `REFINER_REWRITER`
+already meant "questioner done, rewrite outstanding," which was always correct; only
+`_run_refine_loop`'s handling of that position was incomplete. Regression test:
+`orchestrator/test_harness.py::test_resume_mid_round_asks_human_when_answers_missing`.
+
+**Diagrams.** `pipeline.mermaid` and `paths_requirement.mermaid` keep a single "Refiner"
+node deliberately -- these are hand-declared (see "Generated diagrams" above) and the
+two calls are still one conceptual step to a reader of the pipeline shape. `models.mermaid`
+is fully introspected, so it lists both new enum values automatically on regeneration
+with no hand edit.
+
+**Rejected: keep one stage, add a sub-field distinguishing ask/rewrite calls within
+`TokenUsage`/`StageError`.** Would have kept `RunMetadata.stages` at one entry, but
+every consumer of `RunMetadata.stages[stage].model` (`call_stage`'s only source of
+"which model runs this call") would need a second lookup key anyway, so the saving is
+illusory -- and `ALL_STAGES`, `RunMetadata._covers_every_stage`, `TokenUsage.stage`, and
+`StageError.stage` already exist specifically to make "which stage" a first-class,
+countable value; adding a second axis under one stage duplicates that machinery instead
+of reusing it.

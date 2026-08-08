@@ -130,11 +130,18 @@ def test_resume_positions() -> None:
     section("Scenario 5 -- resume_at correctness")
     err = lambda stage: [StageError(stage=stage, kind=FailureKind.TRANSPORT, message="429",
                                     retry_count=3)]
-    mid_round = mk_round(1, T0, passed=False)                        # no rewrite yet
+    mid_round = mk_round(1, T0, passed=False)                        # asked+answered, no rewrite yet
     rewritten = mk_round(1, T0, passed=False, rewrite_to=T1)
     from design.schemas import (
-        Classification, SystemType, TestCase, TestPlan, TestStrategy, TestTechnique,
+        Classification, QualityReport, SystemType, TestCase, TestPlan, TestStrategy,
+        TestTechnique,
     )
+    # turn=None, answers=[], rewrite=None -- the round hasn't been asked about at all yet
+    # (the questioner itself failed, or the cap fired before it ever ran). Distinct from
+    # `mid_round` above, which mk_round always gives a turn+answers to once passed=False.
+    never_asked = RefinementRound(revision_number=1, text_checked=T0,
+                                  quality_report=QualityReport(requirement_id=REQ_A.id,
+                                                               passed=False, issues=[_dummy_issue(1)]))
     cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
     strategy = TestStrategy(requirement_id=REQ_A.id, system_type=SystemType.OTHER,
                             techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
@@ -150,9 +157,13 @@ def test_resume_positions() -> None:
         ("quality checker failed on round 1",
          dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=cls),
          PipelineStage.QUALITY_CHECKER),
-        ("refiner failed mid-round, nothing rewritten yet",
-         dict(errors=err(PipelineStage.REFINER), classification=cls, rounds=[mid_round]),
-         PipelineStage.REFINER),
+        ("refiner questioner failed, nothing asked yet",
+         dict(errors=err(PipelineStage.REFINER_QUESTIONER), classification=cls,
+              rounds=[never_asked]),
+         PipelineStage.REFINER_QUESTIONER),
+        ("refiner rewriter failed, asked and answered but not rewritten yet",
+         dict(errors=err(PipelineStage.REFINER_REWRITER), classification=cls, rounds=[mid_round]),
+         PipelineStage.REFINER_REWRITER),
         ("quality checker failed on round 2, round 1 already rewrote",
          dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=cls, rounds=[rewritten]),
          PipelineStage.QUALITY_CHECKER),
@@ -185,7 +196,8 @@ def test_stage_fns_typo_is_a_typeerror() -> None:
 
     try:
         StageFns(check_consistency=not_provided, map_dependencies=not_provided,
-                 classify=not_provided, check_quality=not_provided, refine=not_provided,
+                 classify=not_provided, check_quality=not_provided,
+                 refine_questioner=not_provided, refine_rewriter=not_provided,
                  select_strategy=not_provided, generate_tests=not_provided,
                  clasify=not_provided)  # typo
         ok("StageFns rejects an unknown field", False)
@@ -200,9 +212,12 @@ def test_stage_fns_typo_is_a_typeerror() -> None:
         ok("HumanFns rejects an unknown field", True)
 
     real = StageFns(check_consistency=not_provided, map_dependencies=not_provided,
-                    classify=not_provided, check_quality=not_provided, refine=not_provided,
+                    classify=not_provided, check_quality=not_provided,
+                    refine_questioner=not_provided, refine_rewriter=not_provided,
                     select_strategy=not_provided, generate_tests=not_provided)
     ok("StageFns constructs with exactly the right fields", real.classify is not_provided)
+    ok("StageFns keeps refine_questioner and refine_rewriter as independent fields",
+       real.refine_questioner is not_provided and real.refine_rewriter is not_provided)
 
 
 def test_call_stage() -> None:
@@ -390,7 +405,8 @@ def test_requirement_id_mismatch_end_to_end() -> None:
     fns_classify = StageFns(
         check_consistency=None, map_dependencies=None,
         classify=Scripted([{"requirement_id": REQ_B.id, "system_type": "other", "rationale": "r"}]),
-        check_quality=never_called, refine=never_called,
+        check_quality=never_called, refine_questioner=never_called,
+        refine_rewriter=never_called,
         select_strategy=never_called, generate_tests=never_called)
     result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_classify, human_fns,
                              throttle, max_revisions=3, stage_configs=STAGE_CONFIGS, max_attempts=1)
@@ -405,7 +421,8 @@ def test_requirement_id_mismatch_end_to_end() -> None:
     fns_quality = StageFns(
         check_consistency=None, map_dependencies=None, classify=None,
         check_quality=Scripted([{"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
-        refine=never_called, select_strategy=never_called, generate_tests=never_called)
+        refine_questioner=never_called, refine_rewriter=never_called,
+        select_strategy=never_called, generate_tests=never_called)
     result2 = run_requirement(rec(requirement=REQ_A, classification=cls), DOC, None, None,
                               fns_quality, human_fns, throttle, max_revisions=3,
                               stage_configs=STAGE_CONFIGS, max_attempts=1)
@@ -462,7 +479,8 @@ def test_document_stages_degraded() -> None:
         check_consistency=Scripted([StageCallFailed("429"), StageCallFailed("429"),
                                     StageCallFailed("429")]),
         map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
-        classify=None, check_quality=None, refine=None, select_strategy=None,
+        classify=None, check_quality=None, refine_questioner=None, refine_rewriter=None,
+        select_strategy=None,
         generate_tests=None,
     )
     cons, deps, errors, usage = run_document_stages(
@@ -643,7 +661,8 @@ def test_happy_path() -> None:
         check_consistency=None, map_dependencies=None,
         classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
         check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
-        refine=None, select_strategy=select_strategy, generate_tests=generate_tests)
+        refine_questioner=None, refine_rewriter=None,
+        select_strategy=select_strategy, generate_tests=generate_tests)
     human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
     clean_record = run_requirement(
         rec(requirement=REQ_A), DOC, None, None, clean_fns, human_fns, throttle,
@@ -665,10 +684,12 @@ def test_happy_path() -> None:
                 "explanation": "Unresolved referent."}]},
             {"requirement_id": REQ_A.id, "passed": True, "issues": []},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
                 "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
                 "question_text": "What limits?"}]},
+        ]),
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text,
              "refined_text": refined_text, "revision_number": 1,
              "answers_used": [{"question_id": "Q1", "answer_text": "DOC-REQ-B's range."}]},
@@ -686,6 +707,222 @@ def test_happy_path() -> None:
        and refined_record.final_requirement.refined_text == refined_text)
     ok("stage 3/4 saw the refined text, not the original (contract item 2)",
        strategy_calls == [refined_text] and generate_calls == [refined_text])
+    ok("questioner and rewriter usage is attributed to their own stage, not shared",
+       sum(1 for u in refined_record.usage if u.stage is PipelineStage.REFINER_QUESTIONER) == 1
+       and sum(1 for u in refined_record.usage if u.stage is PipelineStage.REFINER_REWRITER) == 1)
+
+
+def test_refiner_questioner_and_rewriter_have_independent_configs() -> None:
+    """The REFINER_QUESTIONER/REFINER_REWRITER split exists so the two calls can be
+    configured independently -- different model, different prompt (and so a different
+    prompt_hash). Proven here by actually driving two different model names through
+    Throttle (keyed per model, see Throttle's docstring) and confirming both were used,
+    rather than trusting that two StageConfig entries merely exist unused."""
+    section("REFINER_QUESTIONER / REFINER_REWRITER have independent model configs")
+    from orchestrator.pipeline import run_requirement, Throttle
+
+    configs = dict(STAGE_CONFIGS)
+    configs[PipelineStage.REFINER_QUESTIONER.value] = StageConfig(
+        model="question-model", prompt_hash=prompt_fingerprint("ask a clarifying question"))
+    configs[PipelineStage.REFINER_REWRITER.value] = StageConfig(
+        model="rewrite-model", prompt_hash=prompt_fingerprint("rewrite the requirement"))
+    ok("the two stages were given different models and different prompt hashes",
+       configs[PipelineStage.REFINER_QUESTIONER.value].model
+       != configs[PipelineStage.REFINER_REWRITER.value].model
+       and configs[PipelineStage.REFINER_QUESTIONER.value].prompt_hash
+       != configs[PipelineStage.REFINER_REWRITER.value].prompt_hash)
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "these limits",
+                "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine_questioner=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+        decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=configs)
+    ok("the run completes using the two independently-configured stages",
+       result.outcome is RunOutcome.COMPLETED)
+    ok("both configured models actually reached the throttle (not just declared, unused)",
+       {"question-model", "rewrite-model"} <= set(throttle.last_call_at))
+
+
+def test_refine_questioner_failure_and_retry() -> None:
+    """Failure and retry attributed to REFINER_QUESTIONER specifically: a transient
+    failure that succeeds on retry must not touch the rewriter or the human at all
+    (nothing to rewrite or answer until a turn exists); exhaustion must record a
+    StageError naming REFINER_QUESTIONER, not the old shared REFINER."""
+    section("REFINER_QUESTIONER failure and retry")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def never_called(*a, **k):
+        raise AssertionError("must never be called -- questioner has not produced a turn")
+
+    failing_quality = lambda: Scripted([{"requirement_id": REQ_A.id, "passed": False, "issues": [{
+        "id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"}]}])
+
+    # -- transient failure, retry succeeds --
+    fns_retry = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine_questioner=Scripted([
+            StageCallFailed("429"),
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    answer_calls: list = []
+    human_fns_retry = HumanFns(
+        answer_questions=lambda turn: answer_calls.append(turn) or [
+            RefinerAnswer(question_id="Q1", answer_text="a")],
+        decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_retry, human_fns_retry,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS,
+                             backoff_seconds=lambda a: 0.0)
+    ok("a transient questioner failure that retries successfully still completes",
+       result.outcome is RunOutcome.COMPLETED)
+    ok("the human was asked exactly once, only after the retry succeeded",
+       len(answer_calls) == 1)
+    ok("no error is recorded for a retry that ultimately succeeded", result.errors == [])
+
+    # -- exhaustion --
+    fns_exhaust = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=failing_quality(),
+        refine_questioner=Scripted([StageCallFailed("429"), StageCallFailed("429")]),
+        refine_rewriter=never_called, select_strategy=never_called, generate_tests=never_called)
+    human_fns_exhaust = HumanFns(answer_questions=never_called,
+                                 decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result2 = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_exhaust,
+                              human_fns_exhaust, throttle, max_revisions=3,
+                              stage_configs=STAGE_CONFIGS, max_attempts=2,
+                              backoff_seconds=lambda a: 0.0)
+    ok("exhausting the questioner's retries produces outcome=ERROR",
+       result2.outcome is RunOutcome.ERROR)
+    ok("exactly one StageError naming REFINER_QUESTIONER, not the old shared REFINER",
+       len(result2.errors) == 1 and result2.errors[0].stage is PipelineStage.REFINER_QUESTIONER
+       and result2.errors[0].kind is FailureKind.TRANSPORT
+       and result2.errors[0].retry_count == 1)
+    ok("the rewriter and the human were never reached", result2.rounds[0].turn is None)
+
+
+def test_refine_rewriter_failure_and_retry() -> None:
+    """Mirror of test_refine_questioner_failure_and_retry for REFINER_REWRITER: the
+    questioner and the human answer must already have happened (a rewrite always
+    follows an answered turn) before the rewriter can fail at all; failure and retry
+    must attribute to REFINER_REWRITER specifically, distinct from the questioner."""
+    section("REFINER_REWRITER failure and retry")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def never_called(*a, **k):
+        raise AssertionError("must never be called")
+
+    # -- transient failure, retry succeeds --
+    fns_retry = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]),
+        refine_questioner=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            StageCallFailed("429"),
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns_retry = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+        decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_retry, human_fns_retry,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS,
+                             backoff_seconds=lambda a: 0.0)
+    ok("a transient rewriter failure that retries successfully still completes",
+       result.outcome is RunOutcome.COMPLETED)
+    ok("no error is recorded for a retry that ultimately succeeded", result.errors == [])
+
+    # -- exhaustion --
+    fns_exhaust = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"}]},
+        ]),
+        refine_questioner=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
+                "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([StageCallFailed("429"), StageCallFailed("429")]),
+        select_strategy=never_called, generate_tests=never_called)
+    human_fns_exhaust = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+        decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result2 = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_exhaust,
+                              human_fns_exhaust, throttle, max_revisions=3,
+                              stage_configs=STAGE_CONFIGS, max_attempts=2,
+                              backoff_seconds=lambda a: 0.0)
+    ok("exhausting the rewriter's retries produces outcome=ERROR",
+       result2.outcome is RunOutcome.ERROR)
+    ok("exactly one StageError naming REFINER_REWRITER, not the old shared REFINER",
+       len(result2.errors) == 1 and result2.errors[0].stage is PipelineStage.REFINER_REWRITER
+       and result2.errors[0].kind is FailureKind.TRANSPORT
+       and result2.errors[0].retry_count == 1)
+    ok("the turn and answers survived the failed rewrite (nothing lost, resumable)",
+       result2.rounds[0].turn is not None and result2.rounds[0].answers != []
+       and result2.rounds[0].rewrite is None)
 
 
 def test_revision_cap() -> None:
@@ -702,11 +939,15 @@ def test_revision_cap() -> None:
             "id": "I1", "category": "vague_pronoun", "span": "these limits",
             "explanation": "Unresolved."}]}] * 5)
 
-    def refine_forever():
+    def question_forever():
         return Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
                 "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun",
                 "question_text": "?"}]},
+        ] * 5)
+
+    def rewrite_forever():
+        return Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
              "revision_number": 1,
              "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
@@ -717,7 +958,8 @@ def test_revision_cap() -> None:
         fns = StageFns(
             check_consistency=None, map_dependencies=None,
             classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
-            check_quality=always_fails_quality(), refine=refine_forever(),
+            check_quality=always_fails_quality(), refine_questioner=question_forever(),
+            refine_rewriter=rewrite_forever(),
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
@@ -756,9 +998,11 @@ def _cap_returns_nonsense_raises() -> bool:
             {"requirement_id": REQ_A.id, "passed": False, "issues": [{
                 "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "still there"}]},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
                 "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
              "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
         ]),
@@ -806,15 +1050,17 @@ def test_issue_identity_reuse() -> None:
                  "explanation": "e1, still there"}]},
             {"requirement_id": REQ_A.id, "passed": True, "issues": []},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
                 "id": "Q1", "issue_id": "FRESH-1", "issue_category": "vague_pronoun",
                 "question_text": "?"}]},
-            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
-             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
             {"requirement_id": REQ_A.id, "revision_number": 2, "questions": [{
                 "id": "Q2", "issue_id": "FRESH-1", "issue_category": "vague_pronoun",
                 "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
             {"requirement_id": REQ_A.id, "original_text": T1, "refined_text": T1 + " ",
              "revision_number": 2, "answers_used": [{"question_id": "Q2", "answer_text": "a"}]},
         ]),
@@ -855,16 +1101,18 @@ def test_suppression_persists() -> None:
                  "explanation": "e2 still there"}]},
             {"requirement_id": REQ_A.id, "passed": True, "issues": []},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
                 {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"},
                 {"id": "Q2", "issue_id": "I2", "issue_category": "non_verifiable", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "revision_number": 2, "questions": [
+                {"id": "Q3", "issue_id": "I2", "issue_category": "non_verifiable", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
              "revision_number": 1, "answers_used": [
                  {"question_id": "Q1", "answer_text": "confirmed fine", "user_confirms_resolved": True},
                  {"question_id": "Q2", "answer_text": "a"}]},
-            {"requirement_id": REQ_A.id, "revision_number": 2, "questions": [
-                {"id": "Q3", "issue_id": "I2", "issue_category": "non_verifiable", "question_text": "?"}]},
             {"requirement_id": REQ_A.id, "original_text": T1, "refined_text": T1 + " ",
              "revision_number": 2, "answers_used": [{"question_id": "Q3", "answer_text": "a"}]},
         ]),
@@ -909,7 +1157,8 @@ def test_resume_skips_finished_refine_loop() -> None:
 
     fns = StageFns(
         check_consistency=None, map_dependencies=None,
-        classify=None, check_quality=None, refine=None,  # must never be called
+        classify=None, check_quality=None,
+        refine_questioner=None, refine_rewriter=None,  # must never be called
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
@@ -932,23 +1181,34 @@ def test_resume_skips_finished_refine_loop() -> None:
 
 
 def test_resume_mid_round_completes() -> None:
-    """Regression: resuming INSIDE an unfinished round -- the human has already been
-    asked and has already answered, but the rewrite that answer was supposed to produce
-    never happened (e.g. the process died between the Refiner's turn call and its
-    rewrite call, or the rewrite call itself failed and this is a later retry).
-    resume_at already covers the *position* (test_resume_positions: "refiner failed
-    mid-round" -> REFINER); this covers _run_refine_loop actually resuming from that
-    state and finishing, which is structurally distinct from the two other resume cases
-    already covered:
+    """Regression, and one of two scenarios the REFINER_QUESTIONER/REFINER_REWRITER
+    split's resume position (REFINER_REWRITER) covers: resuming INSIDE an unfinished
+    round where the human has ALREADY answered, but the rewrite never happened (e.g.
+    the process died between the human's answer and the Refiner Rewriter's call, or the
+    rewriter call itself failed and this is a later retry). resume_at already covers the
+    *position* (test_resume_positions: "questioner done, rewrite outstanding" ->
+    REFINER_REWRITER -- note this position does NOT by itself mean the human has
+    answered; see the sibling case below); this covers _run_refine_loop actually
+    resuming from that state and finishing, which is structurally distinct from the
+    other resume cases already covered:
       - test_resume_skips_finished_refine_loop -> resuming PAST the loop entirely
       - the already-capped resume case (see the comment above the pending_round branch
         in _run_refine_loop) -> resuming AT an already-capped round
-      - this one -> resuming INSIDE a round that is neither finished nor capped
+      - test_resume_mid_round_asks_human_when_answers_missing -> resuming at
+        REFINER_REWRITER where the turn exists but answers is still empty (the human
+        has NOT answered yet) -- this test's sibling and the case this one must NOT
+        cover, so the two together pin both halves of the REFINER_REWRITER position
+      - this one -> resuming INSIDE a round with a turn AND answers already recorded,
+        neither finished nor capped
 
     Confirmed by code trace before writing this test: _run_refine_loop's pending_round
-    branch sets `turn = pending_round.turn` (non-None), so the `if turn is None:` guard
-    that would call stage_fns.refine for a fresh turn AND human_fns.answer_questions is
-    skipped entirely -- only the rewrite call runs, using the round's existing answers.
+    branch sets `turn = pending_round.turn` (non-None) and `answers =
+    pending_round.answers` (non-empty, from mk_round), so neither the `if turn is
+    None:` branch (fresh turn) nor the `elif not answers:` branch (ask the human) fires
+    -- only the rewriter call runs, using the round's existing answers. refine_questioner
+    is wired to a function that raises if called at all, and answer_questions records
+    every call, making both "not re-run" guarantees assertions rather than inferences
+    from "only one value was scripted."
     """
     section("Regression -- resuming inside an unfinished round (turn asked, rewrite outstanding)")
     from orchestrator.pipeline import run_requirement, Throttle
@@ -958,8 +1218,11 @@ def test_resume_mid_round_completes() -> None:
     cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
     pending = mk_round(1, T0, passed=False)  # turn asked, answered; rewrite=None
     resuming_record = rec(requirement=REQ_A, classification=cls, rounds=[pending])
-    ok("fixture actually resumes at the refiner (sanity check)",
-       resume_at(resuming_record) is PipelineStage.REFINER)
+    ok("fixture actually resumes at the refiner rewriter (sanity check)",
+       resume_at(resuming_record) is PipelineStage.REFINER_REWRITER)
+
+    def never_called(*a, **k):
+        raise AssertionError("refine_questioner must never be called -- turn already exists")
 
     answer_calls: list = []
     def answer_questions(turn):
@@ -970,11 +1233,12 @@ def test_resume_mid_round_completes() -> None:
         check_consistency=None, map_dependencies=None,
         classify=None,  # must never be called -- classification already exists
         check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
-        refine=Scripted([
+        refine_questioner=never_called,  # must never be called -- turn already exists
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": T0, "refined_text": T1,
              "revision_number": 1, "answers_used": [
                  {"question_id": "Q1", "answer_text": "answer"}]},
-        ]),  # only ONE scripted call -- the turn/ask call must not happen
+        ]),
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
@@ -996,6 +1260,86 @@ def test_resume_mid_round_completes() -> None:
     ok("rewrite.answers_used matches the round's own pre-existing answers",
        completed_round.rewrite is not None
        and completed_round.rewrite.answers_used == completed_round.answers)
+    ok("the run reaches a terminal outcome", result.outcome is RunOutcome.COMPLETED)
+
+
+def test_resume_mid_round_asks_human_when_answers_missing() -> None:
+    """Regression for a gap in the original REFINER_QUESTIONER/REFINER_REWRITER split:
+    a schema-valid RefinementRound can have `turn` present, `answers` empty, and
+    `rewrite` missing -- interruption after the questioner produced a turn but before
+    the human answered it (RefinementRound only rejects `answers` non-empty with
+    `turn is None`, never the reverse). resume_at correctly reports REFINER_REWRITER
+    for this state (the questioner is done), but the first version of _run_refine_loop
+    kept `if turn is None:` as the ONLY place that called human_fns.answer_questions --
+    so a turn-but-no-answers round skipped asking the human entirely and handed the
+    rewriter an empty answers list. Fixed by asking iff `not answers`, independent of
+    `turn`.
+
+    Sibling of test_resume_mid_round_completes, which covers the OTHER half of the
+    REFINER_REWRITER position (turn AND answers already present -- must NOT re-ask).
+    Together the two pin both meanings of "resume at REFINER_REWRITER."
+    """
+    section("Regression -- resuming at REFINER_REWRITER with turn asked but not yet answered")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, Issue, IssueCategory, RunOutcome, SystemType
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    issue = Issue(id="I1", category=IssueCategory.VAGUE_PRONOUN, span="these limits",
+                 explanation="Unresolved referent.")
+    turn = RefinerTurn(requirement_id=REQ_A.id, revision_number=1, questions=[
+        ClarifyingQuestion(id="Q1", issue_id="I1", issue_category=IssueCategory.VAGUE_PRONOUN,
+                           question_text="Which limits?")])
+    # turn present, answers empty, rewrite missing -- schema-valid (see docstring).
+    pending = RefinementRound(revision_number=1, text_checked=T0,
+                              quality_report=QualityReport(requirement_id=REQ_A.id, passed=False,
+                                                           issues=[issue]),
+                              turn=turn)
+    resuming_record = rec(requirement=REQ_A, classification=cls, rounds=[pending])
+    ok("fixture actually resumes at the refiner rewriter (sanity check)",
+       resume_at(resuming_record) is PipelineStage.REFINER_REWRITER)
+    ok("fixture sanity: turn is present but answers is empty",
+       pending.turn is not None and pending.answers == [])
+
+    def questioner_never_called(*a, **k):
+        raise AssertionError("refine_questioner must never be called -- turn already exists")
+
+    answer_calls: list = []
+    def answer_questions(t):
+        answer_calls.append(t)
+        return [RefinerAnswer(question_id=q.id, answer_text="new answer") for q in t.questions]
+
+    rewriter = Scripted([
+        {"requirement_id": REQ_A.id, "original_text": T0, "refined_text": T1,
+         "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "new answer"}]},
+    ])
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=None,  # must never be called -- classification already exists
+        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+        refine_questioner=questioner_never_called,
+        refine_rewriter=rewriter,
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=answer_questions,
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+    result = run_requirement(resuming_record, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+
+    ok("the human was asked exactly once", len(answer_calls) == 1)
+    ok("the human was asked with the pre-existing turn, not a freshly-generated one",
+       answer_calls == [turn])
+    completed_round = result.rounds[0]
+    ok("the rewriter received the answers the human just gave",
+       len(rewriter.calls) == 1
+       and rewriter.calls[0][1] == [RefinerAnswer(question_id="Q1", answer_text="new answer")])
+    ok("the outstanding rewrite was completed", completed_round.rewrite is not None)
+    ok("the round's recorded answers are the ones the human gave, not left empty",
+       completed_round.answers == [RefinerAnswer(question_id="Q1", answer_text="new answer")])
     ok("the run reaches a terminal outcome", result.outcome is RunOutcome.COMPLETED)
 
 
@@ -1033,10 +1377,12 @@ def test_id_reconciliation_mints_fresh_ids_on_collision() -> None:
                 {"id": "ISSUE-2", "category": "ambiguous_term", "span": "the buffer",
                  "explanation": "brand new defect"}]},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
                 {"id": "Q1", "issue_id": "ISSUE-1", "issue_category": "vague_pronoun", "question_text": "?"},
                 {"id": "Q2", "issue_id": "ISSUE-2", "issue_category": "non_verifiable", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
              "revision_number": 1, "answers_used": [
                  {"question_id": "Q1", "answer_text": "a"}, {"question_id": "Q2", "answer_text": "a"}]},
@@ -1083,9 +1429,11 @@ def test_suppressed_issue_reflagged_is_dropped() -> None:
                 {"id": "FRESH-X", "category": "vague_pronoun", "span": "these limits",
                  "explanation": "still flagged despite suppression"}]},
         ]),
-        refine=Scripted([
+        refine_questioner=Scripted([
             {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
                 {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
             {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
              "revision_number": 1, "answers_used": [
                  {"question_id": "Q1", "answer_text": "confirmed", "user_confirms_resolved": True}]},
@@ -1131,7 +1479,8 @@ def test_resume_skips_finished_strategy_selector() -> None:
 
     fns = StageFns(
         check_consistency=None, map_dependencies=None,
-        classify=None, check_quality=None, refine=None, select_strategy=None,  # must never be called
+        classify=None, check_quality=None, refine_questioner=None, refine_rewriter=None,
+        select_strategy=None,  # must never be called
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
             "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
@@ -1160,7 +1509,8 @@ def test_max_revisions_must_be_at_least_two() -> None:
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
     fns = StageFns(check_consistency=None, map_dependencies=None, classify=never_called,
-                   check_quality=never_called, refine=never_called, select_strategy=never_called,
+                   check_quality=never_called, refine_questioner=never_called,
+                   refine_rewriter=never_called, select_strategy=never_called,
                    generate_tests=never_called)
     human_fns = HumanFns(answer_questions=never_called, decide_at_cap=never_called)
 
@@ -1183,17 +1533,19 @@ def test_resumed_cap_generated_then_stopped_strips_stage34() -> None:
     RequirementRunRecord.model_validate raises.
 
     Also confirms, in passing, that resuming into an already-capped round is safe even
-    though resume_at sends it to REFINER (it cannot distinguish "mid-refinement" from
-    "already capped" -- both look like {passed: False, rewrite: None} to it): entering
-    _run_refine_loop's pending-round branch here still lands on revision_number ==
-    max_revisions, so its existing `n >= max_revisions` check re-fires immediately and
-    the round is re-appended unchanged, never reaching stage_fns.refine (all set to
-    `None` below -- calling any of them would crash the mock, not just fail an
-    assertion). An earlier draft of this fix added an explicit extra short-circuit for
-    this ambiguity, on the assumption the existing check wouldn't fire on resume; a
-    mutation test (removing the short-circuit) proved it unnecessary -- every check
-    stayed green -- so it was deleted rather than kept as an untestable no-op
-    (CLAUDE.md: don't write a check that can't fire).
+    though resume_at sends it to REFINER_REWRITER (it cannot distinguish "mid-rewrite"
+    from "already capped" -- both look like {passed: False, turn: <set>, rewrite: None}
+    to it, an ambiguity the REFINER_QUESTIONER/REFINER_REWRITER split narrowed but did
+    not remove): entering _run_refine_loop's pending-round branch here still lands on
+    revision_number == max_revisions, so its existing `n >= max_revisions` check
+    re-fires immediately and the round is re-appended unchanged, never reaching
+    stage_fns.refine_questioner or stage_fns.refine_rewriter (both set to `None` below
+    -- calling either would crash the mock, not just fail an assertion). An earlier
+    draft of this fix added an explicit extra short-circuit for this ambiguity, on the
+    assumption the existing check wouldn't fire on resume; a mutation test (removing
+    the short-circuit) proved it unnecessary -- every check stayed green -- so it was
+    deleted rather than kept as an untestable no-op (CLAUDE.md: don't write a check
+    that can't fire).
     """
     section("Regression -- resuming CAP_GENERATED-then-failed and choosing to stop strips stage 3/4")
     from orchestrator.pipeline import run_requirement, Throttle
@@ -1215,13 +1567,14 @@ def test_resumed_cap_generated_then_stopped_strips_stage34() -> None:
                  errors=[prior_error], test_strategy=strategy)
     ok("fixture is a valid, already-capped-and-errored record (sanity check)",
        resumed.outcome is RunOutcome.ERROR)
-    ok("resume_at sends an already-capped round to REFINER, same as a genuinely "
-       "mid-refinement one (sanity check -- see docstring)",
-       resume_at(resumed) is PipelineStage.REFINER)
+    ok("resume_at sends an already-capped round to REFINER_REWRITER, same as a "
+       "genuinely mid-rewrite one (sanity check -- see docstring)",
+       resume_at(resumed) is PipelineStage.REFINER_REWRITER)
 
     fns = StageFns(
         check_consistency=None, map_dependencies=None,
-        classify=None, check_quality=None, refine=None,  # must never be called
+        classify=None, check_quality=None, refine_questioner=None,
+        refine_rewriter=None,  # must never be called
         select_strategy=None, generate_tests=None)        # human is stopping -- never reached
     human_fns = HumanFns(answer_questions=lambda turn: [],
                          decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "changed my mind, stop here"))
@@ -1267,7 +1620,7 @@ def test_run_document_happy_path() -> None:
         map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
         classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
         check_quality=Scripted([passing_quality(REQ_A.id), passing_quality(REQ_B.id)]),
-        refine=None,
+        refine_questioner=None, refine_rewriter=None,
         select_strategy=Scripted([strategy_for(REQ_A.id), strategy_for(REQ_B.id)]),
         generate_tests=Scripted([plan_for(REQ_A.id), plan_for(REQ_B.id)]))
     human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
@@ -1307,7 +1660,8 @@ def test_document_stage_retry_within_run() -> None:
             check_consistency=Scripted([StageCallFailed("429")] * 2),
             map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
             classify=Scripted([StageCallFailed("429")] * 2),
-            check_quality=None, refine=None, select_strategy=None, generate_tests=None)
+            check_quality=None, refine_questioner=None, refine_rewriter=None,
+            select_strategy=None, generate_tests=None)
         metadata = make_metadata()
         result = run_document(DOC, metadata, first_fns, HumanFns(
             answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None)),
@@ -1319,7 +1673,8 @@ def test_document_stage_retry_within_run() -> None:
 
         retry_fns = StageFns(
             check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
-            map_dependencies=None, classify=None, check_quality=None, refine=None,
+            map_dependencies=None, classify=None, check_quality=None,
+            refine_questioner=None, refine_rewriter=None,
             select_strategy=None, generate_tests=None)
         retried = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER, retry_fns,
                                        throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
@@ -1331,7 +1686,8 @@ def test_document_stage_retry_within_run() -> None:
         # -- second failure bumps retry_count instead of appending --
         fail_again_fns = StageFns(
             check_consistency=Scripted([StageCallFailed("429")]), map_dependencies=None,
-            classify=None, check_quality=None, refine=None, select_strategy=None,
+            classify=None, check_quality=None, refine_questioner=None,
+            refine_rewriter=None, select_strategy=None,
             generate_tests=None)
         # Reset the fixture run_dir to the post-first-run DEGRADED state to test this
         # branch in isolation: write it back down before retrying again.
@@ -1369,7 +1725,8 @@ def test_error_resume_finish() -> None:
             check_consistency=Scripted([{"doc_id": "harness-doc", "conflicts": []}]),
             map_dependencies=Scripted([{"doc_id": "harness-doc", "dependencies": []}]),
             classify=Scripted([StageCallFailed("429")] * 2),  # exhausts at max_attempts=2
-            check_quality=None, refine=None, select_strategy=None, generate_tests=None)
+            check_quality=None, refine_questioner=None, refine_rewriter=None,
+            select_strategy=None, generate_tests=None)
         human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
         metadata = make_metadata(run_id="run-scenario-8")
         result = run_document(one_req_doc, metadata, failing_fns, human_fns, throttle,
@@ -1382,7 +1739,7 @@ def test_error_resume_finish() -> None:
             check_consistency=None, map_dependencies=None,
             classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
             check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
-            refine=None,
+            refine_questioner=None, refine_rewriter=None,
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
@@ -1417,7 +1774,8 @@ def test_interruption_mid_document_round_trip() -> None:
             DOC, metadata.stages,
             StageFns(check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
                     map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
-                    classify=None, check_quality=None, refine=None, select_strategy=None,
+                    classify=None, check_quality=None, refine_questioner=None,
+                    refine_rewriter=None, select_strategy=None,
                     generate_tests=None),
             throttle)
         partial = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
@@ -1440,7 +1798,7 @@ def test_interruption_mid_document_round_trip() -> None:
             check_quality=Scripted([
                 {"requirement_id": REQ_A.id, "passed": True, "issues": []},
                 {"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
-            refine=None,
+            refine_questioner=None, refine_rewriter=None,
             select_strategy=Scripted([
                 {"requirement_id": REQ_A.id, "system_type": "other",
                  "techniques": ["boundary_value_analysis"], "rationale": "r"},
@@ -1535,9 +1893,13 @@ def main() -> int:
               test_backoff_timing, test_document_stages_degraded,
               test_document_id_mismatch_is_validation,
               test_on_disk_round_trip,
-              test_happy_path, test_revision_cap, test_issue_identity_reuse,
+              test_happy_path,
+              test_refiner_questioner_and_rewriter_have_independent_configs,
+              test_refine_questioner_failure_and_retry, test_refine_rewriter_failure_and_retry,
+              test_revision_cap, test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,
               test_resume_mid_round_completes,
+              test_resume_mid_round_asks_human_when_answers_missing,
               test_id_reconciliation_mints_fresh_ids_on_collision,
               test_suppressed_issue_reflagged_is_dropped,
               test_resume_skips_finished_strategy_selector,

@@ -45,12 +45,20 @@ class StageFns:
     a typo'd dict key silently returns nothing and the stage gets skipped; a typo'd
     field name here is an immediate TypeError. Each callable returns a StageCallResult
     (or raises StageCallFailed). orchestrator/test_harness.py wires in scripted
-    fixtures; orchestrator/stages.py (next phase) wires in real LLM calls."""
+    fixtures; orchestrator/stages.py (next phase) wires in real LLM calls.
+
+    refine_questioner/refine_rewriter were one field (refine) until 2026-08-08: two
+    calls with different inputs/outputs (Requirement, QualityReport -> RefinerTurn;
+    requirement + RefinerAnswer[] -> RefinedRequirement) shared one callable, one
+    PipelineStage identity, and one model config -- neither could be configured,
+    measured, or retried independently. See design/DESIGN_NOTES.md, "Refiner split
+    into REFINER_QUESTIONER / REFINER_REWRITER"."""
     check_consistency: Callable[..., StageCallResult]
     map_dependencies: Callable[..., StageCallResult]
     classify: Callable[..., StageCallResult]
     check_quality: Callable[..., StageCallResult]
-    refine: Callable[..., StageCallResult]
+    refine_questioner: Callable[..., StageCallResult]
+    refine_rewriter: Callable[..., StageCallResult]
     select_strategy: Callable[..., StageCallResult]
     generate_tests: Callable[..., StageCallResult]
 
@@ -304,7 +312,16 @@ def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:
     if not last.quality_report.passed:
         # A round whose check failed but which already rewrote has finished refining;
         # the next step is checking that rewrite, i.e. the next round.
-        return PipelineStage.REFINER if last.rewrite is None else PipelineStage.QUALITY_CHECKER
+        if last.rewrite is not None:
+            return PipelineStage.QUALITY_CHECKER
+        # No rewrite yet -- which half of the Refiner is unfinished? No turn means
+        # nothing was ever asked (the questioner itself failed, or this round never
+        # got that far); a turn with no rewrite means the questioner has finished and
+        # only the rewrite is outstanding -- NOT that the human has answered yet.
+        # answers may still be empty here (interrupted between the questioner's turn
+        # and the human's answer); _run_refine_loop asks the human iff answers is
+        # empty, regardless of turn.
+        return PipelineStage.REFINER_QUESTIONER if last.turn is None else PipelineStage.REFINER_REWRITER
     if rec.test_strategy is None:
         return PipelineStage.STRATEGY_SELECTOR
     if rec.test_plan is None:
@@ -406,7 +423,8 @@ def _run_refine_loop(
     rounds = list(record.rounds)
 
     # Resuming mid-round: the last round already has a quality_report but no rewrite
-    # yet (REFINER position) -- pick up from there instead of starting a new round.
+    # yet (REFINER_QUESTIONER or REFINER_REWRITER position) -- pick up from there
+    # instead of starting a new round.
     #
     # This is ALSO where resuming an already-capped record (n == max_revisions,
     # last call chose CAP_GENERATED, a later stage failed) lands, since a capped round
@@ -492,8 +510,9 @@ def _run_refine_loop(
         if turn is None:
             try:
                 turn = call_stage(
-                    stage_fns.refine, (current, quality_report), RefinerTurn,
-                    PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
+                    stage_fns.refine_questioner, (current, quality_report), RefinerTurn,
+                    PipelineStage.REFINER_QUESTIONER,
+                    stage_configs[PipelineStage.REFINER_QUESTIONER.value].model,
                     throttle, usage, req.id, max_attempts, backoff_seconds)
             except StageFailed as f:
                 record = record.model_copy(update={"usage": usage})
@@ -501,16 +520,24 @@ def _run_refine_loop(
                                               quality_report=quality_report,
                                               suppressed_issue_ids=suppressed_ids))
                 return record.model_copy(update={"rounds": rounds}), StageError(
-                    stage=PipelineStage.REFINER, kind=f.kind, message=f.message,
+                    stage=PipelineStage.REFINER_QUESTIONER, kind=f.kind, message=f.message,
                     retry_count=f.retry_count)
             record = record.model_copy(update={"usage": usage})
+            answers = human_fns.answer_questions(turn)
+        elif not answers:
+            # turn already exists (questioner finished, possibly on a prior attempt)
+            # but nothing has answered it yet -- interrupted between the questioner's
+            # call and the human's answer. Schema-valid (RefinementRound only rejects
+            # answers non-empty with turn=None, never the reverse), and distinct from
+            # "turn and answers both already exist" just below, which must NOT re-ask.
             answers = human_fns.answer_questions(turn)
 
         usage = list(record.usage)
         try:
             rewrite = call_stage(
-                stage_fns.refine, (current, answers), RefinedRequirement,
-                PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
+                stage_fns.refine_rewriter, (current, answers), RefinedRequirement,
+                PipelineStage.REFINER_REWRITER,
+                stage_configs[PipelineStage.REFINER_REWRITER.value].model,
                 throttle, usage, req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             record = record.model_copy(update={"usage": usage})
@@ -518,7 +545,7 @@ def _run_refine_loop(
                                           quality_report=quality_report, turn=turn,
                                           answers=answers, suppressed_issue_ids=suppressed_ids))
             return record.model_copy(update={"rounds": rounds}), StageError(
-                stage=PipelineStage.REFINER, kind=f.kind, message=f.message,
+                stage=PipelineStage.REFINER_REWRITER, kind=f.kind, message=f.message,
                 retry_count=f.retry_count)
         record = record.model_copy(update={"usage": usage})
 
@@ -589,15 +616,17 @@ def run_requirement(
                 "usage": [u.model_dump(mode="json") for u in usage]})
         record = record.model_copy(update={"classification": classification, "usage": usage})
 
-    # Only CLASSIFIER/QUALITY_CHECKER/REFINER positions need the refine loop at all --
-    # STRATEGY_SELECTOR and TEST_GENERATOR mean the loop already finished (the last
-    # round passed, or the cap already fired on an earlier call to this function) and
-    # calling it again would try to start a phantom next round: the last round has no
-    # rewrite in that case (a passed round never gets one -- RefinementRound rejects it),
-    # so `rounds[-1].rewrite.refined_text` would raise AttributeError. This was a real
-    # bug in the initial draft -- caught because it is exactly the resume path Task 11
-    # depends on, not because any of the four scenario tests below exercise it.
-    if stage in (PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER, PipelineStage.REFINER):
+    # Only CLASSIFIER/QUALITY_CHECKER/REFINER_QUESTIONER/REFINER_REWRITER positions need
+    # the refine loop at all -- STRATEGY_SELECTOR and TEST_GENERATOR mean the loop
+    # already finished (the last round passed, or the cap already fired on an earlier
+    # call to this function) and calling it again would try to start a phantom next
+    # round: the last round has no rewrite in that case (a passed round never gets one
+    # -- RefinementRound rejects it), so `rounds[-1].rewrite.refined_text` would raise
+    # AttributeError. This was a real bug in the initial draft -- caught because it is
+    # exactly the resume path Task 11 depends on, not because any of the four scenario
+    # tests below exercise it.
+    if stage in (PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER,
+                PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER):
         record, refine_error = _run_refine_loop(
             record, stage_fns, human_fns, throttle, max_revisions, stage_configs,
             max_attempts, backoff_seconds)

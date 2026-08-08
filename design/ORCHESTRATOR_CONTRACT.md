@@ -24,9 +24,16 @@ Execution order is not recorded anywhere in the Pydantic models — nothing in
       a. Classifier
       b. Quality Checker
       c. Refiner (only if the check failed)  -- loops back to (b)
+          c1. Refiner Questioner  (Requirement, QualityReport -> RefinerTurn)
+          c2. Refiner Rewriter    (requirement + RefinerAnswer[] -> RefinedRequirement)
 3.  Test Design Strategy Selector
 4.  Test Case Generator
 ```
+
+Steps c1/c2 are two separately configured stage calls (own `PipelineStage` member, model,
+prompt hash, usage and error attribution) even though they present as one conceptual
+"Refiner" step here and in the diagrams -- see DESIGN_NOTES.md, "Refiner split into
+REFINER_QUESTIONER / REFINER_REWRITER".
 
 *(DESIGN_NOTES: "Generated diagrams" — why `pipeline.mermaid` is hand-declared.)*
 
@@ -102,8 +109,9 @@ def resume_at(rec):
     last = rec.rounds[-1]
     if not last.quality_report.passed:
         # The last round failed its check. Which half of that round is unfinished?
-        if last.rewrite is None:  return REFINER          # ask/answer/rewrite still to do
-        else:                     return QUALITY_CHECKER  # rewrite done -> check it (next round)
+        if last.rewrite is not None:      return QUALITY_CHECKER    # rewrite done -> check it (next round)
+        if last.turn is None:             return REFINER_QUESTIONER # nothing asked yet
+        return REFINER_REWRITER                                    # questioner done, rewrite outstanding
     if rec.test_strategy is None:                     return STRATEGY_SELECTOR
     if rec.test_plan is None:                         return TEST_GENERATOR
     return None                                       # finished
@@ -115,6 +123,25 @@ finished its refinement, so the next step is checking that rewrite, not refining
 Without the branch the Refiner re-runs on a round it already completed. Verified against
 constructed records at all six failure points; the test lives in
 `orchestrator/test_harness.py::test_resume_positions`.
+
+The `REFINER_QUESTIONER`/`REFINER_REWRITER` split (2026-08-08) adds a second branch
+inside "rewrite is None": `last.turn` distinguishes "nothing asked yet" (the
+questioner itself failed, or this round never got that far) from "the questioner has
+produced a turn, only the rewrite is outstanding." **`REFINER_REWRITER` does NOT mean
+the human has already answered** -- `last.turn is not None` says only that the
+questioner finished; `last.answers` may still be empty (interrupted between the
+questioner's turn and the human's answer). `_run_refine_loop` resumes correctly either
+way: it asks the human iff `answers` is empty, regardless of `turn` (2026-08-08, fixing
+a gap in the original split where a turn-but-no-answers round silently skipped asking
+and handed the rewriter nothing) -- see `orchestrator/test_harness.py::
+test_resume_mid_round_asks_human_when_answers_missing`. One ambiguity survives the
+split, unchanged from before it: an already-capped round with a turn but no rewrite
+looks identical to a genuinely mid-round one -- both resolve to `REFINER_REWRITER`.
+This is harmless (`_run_refine_loop`'s cap check fires immediately on a resumed,
+already-capped round before any stage call happens -- see
+`orchestrator/test_harness.py::test_resumed_cap_generated_then_stopped_strips_stage34`),
+so it is left as is rather than given a resume position `resume_at` cannot actually
+derive (it never sees `max_revisions`).
 
 At document level, `DocumentRunRecord.pending_requirement_ids` gives everything that
 still needs work: no record file, **or** a record whose outcome is `IN_PROGRESS`
@@ -173,7 +200,8 @@ Two constraints the schema enforces:
 Within a `StageError`, `retry_count` covers the backoff loop of a single attempt. A
 later manual retry that fails again should bump that count rather than append a second
 entry for the same stage at document level (where each stage runs once). At requirement
-level duplicates are allowed, since the Quality Checker and Refiner run once per round.
+level duplicates are allowed, since the Quality Checker, Refiner Questioner, and Refiner
+Rewriter each run once per round.
 
 Retries that succeeded on the *first* stage invocation leave no trace — `retry_count`
 describes calls that ultimately failed. Do not compute a success rate from it; the

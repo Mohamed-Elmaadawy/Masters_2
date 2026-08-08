@@ -695,10 +695,18 @@ class PipelineStage(str, Enum):
     """Per-requirement stages only -- deliberately kept separate from DocumentStage so
     a RequirementRunRecord cannot express an error naming a document-level stage. Same
     reasoning as using an enum rather than a free string in the first place: make the
-    nonsensical value impossible to write down, rather than merely wrong."""
+    nonsensical value impossible to write down, rather than merely wrong.
+
+    REFINER_QUESTIONER and REFINER_REWRITER were one member (REFINER) until
+    2026-08-08: two LLM calls with different inputs/outputs (Requirement, QualityReport
+    -> RefinerTurn; requirement + RefinerAnswer[] -> RefinedRequirement) shared one
+    stage identity, one model config, and one prompt hash, so neither could be
+    configured, measured, or retried independently of the other. See DESIGN_NOTES.md,
+    "Refiner split into REFINER_QUESTIONER / REFINER_REWRITER"."""
     CLASSIFIER = "classifier"
     QUALITY_CHECKER = "quality_checker"
-    REFINER = "refiner"
+    REFINER_QUESTIONER = "refiner_questioner"
+    REFINER_REWRITER = "refiner_rewriter"
     STRATEGY_SELECTOR = "strategy_selector"
     TEST_GENERATOR = "test_generator"
 
