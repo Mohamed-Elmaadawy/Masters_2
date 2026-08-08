@@ -280,6 +280,38 @@ def test_call_stage() -> None:
         ok("a caller bug (outside call_stage's guarded line) still crashes", True)
 
 
+def test_backoff_timing() -> None:
+    """Backoff fires BETWEEN attempts, never after the last one -- and with the actual
+    scheduled delay, not just "some" delay. Every scenario elsewhere stubs
+    backoff_seconds to 0.0, so nothing else in the suite would notice if this line
+    were deleted entirely (confirmed by mutation: replacing the guard with `if False`
+    still passes all other checks). Mirrors test_throttle's discipline of asserting
+    the recorded values, not merely that sleep_fn was called."""
+    section("Backoff timing (call_stage / call_document_stage)")
+    from orchestrator.pipeline import call_stage, call_document_stage, Throttle
+    from design.schemas import Classification, DocumentStage, ConsistencyReport
+
+    slept: list[float] = []
+    throttle_recording = Throttle(sleep_fn=slept.append, now_fn=lambda: FAKE_NOW)
+    fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
+                  {"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
+    call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+              throttle_recording, [], max_attempts=3,
+              backoff_seconds=lambda a: (a + 1) * 10.0)
+    ok("call_stage: backoff fires between attempts, not after the last (or the first)",
+       slept == [10.0, 20.0])
+
+    slept2: list[float] = []
+    throttle_recording2 = Throttle(sleep_fn=slept2.append, now_fn=lambda: FAKE_NOW)
+    doc_fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
+                       {"doc_id": DOC.doc_id, "conflicts": []}])
+    call_document_stage(doc_fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                        "fake-model", throttle_recording2, [], max_attempts=3,
+                        backoff_seconds=lambda a: (a + 1) * 10.0)
+    ok("call_document_stage: backoff fires between attempts, not after the last",
+       slept2 == [10.0, 20.0])
+
+
 def test_document_stages_degraded() -> None:
     """Scenario 7: consistency checker and dependency mapper fail independently; the
     run continues without whichever one failed, per contract D1=b."""
@@ -1226,7 +1258,8 @@ def main() -> int:
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage, test_document_stages_degraded, test_on_disk_round_trip,
+              test_call_stage, test_backoff_timing, test_document_stages_degraded,
+              test_on_disk_round_trip,
               test_happy_path, test_revision_cap, test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,
               test_id_reconciliation_mints_fresh_ids_on_collision,
