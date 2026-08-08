@@ -260,22 +260,63 @@ def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:
     return None
 
 
-def _reconcile_issue_ids(new_issues: list[Issue], previous_round: Optional[RefinementRound]) -> list[Issue]:
+def _all_issue_ids(rounds: list[RefinementRound]) -> set[str]:
+    """Every issue id that has ever appeared in this record, across every round so far.
+    Used to keep a freshly-minted id (see _reconcile_issue_ids) from colliding with
+    anything already on the record, not just the immediately preceding round."""
+    return {issue.id for rnd in rounds for issue in rnd.quality_report.issues}
+
+
+def _reconcile_issue_ids(
+    new_issues: list[Issue],
+    previous_round: Optional[RefinementRound],
+    used_ids: set[str],
+    req_id: str,
+) -> list[Issue]:
     """Matches this round's issues against the previous round's on (category, span) and
     reuses the id when it's the same defect -- the orchestrator's job per contract item
-    4, not the LLM's: each round's QualityReport is a fresh call minting its own ids."""
+    4, not the LLM's: each round's QualityReport is a fresh call minting its own ids.
+
+    Anything that does NOT match the previous round is a genuinely new defect (round 2
+    onward only -- round 1 has no previous round to match against in the first place).
+    It must NOT keep the LLM's raw id: the checker renumbers from 1 every round, so an
+    unmatched round-2+ issue's raw id reliably collides with an id already used earlier
+    in this record -- sometimes the very id another issue in the same round just got
+    reconciled to. Contract item 4's corollary is explicit about who owns this: "the
+    orchestrator, not the LLM, should assign Issue.id." So a genuinely new issue gets a
+    fresh id here, guaranteed not to collide with `used_ids` (every id used anywhere
+    earlier in the record) or with anything already produced in this same call.
+
+    Round 1's ids are left as the LLM gave them: there is nothing yet to reconcile
+    against, and a collision *within* one round's own output is already caught by
+    QualityReport's own uniqueness check on construction -- a second check here could
+    never fire on its own (CLAUDE.md: don't write a check that can't fire).
+    """
     if previous_round is None:
         return new_issues
     available = {(i.category, i.span): i.id for i in previous_round.quality_report.issues}
-    used_ids: set[str] = set()
+    # Two SEPARATE sets, not one -- a reused id is already in `used_ids` (it came from
+    # an earlier round), so checking a candidate reuse against `used_ids` would always
+    # find it "taken" and never reuse anything. `claimed_this_round` only tracks a
+    # previous-round id being claimed a second time in THIS round's batch (two new
+    # issues both matching the same old defect -- only one of them can actually be it).
+    # `minted_so_far` starts from the full history and grows as fresh ids are minted, so
+    # a newly-minted id can never collide with anything used before or within this call.
+    claimed_this_round: set[str] = set()
+    minted_so_far: set[str] = set(used_ids)
     reconciled = []
+    next_n = 1
     for issue in new_issues:
         reused_id = available.get((issue.category, issue.span))
-        if reused_id is not None and reused_id not in used_ids:
-            used_ids.add(reused_id)
+        if reused_id is not None and reused_id not in claimed_this_round:
+            claimed_this_round.add(reused_id)
             reconciled.append(issue.model_copy(update={"id": reused_id}))
-        else:
-            reconciled.append(issue)
+            continue
+        while f"{req_id}-ISSUE-{next_n}" in minted_so_far:
+            next_n += 1
+        minted_id = f"{req_id}-ISSUE-{next_n}"
+        minted_so_far.add(minted_id)
+        reconciled.append(issue.model_copy(update={"id": minted_id}))
     return reconciled
 
 
@@ -314,6 +355,18 @@ def _run_refine_loop(
 
     # Resuming mid-round: the last round already has a quality_report but no rewrite
     # yet (REFINER position) -- pick up from there instead of starting a new round.
+    #
+    # This is ALSO where resuming an already-capped record (n == max_revisions,
+    # last call chose CAP_GENERATED, a later stage failed) lands, since a capped round
+    # looks structurally identical (failed, no rewrite) -- resume_at cannot tell the two
+    # apart, as it never sees max_revisions. No separate branch is needed for that case,
+    # though: `n` below comes from `pending_round.revision_number`, which is already
+    # >= max_revisions for an already-capped round, so the `n >= max_revisions` check a
+    # few lines down fires immediately and re-appends the round unchanged -- it never
+    # reaches the turn/rewrite calls. Confirmed by mutation test: an earlier version of
+    # this fix added an explicit up-front short-circuit for that case; removing it
+    # again left every test green, proving it was dead code (CLAUDE.md: don't write a
+    # check that can't fire).
     pending_round = None
     if rounds and not rounds[-1].quality_report.passed and rounds[-1].rewrite is None:
         pending_round = rounds[-1]
@@ -344,9 +397,21 @@ def _run_refine_loop(
                 return record, StageError(stage=PipelineStage.QUALITY_CHECKER, kind=f.kind,
                                           message=f.message, retry_count=f.retry_count)
             record = record.model_copy(update={"usage": usage})
-            reconciled = _reconcile_issue_ids(raw_report.issues, rounds[-1] if rounds else None)
-            quality_report = QualityReport(requirement_id=req.id, passed=raw_report.passed,
-                                           issues=reconciled)
+            reconciled = _reconcile_issue_ids(
+                raw_report.issues, rounds[-1] if rounds else None, _all_issue_ids(rounds), req.id)
+            # Enforce suppression regardless of whether the checker honored the
+            # suppressed_ids it was just called with: a checker that re-flags a
+            # suppressed defect under a fresh id gets reconciled back to that id above,
+            # then dropped here. Without this, a re-flagged suppressed issue would fail
+            # RefinementRound's "suppresses X but quality_report raises it anyway" check
+            # with an uncaught ValidationError -- and VAGUE_PRONOUN in particular is
+            # documented as expected to be noisy (Known Limitation 4), so this is a
+            # normal-path risk on free-tier models, not a corner case. `passed` is
+            # recomputed from what's left, not taken from the raw report, since
+            # suppression can turn a "failed" raw report into a passing round.
+            remaining = [i for i in reconciled if i.id not in set(suppressed_ids)]
+            quality_report = QualityReport(requirement_id=req.id, passed=(len(remaining) == 0),
+                                           issues=remaining)
             turn, answers = None, []
 
         if quality_report.passed:
@@ -428,6 +493,20 @@ def run_requirement(
     no stage_fns signature in this task's scenarios takes them. Wiring them into the
     quality checker / strategy selector is future work, not silently invented here.
     """
+    if max_revisions < 2:
+        # A cap can only be reached by exhausting revisions -- which means at least one
+        # round already tried to fix the text and failed again. RunOutcome.CAP_GENERATED/
+        # CAP_STOPPED's own schema rule requires evidence of that (at least one round
+        # with a rewrite). max_revisions=1 caps on round 1 itself, before any rewrite
+        # could exist, so it can never produce a record the schema will accept --
+        # rejected here, at the only point that can explain why, rather than as a
+        # ValidationError deep inside _run_refine_loop.
+        raise ValueError(
+            f"max_revisions must be >= 2 (got {max_revisions}): a revision cap can only "
+            "be reached after at least one refinement attempt, and CAP_GENERATED/"
+            "CAP_STOPPED both require a round with a rewrite to exist"
+        )
+
     stage = resume_at(record)
     if stage is None:
         return record
@@ -477,9 +556,20 @@ def run_requirement(
             raise ValueError(
                 f"decide_at_cap returned {outcome!r}, must be CAP_GENERATED or CAP_STOPPED")
         if outcome is RunOutcome.CAP_STOPPED:
+            # This decision can be re-asked on a resumed record (e.g. an earlier call
+            # chose CAP_GENERATED, then the Strategy Selector or Test Generator failed,
+            # and the human now says stop instead of retrying). CAP_STOPPED's own schema
+            # rule forbids test_strategy/test_plan and forbids errors naming those two
+            # stages -- "the human stopped before stage 3" -- so a stop decision made
+            # AFTER stage 3/4 already ran (or failed) must retroactively discard that
+            # work, not just relabel the outcome. Stripping is a safe no-op on a record
+            # that never got that far in the first place.
+            surviving_errors = [e for e in record.errors if e.stage not in (
+                PipelineStage.STRATEGY_SELECTOR, PipelineStage.TEST_GENERATOR)]
             return RequirementRunRecord.model_validate(
                 {**record.model_dump(mode="json"), "outcome": outcome.value,
-                 "cap_reason": cap_reason})
+                 "cap_reason": cap_reason, "test_strategy": None, "test_plan": None,
+                 "errors": [e.model_dump(mode="json") for e in surviving_errors]})
         record = record.model_copy(update={"cap_reason": cap_reason})
         final_outcome = RunOutcome.CAP_GENERATED
     else:
@@ -492,22 +582,30 @@ def run_requirement(
     # is guaranteed non-empty and its last entry is exactly what was checked/rewritten.
     current = Requirement(id=req.id, text=record.final_text, source_doc_id=req.source_doc_id)
 
-    usage = list(record.usage)
-    try:
-        strategy = call_stage(
-            stage_fns.select_strategy, (current, record.classification), TestStrategy,
-            PipelineStage.STRATEGY_SELECTOR,
-            stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, usage,
-            max_attempts, backoff_seconds)
-    except StageFailed as f:
-        errors = list(record.errors) + [StageError(
-            stage=PipelineStage.STRATEGY_SELECTOR, kind=f.kind, message=f.message,
-            retry_count=f.retry_count)]
-        return RequirementRunRecord.model_validate(
-            {**record.model_dump(mode="json"), "outcome": "error",
-             "errors": [e.model_dump(mode="json") for e in errors],
-             "usage": [u.model_dump(mode="json") for u in usage]})
-    record = record.model_copy(update={"test_strategy": strategy, "usage": usage})
+    # Contract item 6: "nothing else is redone." resume_at can send us here with
+    # test_strategy already set (a resume where only the Test Generator failed last
+    # time) -- calling the Strategy Selector again would waste an API call and could
+    # legitimately return a DIFFERENT strategy for the same requirement, making the
+    # stored result nondeterministic across resumes.
+    if record.test_strategy is not None:
+        strategy = record.test_strategy
+    else:
+        usage = list(record.usage)
+        try:
+            strategy = call_stage(
+                stage_fns.select_strategy, (current, record.classification), TestStrategy,
+                PipelineStage.STRATEGY_SELECTOR,
+                stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, usage,
+                max_attempts, backoff_seconds)
+        except StageFailed as f:
+            errors = list(record.errors) + [StageError(
+                stage=PipelineStage.STRATEGY_SELECTOR, kind=f.kind, message=f.message,
+                retry_count=f.retry_count)]
+            return RequirementRunRecord.model_validate(
+                {**record.model_dump(mode="json"), "outcome": "error",
+                 "errors": [e.model_dump(mode="json") for e in errors],
+                 "usage": [u.model_dump(mode="json") for u in usage]})
+        record = record.model_copy(update={"test_strategy": strategy, "usage": usage})
 
     usage = list(record.usage)
     try:

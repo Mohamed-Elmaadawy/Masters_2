@@ -501,25 +501,42 @@ def test_revision_cap() -> None:
 
 
 def _cap_returns_nonsense_raises() -> bool:
+    """max_revisions=2, not 1: run_requirement now rejects max_revisions < 2 outright
+    (Important finding #4a from task review -- a cap can only be reached after at
+    least one refinement attempt, which max_revisions=1 could never produce), so this
+    needs a real two-round cap to reach decide_at_cap at all. Round 2's issue matches
+    round 1's identity, reconciling back to "I1" -- no fresh id involved, keeping this
+    test focused on the decide_at_cap guard, not id reconciliation.
+    """
     from orchestrator.pipeline import run_requirement, Throttle
     from design.schemas import RunOutcome
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
     fns = StageFns(
         check_consistency=None, map_dependencies=None,
         classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
-        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": False, "issues": [{
-            "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "e"}]}] * 3),
-        refine=Scripted([{"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
-            "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]}] * 3),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "still there"}]},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
         select_strategy=None, generate_tests=None)
-    human_fns = HumanFns(answer_questions=lambda turn: [],
+    human_fns = HumanFns(answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
                          decide_at_cap=lambda rec: (RunOutcome.COMPLETED, "nonsense"))
     try:
         run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
-                        max_revisions=1, stage_configs=STAGE_CONFIGS)
+                        max_revisions=2, stage_configs=STAGE_CONFIGS)
         return False
-    except ValueError:
-        return True
+    except ValueError as e:
+        # Distinguishes the intended guard from the (also ValueError) max_revisions
+        # guard or an incidental schema ValidationError (also a ValueError subclass).
+        return "decide_at_cap" in str(e)
 
 
 def test_issue_identity_reuse() -> None:
@@ -678,6 +695,243 @@ def test_resume_skips_finished_refine_loop() -> None:
         ok("resuming at the strategy selector still completes", False)
 
 
+def test_id_reconciliation_mints_fresh_ids_on_collision() -> None:
+    """Regression for task review finding Important #1: _reconcile_issue_ids must mint
+    a fresh, orchestrator-owned id for anything that does NOT match the previous round
+    -- not keep the LLM's own raw id. The Quality Checker renumbers from 1 every round,
+    so round 2's raw ids collide with round 1's real ones as a matter of course: here
+    round 1 raises ISSUE-1 (vague_pronoun) and ISSUE-2 (non_verifiable); round 2's
+    checker finds only the non_verifiable defect surviving (renumbered "ISSUE-1" by the
+    LLM) plus one brand-new defect (renumbered "ISSUE-2" by the LLM). Reconciling the
+    first back to its real identity (ISSUE-2) while keeping the second's raw id
+    "ISSUE-2" too would give one QualityReport two issues sharing an id -- an uncaught
+    ValidationError from QualityReport's own uniqueness check, before this fix.
+    """
+    section("Regression -- id reconciliation mints fresh ids instead of colliding")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "ISSUE-1", "category": "vague_pronoun", "span": "these limits", "explanation": "e1"},
+                {"id": "ISSUE-2", "category": "non_verifiable", "span": "subsequent processing",
+                 "explanation": "e2"}]},
+            # The checker renumbers from 1 every round: the surviving non_verifiable
+            # defect comes back as "ISSUE-1", and a genuinely new defect also comes back
+            # as "ISSUE-2" -- both raw ids collide with round 1's real ones.
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "ISSUE-1", "category": "non_verifiable", "span": "subsequent processing",
+                 "explanation": "e2, still there"},
+                {"id": "ISSUE-2", "category": "ambiguous_term", "span": "the buffer",
+                 "explanation": "brand new defect"}]},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
+                {"id": "Q1", "issue_id": "ISSUE-1", "issue_category": "vague_pronoun", "question_text": "?"},
+                {"id": "Q2", "issue_id": "ISSUE-2", "issue_category": "non_verifiable", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [
+                 {"question_id": "Q1", "answer_text": "a"}, {"question_id": "Q2", "answer_text": "a"}]},
+        ]),
+        select_strategy=None, generate_tests=None)  # cap fires before stage 3 is ever reached
+    human_fns = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id=q.id, answer_text="a")
+                                       for q in turn.questions],
+        decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=2, stage_configs=STAGE_CONFIGS)
+    ok("the record was built without crashing", result.outcome is RunOutcome.CAP_STOPPED)
+    round2_ids = [i.id for i in result.rounds[1].quality_report.issues]
+    ok("round 2's two issues did not collide", len(set(round2_ids)) == 2)
+    ok("the surviving defect reused round 1's real id (ISSUE-2, non_verifiable)",
+       "ISSUE-2" in round2_ids)
+    fresh = [i for i in round2_ids if i != "ISSUE-2"]
+    ok("the genuinely new defect got a fresh, non-colliding id, not the LLM's raw 'ISSUE-2'",
+       len(fresh) == 1 and fresh[0] not in ("ISSUE-1", "ISSUE-2"))
+
+
+def test_suppressed_issue_reflagged_is_dropped() -> None:
+    """Regression for task review finding Important #2: if the Quality Checker
+    re-flags an issue the human already suppressed under a fresh id (VAGUE_PRONOUN is
+    documented as expected to be noisy -- Known Limitation 4), the orchestrator must
+    drop it after reconciliation, not let RefinementRound's "suppresses X but
+    quality_report raises it anyway" check raise an uncaught ValidationError. `passed`
+    must be recomputed from what survives the drop, not taken from the raw report.
+    """
+    section("Regression -- a re-flagged suppressed issue is dropped, not a crash")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "I1", "category": "vague_pronoun", "span": "these limits", "explanation": "e"}]},
+            # The checker ignores the suppression instruction and raises the same
+            # defect again under a fresh id.
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": "FRESH-X", "category": "vague_pronoun", "span": "these limits",
+                 "explanation": "still flagged despite suppression"}]},
+        ]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
+                {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [
+                 {"question_id": "Q1", "answer_text": "confirmed", "user_confirms_resolved": True}]},
+        ]),
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(
+        answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="confirmed",
+                                                      user_confirms_resolved=True)],
+        decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, "n/a"))  # never called -- round 2 passes
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("the record was built without crashing and completed", result.outcome is RunOutcome.COMPLETED)
+    ok("round 2 dropped the re-flagged issue entirely", result.rounds[1].quality_report.issues == [])
+    ok("round 2 passed once the only remaining candidate was suppressed",
+       result.rounds[1].quality_report.passed is True)
+    ok("round 2 still records the suppression", "I1" in result.rounds[1].suppressed_issue_ids)
+
+
+def test_resume_skips_finished_strategy_selector() -> None:
+    """Regression for task review finding Important #3: resuming at TEST_GENERATOR
+    (only the Test Generator failed last time; the Strategy Selector already succeeded
+    and its result is already on the record) must not call select_strategy again --
+    contract item 6: "nothing else is redone." Calling it again wastes an API call and
+    could legitimately mint a DIFFERENT strategy for the same requirement.
+    """
+    section("Regression -- resuming at TEST_GENERATOR must not re-run the strategy selector")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, RunOutcome, SystemType, TestStrategy, TestTechnique
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    strategy = TestStrategy(requirement_id=REQ_A.id, system_type=SystemType.OTHER,
+                            techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="already chosen")
+    passed_round = mk_round(1, REQ_A.text, passed=True)
+    resuming_record = rec(requirement=REQ_A, classification=cls, rounds=[passed_round],
+                          test_strategy=strategy)
+    ok("fixture actually resumes at the test generator (sanity check)",
+       resume_at(resuming_record) is PipelineStage.TEST_GENERATOR)
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=None, check_quality=None, refine=None, select_strategy=None,  # must never be called
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=lambda turn: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(resuming_record, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+    ok("resuming at the test generator does not crash and completes",
+       result.outcome is RunOutcome.COMPLETED)
+    ok("the pre-existing strategy was kept, not replaced", result.test_strategy == strategy)
+
+
+def test_max_revisions_must_be_at_least_two() -> None:
+    """Regression for task review finding Important #4a: a cap can only be reached
+    after at least one refinement attempt -- CAP_GENERATED/CAP_STOPPED's own schema
+    rule requires a round with a rewrite to exist -- which max_revisions=1 (round 1 is
+    already "at the cap" with nothing rewritten yet) or less could never produce.
+    Rejected up front with a clear ValueError, rather than surfacing later as a
+    confusing ValidationError deep inside the refine loop.
+    """
+    section("Regression -- max_revisions < 2 is rejected outright")
+    from orchestrator.pipeline import run_requirement, Throttle
+
+    def never_called(*a, **k):
+        raise AssertionError("should never be called -- rejected before any stage runs")
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(check_consistency=None, map_dependencies=None, classify=never_called,
+                   check_quality=never_called, refine=never_called, select_strategy=never_called,
+                   generate_tests=never_called)
+    human_fns = HumanFns(answer_questions=never_called, decide_at_cap=never_called)
+
+    for bad in (1, 0, -1):
+        try:
+            run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                            max_revisions=bad, stage_configs=STAGE_CONFIGS)
+            ok(f"max_revisions={bad} is rejected", False)
+        except ValueError:
+            ok(f"max_revisions={bad} is rejected", True)
+
+
+def test_resumed_cap_generated_then_stopped_strips_stage34() -> None:
+    """Regression for task review finding Important #4b: a record capped once, told to
+    generate anyway (CAP_GENERATED), whose Strategy Selector or Test Generator then
+    failed and got resumed -- if the human now says CAP_STOPPED instead of retrying,
+    CAP_STOPPED's own schema rule forbids test_strategy/test_plan and forbids errors
+    naming those two stages ("the human stopped before stage 3"). The stop decision must
+    retroactively discard that stage-3/4 work, not just relabel the outcome -- otherwise
+    RequirementRunRecord.model_validate raises.
+
+    Also confirms, in passing, that resuming into an already-capped round is safe even
+    though resume_at sends it to REFINER (it cannot distinguish "mid-refinement" from
+    "already capped" -- both look like {passed: False, rewrite: None} to it): entering
+    _run_refine_loop's pending-round branch here still lands on revision_number ==
+    max_revisions, so its existing `n >= max_revisions` check re-fires immediately and
+    the round is re-appended unchanged, never reaching stage_fns.refine (all set to
+    `None` below -- calling any of them would crash the mock, not just fail an
+    assertion). An earlier draft of this fix added an explicit extra short-circuit for
+    this ambiguity, on the assumption the existing check wouldn't fire on resume; a
+    mutation test (removing the short-circuit) proved it unnecessary -- every check
+    stayed green -- so it was deleted rather than kept as an untestable no-op
+    (CLAUDE.md: don't write a check that can't fire).
+    """
+    section("Regression -- resuming CAP_GENERATED-then-failed and choosing to stop strips stage 3/4")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import (
+        Classification, FailureKind, RunOutcome, StageError, SystemType, TestStrategy,
+        TestTechnique,
+    )
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    strategy = TestStrategy(requirement_id=REQ_A.id, system_type=SystemType.OTHER,
+                            techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
+    capped_round1 = mk_round(1, REQ_A.text, passed=False, rewrite_to=T1)
+    capped_round2 = mk_round(2, T1, passed=False)  # cap fires here (max_revisions=2 below)
+    prior_error = StageError(stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
+                             message="429", retry_count=3)
+    resumed = rec(requirement=REQ_A, outcome=RunOutcome.ERROR, classification=cls,
+                 rounds=[capped_round1, capped_round2], cap_reason="chose to generate anyway",
+                 errors=[prior_error], test_strategy=strategy)
+    ok("fixture is a valid, already-capped-and-errored record (sanity check)",
+       resumed.outcome is RunOutcome.ERROR)
+    ok("resume_at sends an already-capped round to REFINER, same as a genuinely "
+       "mid-refinement one (sanity check -- see docstring)",
+       resume_at(resumed) is PipelineStage.REFINER)
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=None, check_quality=None, refine=None,  # must never be called
+        select_strategy=None, generate_tests=None)        # human is stopping -- never reached
+    human_fns = HumanFns(answer_questions=lambda turn: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "changed my mind, stop here"))
+
+    result = run_requirement(resumed, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=2, stage_configs=STAGE_CONFIGS)
+    ok("the record was built without crashing", result.outcome is RunOutcome.CAP_STOPPED)
+    ok("test_strategy was stripped", result.test_strategy is None)
+    ok("test_plan stays None", result.test_plan is None)
+    ok("the stage-4 error was stripped along with it", result.errors == [])
+    ok("the new cap_reason reflects the human's latest decision",
+       result.cap_reason == "changed my mind, stop here")
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
@@ -685,7 +939,12 @@ def main() -> int:
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
               test_call_stage, test_document_stages_degraded, test_on_disk_round_trip,
               test_happy_path, test_revision_cap, test_issue_identity_reuse,
-              test_suppression_persists, test_resume_skips_finished_refine_loop):
+              test_suppression_persists, test_resume_skips_finished_refine_loop,
+              test_id_reconciliation_mints_fresh_ids_on_collision,
+              test_suppressed_issue_reflagged_is_dropped,
+              test_resume_skips_finished_strategy_selector,
+              test_max_revisions_must_be_at_least_two,
+              test_resumed_cap_generated_then_stopped_strips_stage34):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
