@@ -737,36 +737,274 @@ class FailureKind(str, Enum):
     OTHER = "other"
 
 
-class TokenUsage(BaseModel):
-    """One entry per API call that returned, whether it validated or not.
+class AttemptResult(str, Enum):
+    """What happened on ONE attempt of a stage call -- distinct from FailureKind, which
+    is scoped to "why did the stage *finally* fail" and is used only on the exhausted-
+    stage summary (StageError/DocumentStageError). Every attempt needs a result,
+    including the ones that succeeded, which FailureKind has no member for and was
+    never meant to cover. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    """
+    SUCCESS = "success"
+    TRANSPORT_FAILURE = "transport_failure"
+    VALIDATION_FAILURE = "validation_failure"
+    OTHER_FAILURE = "other_failure"
 
-    Tokens, not cost: prices change, a stored cost freezes today's price into a record
-    read months later. Tokens x a price table kept separately gives cost at whatever
-    price is current. No model field: RunMetadata.stages[stage].model already says
-    which model served this stage for the whole run -- repeating it here would be a
-    denormalised copy requiring agreement, the exact pattern behind most bugs in this
-    project. Never recorded for a StageCallFailed (transport failure): the request was
-    rejected before inference, so no tokens were spent. See
-    docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.
+
+# The three failure variants of AttemptResult map 1:1 onto FailureKind -- used by the
+# StageError/DocumentStageError agreement checks below to compare a StageAttempt's
+# result against the kind an error claims.
+_ATTEMPT_RESULT_TO_FAILURE_KIND: dict[AttemptResult, FailureKind] = {
+    AttemptResult.TRANSPORT_FAILURE: FailureKind.TRANSPORT,
+    AttemptResult.VALIDATION_FAILURE: FailureKind.VALIDATION,
+    AttemptResult.OTHER_FAILURE: FailureKind.OTHER,
+}
+
+
+def _attempt_shape_error(
+    result: AttemptResult, error_message: Optional[str],
+    prompt_tokens: Optional[int], completion_tokens: Optional[int],
+) -> Optional[str]:
+    """Shared shape rule for StageAttempt/DocumentStageAttempt (identical body, two
+    classes -- same PipelineStage/DocumentStage split reasoning as everywhere else in
+    this file). Returns an error message, or None if the shape is fine."""
+    if (prompt_tokens is None) != (completion_tokens is None):
+        return "prompt_tokens and completion_tokens must both be set or both be absent"
+    has_tokens = prompt_tokens is not None
+
+    if result is AttemptResult.SUCCESS:
+        if error_message is not None:
+            return "a successful attempt must not carry an error_message"
+        if not has_tokens:
+            return "a successful attempt must record token counts"
+    elif result is AttemptResult.VALIDATION_FAILURE:
+        if error_message is None:
+            return "a validation failure must carry an error_message"
+        if not has_tokens:
+            return ("a validation failure spent tokens on rejected output and must "
+                    "record them")
+    elif result is AttemptResult.TRANSPORT_FAILURE:
+        if error_message is None:
+            return "a transport failure must carry an error_message"
+        if has_tokens:
+            return ("a transport failure means the request was rejected before "
+                    "inference -- it cannot carry token counts")
+    else:  # OTHER_FAILURE
+        if error_message is None:
+            return "an other-failure attempt must carry an error_message"
+        # Token counts are optional here, deliberately not forced either way -- an
+        # unanticipated failure may or may not have happened after inference returned.
+        # See FailureKind.OTHER's docstring.
+    return None
+
+
+class StageAttempt(BaseModel):
+    """One attempt at one per-requirement stage call -- the complete record of every
+    call_stage() try, success or failure, not just the ones that returned (contrast the
+    old TokenUsage, which only recorded returns, and StageError, which records only the
+    final exhausted attempt). invocation_id groups every attempt belonging to one
+    logical call_stage() invocation: retries share it, a fresh call gets a new one --
+    e.g. Quality Checker round 1 and round 2 are different invocations even though both
+    use PipelineStage.QUALITY_CHECKER. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
     """
     stage: PipelineStage
-    prompt_tokens: int = Field(..., ge=0)
-    completion_tokens: int = Field(..., ge=0)
+    invocation_id: NonEmptyStr
+    attempt_number: int = Field(..., ge=1)
+    result: AttemptResult
+    error_message: Optional[str] = Field(None, min_length=1)
+    prompt_tokens: Optional[int] = Field(None, ge=0)
+    completion_tokens: Optional[int] = Field(None, ge=0)
+
+    @model_validator(mode="after")
+    def _shape_matches_result(self) -> "StageAttempt":
+        if msg := _attempt_shape_error(self.result, self.error_message,
+                                       self.prompt_tokens, self.completion_tokens):
+            raise ValueError(msg)
+        return self
 
 
-class DocumentTokenUsage(BaseModel):
-    """Structurally identical to TokenUsage apart from the stage type -- same reasoning
-    as the StageError/DocumentStageError split: a shared PipelineStage | DocumentStage
-    union would let a RequirementRunRecord's usage list name a document stage again."""
+class DocumentStageAttempt(BaseModel):
+    """Structurally identical to StageAttempt apart from the stage type -- same
+    PipelineStage/DocumentStage split reasoning as TokenUsage/DocumentTokenUsage and
+    StageError/DocumentStageError before it."""
     stage: DocumentStage
-    prompt_tokens: int = Field(..., ge=0)
-    completion_tokens: int = Field(..., ge=0)
+    invocation_id: NonEmptyStr
+    attempt_number: int = Field(..., ge=1)
+    result: AttemptResult
+    error_message: Optional[str] = Field(None, min_length=1)
+    prompt_tokens: Optional[int] = Field(None, ge=0)
+    completion_tokens: Optional[int] = Field(None, ge=0)
+
+    @model_validator(mode="after")
+    def _shape_matches_result(self) -> "DocumentStageAttempt":
+        if msg := _attempt_shape_error(self.result, self.error_message,
+                                       self.prompt_tokens, self.completion_tokens):
+            raise ValueError(msg)
+        return self
+
+
+def _group_attempts_by_invocation(attempts: list) -> dict[str, list]:
+    """Groups a flat attempt log into per-invocation runs, keyed by invocation_id,
+    preserving first-appearance order (plain dict insertion order). Attempts within one
+    call_stage()/call_document_stage() invocation are always contiguous -- the retry
+    loop runs straight through before any other invocation can be appended -- which is
+    exactly what _attempts_are_well_formed (below) checks, not assumes."""
+    groups: dict[str, list] = {}
+    for a in attempts:
+        groups.setdefault(a.invocation_id, []).append(a)
+    return groups
+
+
+def _attempts_are_well_formed(attempts: list, where: str) -> None:
+    """Shared invariant for RequirementRunRecord.attempts / DocumentRunRecord.attempts:
+
+    - one invocation_id names exactly one stage (catches an id reused across calls);
+    - attempt numbers within an invocation are exactly 1..N, in that order (catches
+      gaps, duplicates, and out-of-order entries with one comparison -- a dedicated
+      `_require_unique` on (invocation_id, attempt_number) was tried and deleted after
+      mutation-testing proved it unreachable: any duplicate number inside one group
+      already breaks that group's list from equalling range(1, len+1), so this single
+      comparison was always the one actually catching it. Per CLAUDE.md, "don't write
+      a check that can't fire." See
+      docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md);
+    - at most one SUCCESS per invocation, and only as the last attempt (a retry loop
+      stops the moment a call succeeds);
+    - attempts for one invocation are contiguous in the flat list -- once the list
+      moves on to a different invocation_id, the earlier one may not reappear, since no
+      real call sequence can produce that interleaving.
+
+    See docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    """
+    seen_ids: set[str] = set()
+    prev_id: Optional[str] = None
+    for a in attempts:
+        if a.invocation_id != prev_id:
+            if a.invocation_id in seen_ids:
+                raise ValueError(
+                    f"{where}: attempts for invocation_id {a.invocation_id!r} are not "
+                    "contiguous -- another invocation's attempts appear in between"
+                )
+            seen_ids.add(a.invocation_id)
+            prev_id = a.invocation_id
+
+    for invocation_id, group in _group_attempts_by_invocation(attempts).items():
+        stages = {a.stage for a in group}
+        if len(stages) > 1:
+            raise ValueError(
+                f"{where}: invocation_id {invocation_id!r} names more than one stage: "
+                f"{sorted(s.value for s in stages)}"
+            )
+        numbers = [a.attempt_number for a in group]
+        if numbers != list(range(1, len(group) + 1)):
+            raise ValueError(
+                f"{where}: invocation_id {invocation_id!r} attempt_numbers are "
+                f"{numbers}, expected 1..{len(group)} in order with no gaps"
+            )
+        # One check does the work of "at most one SUCCESS" AND "SUCCESS must be last"
+        # combined: successes[0] is the FIRST success's index (enumerate gives sorted,
+        # distinct indices), so it can only equal the final position len(group)-1 when
+        # there is exactly one success in the group. A hand-written second check for
+        # "len(successes) > 1" was tried and proved unreachable by mutation -- whenever
+        # 2+ successes exist, the smallest of their indices is strictly less than the
+        # last position, so THIS check always catches it first. Deleted per CLAUDE.md
+        # ("don't write a check that can't fire"): unreachable means untestable, which
+        # means untested. See
+        # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+        successes = [i for i, a in enumerate(group) if a.result is AttemptResult.SUCCESS]
+        if successes and successes[0] != len(group) - 1:
+            raise ValueError(
+                f"{where}: invocation_id {invocation_id!r} has a SUCCESS attempt that "
+                "is not the last one -- a retry loop stops the moment a call succeeds "
+                "(this also covers more than one SUCCESS in the same invocation)"
+            )
+
+
+def _errors_agree_with_attempts(
+    errors: list, attempts: list, where: str,
+    backward_exempt_stages: frozenset = frozenset(),
+    backward_exemption_active: bool = False,
+) -> None:
+    """Shared agreement check for StageError-vs-StageAttempt and
+    DocumentStageError-vs-DocumentStageAttempt. Two directions:
+
+    Forward -- every error must reference a real, matching, failed invocation: same
+    stage, not a SUCCESS, kind/message/retry_count agree with that invocation's final
+    attempt. No exceptions, at either level (schema version 1.1: a StageError with no
+    backing invocation is invalid).
+
+    Backward -- every failed invocation must be summarised by some error, UNLESS its
+    stage is in backward_exempt_stages AND backward_exemption_active is True -- the one
+    place the pipeline intentionally deletes an error that used to exist: a
+    RequirementRunRecord with outcome=CAP_STOPPED strips errors naming
+    STRATEGY_SELECTOR/TEST_GENERATOR (required by _outcome_matches_contents) but never
+    strips the append-only attempts log. DocumentRunRecord calls this with
+    backward_exempt_stages empty, since nothing strips DocumentStageError entries.
+
+    See docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    """
+    _require_unique([e.invocation_id for e in errors], "invocation_id", f"{where} errors")
+
+    by_invocation = _group_attempts_by_invocation(attempts)
+
+    for err in errors:
+        group = by_invocation.get(err.invocation_id)
+        if group is None:
+            raise ValueError(
+                f"{where}: error for {err.stage.value!r} references invocation_id "
+                f"{err.invocation_id!r}, which has no matching attempts"
+            )
+        final = group[-1]
+        if final.stage != err.stage:
+            raise ValueError(
+                f"{where}: error claims stage {err.stage.value!r}, but invocation "
+                f"{err.invocation_id!r} is for {final.stage.value!r}"
+            )
+        if final.result is AttemptResult.SUCCESS:
+            raise ValueError(
+                f"{where}: error references invocation {err.invocation_id!r}, whose "
+                "final attempt succeeded -- an error cannot summarise a successful call"
+            )
+        expected_kind = _ATTEMPT_RESULT_TO_FAILURE_KIND[final.result]
+        if err.kind != expected_kind:
+            raise ValueError(
+                f"{where}: error kind is {err.kind.value!r}, but invocation "
+                f"{err.invocation_id!r}'s final attempt was {final.result.value!r} "
+                f"(expected kind {expected_kind.value!r})"
+            )
+        if err.message != final.error_message:
+            raise ValueError(
+                f"{where}: error message does not match invocation "
+                f"{err.invocation_id!r}'s final attempt"
+            )
+        if err.retry_count != len(group) - 1:
+            raise ValueError(
+                f"{where}: error retry_count is {err.retry_count}, but invocation "
+                f"{err.invocation_id!r} has {len(group)} attempts (expected "
+                f"retry_count={len(group) - 1})"
+            )
+
+    covered = {e.invocation_id for e in errors}
+    for invocation_id, group in by_invocation.items():
+        final = group[-1]
+        if final.result is AttemptResult.SUCCESS or invocation_id in covered:
+            continue
+        if backward_exemption_active and final.stage in backward_exempt_stages:
+            continue
+        raise ValueError(
+            f"{where}: invocation {invocation_id!r} ({final.stage.value!r}) ended in "
+            f"failure but no error references it"
+        )
 
 
 class StageError(BaseModel):
     # An enum rather than a free string so "which stage fails most" stays countable --
     # "classifier" vs "Classifier" would silently split the tally. See DESIGN_NOTES.md.
     stage: PipelineStage
+    # Which attempts-log invocation this error summarises -- the direct link that
+    # replaces matching by list position or by aggregating across invocations. See
+    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    invocation_id: NonEmptyStr
     kind: FailureKind
     message: NonEmptyStr
     # Retries attempted *before* giving up and recording this error, so 0 means it
@@ -785,6 +1023,7 @@ class DocumentStageError(BaseModel):
     # which is the exact thing the split exists to prevent. Two duplicated fields is a
     # cheaper price than that hole. See DESIGN_NOTES.md.
     stage: DocumentStage
+    invocation_id: NonEmptyStr
     kind: FailureKind
     message: NonEmptyStr
     retry_count: int = Field(0, ge=0)
@@ -906,13 +1145,12 @@ class RequirementRunRecord(BaseModel):
     outcome: RunOutcome = RunOutcome.IN_PROGRESS
     # A list, and allowed on any outcome: a stage that failed and then succeeded on a
     # retry keeps its failure on record, so "how many requirements needed a retry" stays
-    # countable. Symmetric with DocumentRunRecord.errors.
-    #
-    # One asymmetry IS justified: the document record allows at most one error per stage
-    # (each document-level stage runs once). Here the Quality Checker and Refiner run
-    # once per round, so the same stage can legitimately fail more than once in one
-    # requirement -- duplicates are allowed. Which round a failure happened in is not
-    # recorded; add `at_revision` to StageError if that ever needs tracing.
+    # countable. Symmetric with DocumentRunRecord.errors -- both now allow more than one
+    # error per stage (a document-level stage can be retried across multiple manual
+    # `retry_document_stage` calls, each its own invocation; here the Quality Checker
+    # and Refiner run once per round, so the same stage can legitimately fail more than
+    # once in one requirement). Each error is linked to the invocation that produced it
+    # via `invocation_id`; which round a failure happened in is derivable from that.
     errors: list[StageError] = Field(default_factory=list)
     # Required on both cap outcomes, forbidden on every other one -- this free text is
     # the audit trail the "ask the human at the cap" decision was chosen for, so a cap
@@ -931,7 +1169,31 @@ class RequirementRunRecord(BaseModel):
     rounds: list[RefinementRound] = Field(default_factory=list)
     test_strategy: Optional[TestStrategy] = None
     test_plan: Optional[TestPlan] = None
-    usage: list[TokenUsage] = Field(default_factory=list)
+    # The complete log of every call_stage() attempt for this requirement, success or
+    # failure -- source of truth for token totals (see total_tokens) and for what each
+    # StageError in `errors` summarises (see _errors_agree_with_attempts). Replaces the
+    # old TokenUsage-only log. See
+    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    attempts: list[StageAttempt] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _attempts_well_formed(self) -> "RequirementRunRecord":
+        _attempts_are_well_formed(self.attempts, "RequirementRunRecord.attempts")
+        return self
+
+    @model_validator(mode="after")
+    def _errors_agree_with_final_attempts(self) -> "RequirementRunRecord":
+        # CAP_STOPPED strips errors naming STRATEGY_SELECTOR/TEST_GENERATOR (required by
+        # _outcome_matches_contents below) but never strips attempts, which is
+        # append-only -- so a failed invocation of either stage surviving with no error
+        # is expected specifically here, and nowhere else.
+        _errors_agree_with_attempts(
+            self.errors, self.attempts, "RequirementRunRecord",
+            backward_exempt_stages=frozenset(
+                {PipelineStage.STRATEGY_SELECTOR, PipelineStage.TEST_GENERATOR}),
+            backward_exemption_active=self.outcome is RunOutcome.CAP_STOPPED,
+        )
+        return self
 
     @model_validator(mode="after")
     def _outcome_matches_contents(self) -> "RequirementRunRecord":
@@ -1227,12 +1489,15 @@ class RequirementRunRecord(BaseModel):
         return history
 
     # Cost at any price table, at any point: tokens x price, computed by the caller.
-    # A stage retried twice then succeeded shows 3 entries here -- once per call that
-    # returned, including the two that failed validation and got thrown away.
+    # A stage retried twice then succeeded shows 3 attempt rows here -- one per try,
+    # including the two that failed. Only attempts that recorded tokens contribute
+    # (SUCCESS and VALIDATION_FAILURE always do; TRANSPORT_FAILURE never does;
+    # OTHER_FAILURE does only when they happened to be available).
     @computed_field
     @property
     def total_tokens(self) -> int:
-        return sum(u.prompt_tokens + u.completion_tokens for u in self.usage)
+        return sum(a.prompt_tokens + a.completion_tokens for a in self.attempts
+                   if a.prompt_tokens is not None)
 
 
 # ---------------------------------------------------------------------------
@@ -1324,7 +1589,13 @@ class RunMetadata(BaseModel):
     # catching before it reaches the API.
     # If per-stage temperature is ever needed, add it to StageConfig rather than here.
     temperature: float = Field(1.0, ge=0.0, le=2.0)
-    schema_version: NonEmptyStr = "1.0"
+    # 1.0 -> 1.1 (2026-08-08): RequirementRunRecord/DocumentRunRecord's usage field was
+    # replaced by the per-attempt log (attempts: list[StageAttempt/DocumentStageAttempt]),
+    # and StageError/DocumentStageError gained invocation_id. No real run predates this
+    # -- nothing to migrate -- the bump exists so a future reader can tell the two
+    # record shapes apart. See
+    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    schema_version: NonEmptyStr = "1.1"
 
     @model_validator(mode="after")
     def _started_at_is_timezone_aware(self) -> "RunMetadata":
@@ -1378,27 +1649,43 @@ class DocumentRunRecord(BaseModel):
     # would legitimately be missing.
     metadata: RunMetadata
     outcome: DocumentOutcome = DocumentOutcome.IN_PROGRESS
-    # A list, not a single error: the Consistency Checker and Dependency Mapper run
-    # independently, so both can fail in one run (cardinality audit, checklist lens 1).
+    # A list: the Consistency Checker and Dependency Mapper run independently, so both
+    # can fail in one run (cardinality audit, checklist lens 1) -- and, since
+    # retry_document_stage no longer merges repeated failures into one entry, a single
+    # stage retried more than once can also produce more than one error, each linked to
+    # its own invocation via invocation_id. Symmetric with RequirementRunRecord.errors.
     errors: list[DocumentStageError] = Field(default_factory=list)
     consistency_report: Optional[ConsistencyReport] = None
     dependency_report: Optional[DependencyReport] = None
     requirement_records: list[RequirementRunRecord] = Field(default_factory=list)
-    usage: list[DocumentTokenUsage] = Field(default_factory=list)
+    # The complete log of every call_document_stage() attempt, success or failure --
+    # source of truth for token totals (see document_stage_tokens) and for what each
+    # DocumentStageError in `errors` summarises. Replaces the old
+    # DocumentTokenUsage-only log. See
+    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    attempts: list[DocumentStageAttempt] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _attempts_well_formed(self) -> "DocumentRunRecord":
+        _attempts_are_well_formed(self.attempts, "DocumentRunRecord.attempts")
+        return self
+
+    @model_validator(mode="after")
+    def _errors_agree_with_final_attempts(self) -> "DocumentRunRecord":
+        # No exemption at document level -- nothing ever strips a DocumentStageError,
+        # unlike RequirementRunRecord's CAP_STOPPED case.
+        _errors_agree_with_attempts(self.errors, self.attempts, "DocumentRunRecord")
+        return self
 
     @model_validator(mode="after")
     def _outcome_matches_contents(self) -> "DocumentRunRecord":
         o = self.outcome
         _apply_outcome_rule(self, o.value, _DOCUMENT_OUTCOME_RULES[o])
 
-        # A document-level stage runs once, so it can fail at most once per run.
-        # Retries are counted in DocumentStageError.retry_count, not by repeating the
-        # entry -- two entries for one stage would double-count it in failure tallies.
-        failed: set[DocumentStage] = set()
-        for err in self.errors:
-            if err.stage in failed:
-                raise ValueError(f"more than one error recorded for {err.stage.value}")
-            failed.add(err.stage)
+        # Duplicates are now allowed (see `errors` field docstring above) -- this set is
+        # still needed for the DEGRADED "a missing report must have a recorded failure
+        # explaining it" check just below, which only cares which stages failed at all.
+        failed: set[DocumentStage] = {err.stage for err in self.errors}
 
         # `errors` is a LOG OF FAILED ATTEMPTS, not a statement of current state. A
         # stage may therefore hold both an error (it failed once) and a report (a later
@@ -1537,4 +1824,5 @@ class DocumentRunRecord(BaseModel):
     @computed_field
     @property
     def document_stage_tokens(self) -> int:
-        return sum(u.prompt_tokens + u.completion_tokens for u in self.usage)
+        return sum(a.prompt_tokens + a.completion_tokens for a in self.attempts
+                   if a.prompt_tokens is not None)

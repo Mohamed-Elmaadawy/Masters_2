@@ -29,14 +29,14 @@ from datetime import datetime, timezone
 from pydantic import ValidationError
 
 from design.schemas import (
-    ALL_STAGES, Classification, ELIGIBLE_TECHNIQUES, ClarifyingQuestion, ConsistencyConflict,
-    ConsistencyReport, DependencyLink, DependencyReport, DocumentOutcome,
-    DocumentRunRecord, DocumentStage, DocumentStageError, FailureKind, Issue, IssueCategory,
-    PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
-    RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunMetadata,
-    RunOutcome, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
-    TestTechnique, TokenUsage, DocumentTokenUsage, fields_carrying_requirement_id,
-    prompt_fingerprint,
+    ALL_STAGES, AttemptResult, Classification, ELIGIBLE_TECHNIQUES, ClarifyingQuestion,
+    ConsistencyConflict, ConsistencyReport, DependencyLink, DependencyReport,
+    DocumentOutcome, DocumentRunRecord, DocumentStage, DocumentStageAttempt,
+    DocumentStageError, FailureKind, Issue, IssueCategory, PipelineStage, QualityReport,
+    RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn, Requirement,
+    RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome, StageAttempt,
+    StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
+    TestTechnique, fields_carrying_requirement_id, prompt_fingerprint,
 )
 from design.schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES
 
@@ -135,6 +135,41 @@ def mk_round(n, text, issues=(), questions=(), answers=(), rewrite_to=None,
         suppressed_issue_ids=list(suppressed))
 
 
+_KIND_TO_RESULT = {FailureKind.TRANSPORT: AttemptResult.TRANSPORT_FAILURE,
+                  FailureKind.VALIDATION: AttemptResult.VALIDATION_FAILURE,
+                  FailureKind.OTHER: AttemptResult.OTHER_FAILURE}
+
+
+def failed_stage(stage, invocation_id, kind=FailureKind.TRANSPORT, message="429",
+                 attempts=1) -> tuple:
+    """A StageError plus the matching minimal StageAttempt log an exhausted
+    `attempts`-try invocation would produce. Every test that hand-builds a StageError
+    needs an attempts log agreeing with it (schema 1.1 requires it, no exceptions) --
+    this is the one place that shape is assembled, so a test only states what it's
+    actually varying (stage / kind / message / how many tries)."""
+    result = _KIND_TO_RESULT[kind]
+    tokens = dict(prompt_tokens=10, completion_tokens=5) if result is AttemptResult.VALIDATION_FAILURE else {}
+    log = [StageAttempt(stage=stage, invocation_id=invocation_id, attempt_number=i,
+                        result=result, error_message=message, **tokens)
+           for i in range(1, attempts + 1)]
+    err = StageError(stage=stage, invocation_id=invocation_id, kind=kind, message=message,
+                     retry_count=attempts - 1)
+    return err, log
+
+
+def failed_document_stage(stage, invocation_id, kind=FailureKind.TRANSPORT, message="429",
+                          attempts=1) -> tuple:
+    """DocumentStageError/DocumentStageAttempt mirror of failed_stage."""
+    result = _KIND_TO_RESULT[kind]
+    tokens = dict(prompt_tokens=10, completion_tokens=5) if result is AttemptResult.VALIDATION_FAILURE else {}
+    log = [DocumentStageAttempt(stage=stage, invocation_id=invocation_id, attempt_number=i,
+                                result=result, error_message=message, **tokens)
+           for i in range(1, attempts + 1)]
+    err = DocumentStageError(stage=stage, invocation_id=invocation_id, kind=kind,
+                             message=message, retry_count=attempts - 1)
+    return err, log
+
+
 # One passing round: the clean, first-try path.
 ROUNDS_CLEAN = [mk_round(1, T0)]
 # Refine once, then pass: the ordinary refined path.
@@ -159,10 +194,10 @@ VALID_RECORDS: dict[RunOutcome, dict] = {
                                    cap_reason="Referent still disputed; tests useful."),
     RunOutcome.CAP_STOPPED: dict(classification=CLS, rounds=ROUNDS_CAPPED,
                                  cap_reason="Too defective to test meaningfully."),
-    RunOutcome.ERROR: dict(errors=[StageError(stage=PipelineStage.CLASSIFIER,
-                                              kind=FailureKind.TRANSPORT,
-                                              message="429 rate limit", retry_count=3)]),
 }
+CLASSIFIER_ERR, CLASSIFIER_ATTEMPTS = failed_stage(
+    PipelineStage.CLASSIFIER, "inv-classifier-err", message="429 rate limit", attempts=4)
+VALID_RECORDS[RunOutcome.ERROR] = dict(errors=[CLASSIFIER_ERR], attempts=CLASSIFIER_ATTEMPTS)
 RECORD_EXTRAS = {"cap_reason": "x", "classification": CLS,
                  "test_strategy": STRATEGY, "test_plan": PLAN}
 
@@ -176,15 +211,20 @@ CONS = ConsistencyReport(doc_id=REQ_SET.doc_id, conflicts=[ConsistencyConflict(
 DEP = DependencyReport(doc_id=REQ_SET.doc_id, dependencies=[DependencyLink(
     from_requirement_id="THEMAS-REQ-D", to_requirement_id="THEMAS-REQ-B",
     explanation="D's limits are defined by B.")])
-CE = DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, kind=FailureKind.TRANSPORT,
-                        message="429", retry_count=2)
-DE = DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, kind=FailureKind.VALIDATION,
-                        message="malformed JSON")
+CE, CE_ATTEMPTS = failed_document_stage(
+    DocumentStage.CONSISTENCY_CHECKER, "inv-consistency-1", message="429", attempts=3)
+# A second, independent manual retry of the SAME stage -- a different invocation_id,
+# proving the stage can legitimately fail more than once (see test_gap3_document_record).
+CE_RETRY, CE_RETRY_ATTEMPTS = failed_document_stage(
+    DocumentStage.CONSISTENCY_CHECKER, "inv-consistency-2", message="429 again", attempts=1)
+DE, DE_ATTEMPTS = failed_document_stage(
+    DocumentStage.DEPENDENCY_MAPPER, "inv-dependency-1", kind=FailureKind.VALIDATION,
+    message="malformed JSON", attempts=1)
 
 VALID_DOCS: dict[DocumentOutcome, dict] = {
     DocumentOutcome.IN_PROGRESS: dict(),
     DocumentOutcome.COMPLETED: dict(consistency_report=CONS, dependency_report=DEP),
-    DocumentOutcome.DEGRADED: dict(errors=[CE], dependency_report=DEP),
+    DocumentOutcome.DEGRADED: dict(errors=[CE], dependency_report=DEP, attempts=CE_ATTEMPTS),
 }
 DOC_EXTRAS = {"consistency_report": CONS, "dependency_report": DEP}
 # Aliases used by the reference tests, for readability at the call sites.
@@ -279,13 +319,13 @@ def test_gap2_requirement_outcomes() -> None:
     for outcome, kw in VALID_RECORDS.items():
         accepts(f"valid {outcome.value} record", lambda o=outcome, k=kw: rec(outcome=o, **k))
     ok("bare record defaults to IN_PROGRESS", rec().outcome is RunOutcome.IN_PROGRESS)
-    ok("classifier failure is persistable", rec(outcome=RunOutcome.ERROR,
-        errors=[StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.TRANSPORT,
-                           message="429")]).errors[0].stage
-        is PipelineStage.CLASSIFIER)
+    cls_err, cls_attempts = failed_stage(PipelineStage.CLASSIFIER, "inv-classifier-persist")
+    ok("classifier failure is persistable",
+       rec(outcome=RunOutcome.ERROR, errors=[cls_err], attempts=cls_attempts).errors[0].stage
+       is PipelineStage.CLASSIFIER)
     rejects("negative retry_count",
-            lambda: StageError(stage=PipelineStage.REFINER_QUESTIONER, kind=FailureKind.TRANSPORT,
-                               message="x", retry_count=-1))
+            lambda: StageError(stage=PipelineStage.REFINER_QUESTIONER, invocation_id="i",
+                               kind=FailureKind.TRANSPORT, message="x", retry_count=-1))
 
     override_rounds = [
         mk_round(1, T0, [VAGUE], [("Q1", VAGUE)],
@@ -329,43 +369,309 @@ def test_failure_kind() -> None:
     """FailureKind distinguishes why a stage call failed -- see the design doc."""
     section("FailureKind")
     rejects("StageError without kind",
-            lambda: StageError(stage=PipelineStage.CLASSIFIER, message="x"))
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i", message="x"))
     accepts("StageError with kind=TRANSPORT",
-            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.TRANSPORT,
-                               message="429"))
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                               kind=FailureKind.TRANSPORT, message="429"))
     accepts("StageError with kind=VALIDATION",
-            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.VALIDATION,
-                               message="schema rejected"))
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                               kind=FailureKind.VALIDATION, message="schema rejected"))
     accepts("StageError with kind=OTHER",
-            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.OTHER,
-                               message="KeyError: 'foo'"))
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                               kind=FailureKind.OTHER, message="KeyError: 'foo'"))
     accepts("DocumentStageError with kind",
             lambda: DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER,
-                                       kind=FailureKind.TRANSPORT, message="429"))
+                                       invocation_id="i", kind=FailureKind.TRANSPORT,
+                                       message="429"))
+    rejects("StageError without invocation_id",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, kind=FailureKind.TRANSPORT,
+                               message="429"))
+    rejects("StageError with empty invocation_id",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="",
+                               kind=FailureKind.TRANSPORT, message="429"))
 
 
-def test_token_usage() -> None:
-    """TokenUsage is a log mirroring StageError/DocumentStageError -- see the design doc."""
-    section("Token usage")
-    u1 = TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=100, completion_tokens=20)
-    u2 = TokenUsage(stage=PipelineStage.QUALITY_CHECKER, prompt_tokens=50, completion_tokens=10)
-    r = rec(usage=[u1, u2])
-    ok("total_tokens sums all entries", r.total_tokens == 180)
-    ok("empty usage sums to zero", rec().total_tokens == 0)
-    rejects("TokenUsage rejects negative prompt_tokens",
-            lambda: TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=-1, completion_tokens=0))
-    rejects("TokenUsage rejects negative completion_tokens",
-            lambda: TokenUsage(stage=PipelineStage.CLASSIFIER, prompt_tokens=0, completion_tokens=-1))
+def test_stage_attempt_shape() -> None:
+    """Per-attempt observability: the result/error_message/tokens shape rule shared by
+    StageAttempt/DocumentStageAttempt. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
+    section("StageAttempt / DocumentStageAttempt shape")
+    mk = lambda **kw: StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                                   attempt_number=1, **kw)
+    accepts("SUCCESS with tokens, no error_message",
+            lambda: mk(result=AttemptResult.SUCCESS, prompt_tokens=10, completion_tokens=5))
+    rejects("SUCCESS with an error_message",
+            lambda: mk(result=AttemptResult.SUCCESS, prompt_tokens=10, completion_tokens=5,
+                       error_message="x"))
+    rejects("SUCCESS without tokens",
+            lambda: mk(result=AttemptResult.SUCCESS))
+    accepts("VALIDATION_FAILURE with tokens and an error_message",
+            lambda: mk(result=AttemptResult.VALIDATION_FAILURE, prompt_tokens=10,
+                       completion_tokens=5, error_message="schema rejected"))
+    rejects("VALIDATION_FAILURE without an error_message",
+            lambda: mk(result=AttemptResult.VALIDATION_FAILURE, prompt_tokens=10, completion_tokens=5))
+    rejects("VALIDATION_FAILURE without tokens",
+            lambda: mk(result=AttemptResult.VALIDATION_FAILURE, error_message="schema rejected"))
+    accepts("TRANSPORT_FAILURE with an error_message, no tokens",
+            lambda: mk(result=AttemptResult.TRANSPORT_FAILURE, error_message="429"))
+    rejects("TRANSPORT_FAILURE without an error_message",
+            lambda: mk(result=AttemptResult.TRANSPORT_FAILURE))
+    rejects("TRANSPORT_FAILURE carrying tokens",
+            lambda: mk(result=AttemptResult.TRANSPORT_FAILURE, error_message="429",
+                       prompt_tokens=10, completion_tokens=5))
+    accepts("OTHER_FAILURE with an error_message, no tokens",
+            lambda: mk(result=AttemptResult.OTHER_FAILURE, error_message="KeyError: 'foo'"))
+    accepts("OTHER_FAILURE with an error_message AND tokens (neither forced)",
+            lambda: mk(result=AttemptResult.OTHER_FAILURE, error_message="KeyError: 'foo'",
+                       prompt_tokens=10, completion_tokens=5))
+    rejects("OTHER_FAILURE without an error_message",
+            lambda: mk(result=AttemptResult.OTHER_FAILURE))
+    rejects("prompt_tokens without completion_tokens",
+            lambda: mk(result=AttemptResult.SUCCESS, prompt_tokens=10))
+    rejects("attempt_number must be >= 1",
+            lambda: StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                                 attempt_number=0, result=AttemptResult.SUCCESS,
+                                 prompt_tokens=10, completion_tokens=5))
+    rejects("invocation_id cannot be empty",
+            lambda: StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="",
+                                 attempt_number=1, result=AttemptResult.SUCCESS,
+                                 prompt_tokens=10, completion_tokens=5))
+    accepts("DocumentStageAttempt follows the identical shape rule",
+            lambda: DocumentStageAttempt(stage=DocumentStage.CONSISTENCY_CHECKER,
+                                         invocation_id="i", attempt_number=1,
+                                         result=AttemptResult.SUCCESS, prompt_tokens=10,
+                                         completion_tokens=5))
 
-    du1 = DocumentTokenUsage(stage=DocumentStage.CONSISTENCY_CHECKER, prompt_tokens=200, completion_tokens=40)
-    du2 = DocumentTokenUsage(stage=DocumentStage.DEPENDENCY_MAPPER, prompt_tokens=300, completion_tokens=60)
-    d = doc(usage=[du1, du2])
-    ok("document_stage_tokens sums only document-level usage", d.document_stage_tokens == 600)
+
+def _success(stage, invocation_id, attempt_number=1, tokens=(10, 5)):
+    return StageAttempt(stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                        result=AttemptResult.SUCCESS, prompt_tokens=tokens[0],
+                        completion_tokens=tokens[1])
+
+
+def test_attempts_well_formed() -> None:
+    """Invocation-shape invariants over RequirementRunRecord.attempts /
+    DocumentRunRecord.attempts: one stage per invocation id, attempt numbers exactly
+    1..N in order, at most one terminal SUCCESS, and no interleaving between
+    invocations. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
+    section("Attempts are well-formed")
+    accepts("a clean two-invocation log", lambda: rec(attempts=[
+        _success(PipelineStage.CLASSIFIER, "inv-1"),
+        _success(PipelineStage.QUALITY_CHECKER, "inv-2")]))
+    accepts("a retry-then-success invocation", lambda: rec(attempts=[
+        StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1", attempt_number=1,
+                    result=AttemptResult.TRANSPORT_FAILURE, error_message="429"),
+        _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=2)]))
+    rejects("one invocation id naming two stages",
+            lambda: rec(attempts=[
+                # A second SUCCESS here would also trip the (separate) "at most one
+                # SUCCESS" check, masking this one -- kept to a single SUCCESS so the
+                # one-stage-per-invocation check is the only possible reason to reject.
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429"),
+                StageAttempt(stage=PipelineStage.QUALITY_CHECKER, invocation_id="inv-1",
+                            attempt_number=2, result=AttemptResult.SUCCESS,
+                            prompt_tokens=1, completion_tokens=1)]))
+    rejects("attempt_number gap (1, 3)",
+            lambda: rec(attempts=[
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429"),
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=3)]))
+    rejects("attempt_number duplicated (1, 1)",
+            lambda: rec(attempts=[
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429"),
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=1)]))
+    rejects("attempt_number out of order (2, 1)",
+            lambda: rec(attempts=[
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=2),
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429")],
+                        # Without a matching error, the errors-agreement check alone
+                        # would already reject this (failed invocation, no error),
+                        # masking whether the numbering check itself fired. Confirmed
+                        # by mutation before this fixture had the error added.
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.TRANSPORT, message="429",
+                                           retry_count=1)]))
+    rejects("two SUCCESS attempts in one invocation",
+            lambda: rec(attempts=[
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=1),
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=2)]))
+    # The next three fixtures end their invocation on a FAILURE, which the (separate)
+    # errors-agreement check would also reject on its own ("failed invocation, no
+    # error") -- masking whichever shape check is actually under test. Each gets a
+    # matching StageError so the shape check under test is the ONLY possible reason
+    # for rejection (verified by mutation: disabling the shape check alone must turn
+    # each of these red).
+    rejects("SUCCESS followed by another attempt in the same invocation",
+            lambda: rec(attempts=[
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=1),
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=2, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429")],
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.TRANSPORT, message="429",
+                                           retry_count=1)]))
+    rejects("invocation A, invocation B, invocation A again -- not contiguous",
+            lambda: rec(attempts=[
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="A",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429"),
+                StageAttempt(stage=PipelineStage.QUALITY_CHECKER, invocation_id="B",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429"),
+                _success(PipelineStage.CLASSIFIER, "A", attempt_number=2)],
+                        # Invocation A's group (by id, not position) is
+                        # [TRANSPORT_FAILURE(1), SUCCESS(2)] -- it ends in success and
+                        # needs no error. Only B ends in failure.
+                        errors=[StageError(stage=PipelineStage.QUALITY_CHECKER, invocation_id="B",
+                                           kind=FailureKind.TRANSPORT, message="429",
+                                           retry_count=0)]))
+    # A dedicated uniqueness check on (invocation_id, attempt_number) was tried and
+    # deleted after mutation-testing proved it unreachable: any duplicate number inside
+    # one invocation always already breaks that group's numbers away from
+    # range(1, len+1), so THIS is the check that actually catches the case below (not
+    # a separate uniqueness mechanism).
+    rejects("duplicate attempt_number within one invocation (1, 1)",
+            lambda: rec(attempts=[
+                _success(PipelineStage.CLASSIFIER, "inv-1", attempt_number=1),
+                StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                            attempt_number=1, result=AttemptResult.TRANSPORT_FAILURE,
+                            error_message="429")],
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.TRANSPORT, message="429",
+                                           retry_count=1)]))
+
+
+# A QUALITY_CHECKER failure, defined once here so test_errors_agree_with_attempts can
+# reuse it to prove the CAP_STOPPED exemption is scoped to STRATEGY_SELECTOR/
+# TEST_GENERATOR specifically, not "any stage under CAP_STOPPED".
+_, _qc_under_cap_stopped_attempts = failed_stage(
+    PipelineStage.QUALITY_CHECKER, "inv-qc-exemption-check")
+
+
+def test_errors_agree_with_attempts() -> None:
+    """StageError/DocumentStageError <-> attempts agreement, both directions, at both
+    levels -- schema version 1.1's direct invocation_id linkage. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
+    section("Errors agree with attempts")
+
+    err, attempts = failed_stage(PipelineStage.CLASSIFIER, "inv-1", attempts=3)
+    accepts("a well-formed error/attempts pair",
+            lambda: rec(outcome=RunOutcome.ERROR, errors=[err], attempts=attempts))
+
+    rejects("error references an invocation_id with no attempts",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER,
+                                           invocation_id="does-not-exist",
+                                           kind=FailureKind.TRANSPORT, message="429")]))
+    rejects("error's stage does not match its invocation's stage",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.QUALITY_CHECKER,
+                                           invocation_id="inv-1", kind=FailureKind.TRANSPORT,
+                                           message="429")], attempts=attempts))
+    rejects("error references an invocation that actually succeeded",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-s",
+                                           kind=FailureKind.TRANSPORT, message="429")],
+                        attempts=[_success(PipelineStage.CLASSIFIER, "inv-s")]))
+    rejects("error kind does not match the invocation's final result",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.VALIDATION, message="429")],
+                        attempts=attempts))
+    rejects("error message does not match the invocation's final attempt",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.TRANSPORT, message="different")],
+                        attempts=attempts))
+    rejects("retry_count does not match attempts - 1",
+            lambda: rec(outcome=RunOutcome.ERROR,
+                        errors=[StageError(stage=PipelineStage.CLASSIFIER, invocation_id="inv-1",
+                                           kind=FailureKind.TRANSPORT, message="429",
+                                           retry_count=99)], attempts=attempts))
+    rejects("two errors cannot reference the same invocation_id",
+            lambda: rec(outcome=RunOutcome.ERROR, errors=[err, err], attempts=attempts))
+
+    tg_err, tg_attempts = failed_stage(PipelineStage.TEST_GENERATOR, "inv-tg")
+    unrelated_err, unrelated_attempts = failed_stage(PipelineStage.CLASSIFIER, "inv-unrelated")
+    rejects("a failed invocation with no error, outcome != CAP_STOPPED",
+            lambda: rec(outcome=RunOutcome.ERROR, errors=[unrelated_err],
+                        attempts=unrelated_attempts + tg_attempts))
+    ok("the same shape IS accepted under CAP_STOPPED for STRATEGY_SELECTOR/TEST_GENERATOR "
+       "-- the pipeline strips exactly those errors, never the attempts",
+       rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS, rounds=ROUNDS_CAPPED,
+           cap_reason="x", attempts=tg_attempts).attempts == tg_attempts)
+    ss_err, ss_attempts = failed_stage(PipelineStage.STRATEGY_SELECTOR, "inv-ss")
+    ok("the CAP_STOPPED exemption also covers STRATEGY_SELECTOR",
+       rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS, rounds=ROUNDS_CAPPED,
+           cap_reason="x", attempts=ss_attempts).attempts == ss_attempts)
+    rejects("the CAP_STOPPED exemption does NOT extend to other stages",
+            lambda: rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS, rounds=ROUNDS_CAPPED,
+                        cap_reason="x", attempts=_qc_under_cap_stopped_attempts))
+    rejects("the exemption does NOT extend to other outcomes for the same stages",
+            lambda: rec(outcome=RunOutcome.ERROR, errors=[unrelated_err],
+                        attempts=unrelated_attempts + tg_attempts, classification=CLS,
+                        rounds=ROUNDS_CAPPED))
+
+    # Document level: identical forward direction, but no CAP_STOPPED-style exemption.
+    d_err, d_attempts = failed_document_stage(DocumentStage.DEPENDENCY_MAPPER, "inv-d", attempts=2)
+    accepts("document-level: a well-formed error/attempts pair",
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[d_err], attempts=d_attempts,
+                        consistency_report=CONS))
+    rejects("document-level: a failed invocation with no error -- no exemption exists",
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, dependency_report=DEP,
+                        attempts=d_attempts))
+
+
+def test_attempts_are_source_of_truth_for_tokens() -> None:
+    """attempts is the ONLY token log now -- total_tokens/document_stage_tokens sum
+    over it directly, including tokens spent on rejected (VALIDATION_FAILURE) output,
+    and excluding TRANSPORT_FAILURE, which never spends any. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
+    section("attempts is the source of truth for token totals")
+    a1 = _success(PipelineStage.CLASSIFIER, "inv-1", tokens=(100, 20))
+    a2 = _success(PipelineStage.QUALITY_CHECKER, "inv-2", tokens=(50, 10))
+    r = rec(attempts=[a1, a2])
+    ok("total_tokens sums all SUCCESS entries", r.total_tokens == 180)
+    ok("empty attempts sums to zero", rec().total_tokens == 0)
+
+    rejected_then_ok = [
+        StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-3", attempt_number=1,
+                    result=AttemptResult.VALIDATION_FAILURE, error_message="bad schema",
+                    prompt_tokens=30, completion_tokens=7),
+        _success(PipelineStage.CLASSIFIER, "inv-3", attempt_number=2, tokens=(15, 3)),
+    ]
+    ok("tokens spent on a rejected validation attempt still count",
+       rec(attempts=rejected_then_ok).total_tokens == 30 + 7 + 15 + 3)
+
+    transport_then_ok = [
+        StageAttempt(stage=PipelineStage.CLASSIFIER, invocation_id="inv-4", attempt_number=1,
+                    result=AttemptResult.TRANSPORT_FAILURE, error_message="429"),
+        _success(PipelineStage.CLASSIFIER, "inv-4", attempt_number=2, tokens=(15, 3)),
+    ]
+    ok("a transport failure contributes zero tokens",
+       rec(attempts=transport_then_ok).total_tokens == 15 + 3)
+
+    du1 = DocumentStageAttempt(stage=DocumentStage.CONSISTENCY_CHECKER, invocation_id="d-1",
+                               attempt_number=1, result=AttemptResult.SUCCESS,
+                               prompt_tokens=200, completion_tokens=40)
+    du2 = DocumentStageAttempt(stage=DocumentStage.DEPENDENCY_MAPPER, invocation_id="d-2",
+                               attempt_number=1, result=AttemptResult.SUCCESS,
+                               prompt_tokens=300, completion_tokens=60)
+    d = doc(attempts=[du1, du2])
+    ok("document_stage_tokens sums only document-level attempts", d.document_stage_tokens == 600)
     ok("document_stage_tokens ignores requirement_records",
-       doc(usage=[du1], requirement_records=[rec(usage=[u1])]).document_stage_tokens == 240)
-    ok("total_tokens is read-only",
-       _raises_attribute_error_total_tokens(r))
-    ok("usage round trips through JSON",
+       doc(attempts=[du1],
+           requirement_records=[rec(attempts=[a1])]).document_stage_tokens == 240)
+    ok("total_tokens is read-only", _raises_attribute_error_total_tokens(r))
+    ok("attempts round trip through JSON",
        RequirementRunRecord.model_validate_json(r.model_dump_json()).total_tokens == 180)
 
 
@@ -475,9 +781,10 @@ def test_gap3_document_record() -> None:
     for outcome, kw in VALID_DOCS.items():
         accepts(f"valid {outcome.value} document", lambda o=outcome, k=kw: doc(outcome=o, **k))
     accepts("both document stages failed",
-            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, DE]))
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, DE],
+                        attempts=CE_ATTEMPTS + DE_ATTEMPTS))
     accepts("mid-run: error recorded while still IN_PROGRESS",
-            lambda: doc(outcome=DocumentOutcome.IN_PROGRESS, errors=[CE]))
+            lambda: doc(outcome=DocumentOutcome.IN_PROGRESS, errors=[CE], attempts=CE_ATTEMPTS))
 
     checked = 0
     for outcome, rule in _DOCUMENT_OUTCOME_RULES.items():
@@ -497,23 +804,32 @@ def test_gap3_document_record() -> None:
     print(f"    ({checked} rules enumerated from _DOCUMENT_OUTCOME_RULES)")
 
     rejects("DEGRADED without the non-failed stage's report",
-            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE]))
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE], attempts=CE_ATTEMPTS))
     # `errors` is a log of failed attempts, not current state -- so a stage that failed
     # once and succeeded on a retry legitimately has both. This is what makes retrying
     # one document stage possible without erasing the failure or redoing the document.
     accepts("COMPLETED carrying an earlier failure (stage retried successfully)",
             lambda: doc(outcome=DocumentOutcome.COMPLETED, consistency_report=CONS,
-                        dependency_report=DEP, errors=[CE]))
+                        dependency_report=DEP, errors=[CE], attempts=CE_ATTEMPTS))
     rejects("DEGRADED with both reports present",
             lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE], consistency_report=CONS,
-                        dependency_report=DEP))
+                        dependency_report=DEP, attempts=CE_ATTEMPTS))
+    dep_missing_err, dep_missing_attempts = failed_document_stage(
+        DocumentStage.DEPENDENCY_MAPPER, "inv-dependency-missing", message="x")
     rejects("a missing report with no failure explaining it",
-            lambda: doc(outcome=DocumentOutcome.DEGRADED,
-                        errors=[DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER,
-                                                   kind=FailureKind.TRANSPORT,
-                                                   message="x")]))
-    rejects("same document stage failing twice",
-            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, CE], dependency_report=DEP))
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[dep_missing_err],
+                        attempts=dep_missing_attempts))
+    # rev 2: document-level retries no longer merge into one entry -- a stage can
+    # legitimately fail across two independent manual retries, each its own invocation
+    # (symmetric with the requirement-level "same stage failing in two different
+    # rounds" case below). What's still rejected is the SAME invocation being recorded
+    # as an error twice.
+    rejects("the same invocation recorded as an error twice",
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, CE],
+                        dependency_report=DEP, attempts=CE_ATTEMPTS))
+    accepts("the same document stage failing across two different manual retries",
+            lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE, CE_RETRY],
+                        dependency_report=DEP, attempts=CE_ATTEMPTS + CE_RETRY_ATTEMPTS))
     rejects("record for a requirement not in the set",
             lambda: doc(requirement_records=[RequirementRunRecord(
                 requirement=Requirement(id="NOT-IN-SET", text="x"), run_id=META.run_id)]))
@@ -525,10 +841,10 @@ def test_gap3_document_record() -> None:
                                         source_doc_id="themas-fischbach2022"),
                 run_id=META.run_id)]))
     rejects("StageError cannot name a document stage",
-            lambda: StageError(stage=DocumentStage.CONSISTENCY_CHECKER,
+            lambda: StageError(stage=DocumentStage.CONSISTENCY_CHECKER, invocation_id="i",
                                kind=FailureKind.TRANSPORT, message="x"))
     rejects("DocumentStageError cannot name a requirement stage",
-            lambda: DocumentStageError(stage=PipelineStage.CLASSIFIER,
+            lambda: DocumentStageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
                                        kind=FailureKind.TRANSPORT, message="x"))
 
     ok("fresh document: everything pending",
@@ -537,10 +853,10 @@ def test_gap3_document_record() -> None:
     ok("a finished requirement drops out of pending",
        doc(requirement_records=[finished]).pending_requirement_ids == [REQ_G.id, REQ_B.id])
     # The three states that must STAY pending, so a resume pass picks them up again.
+    tg_err, tg_attempts = failed_stage(PipelineStage.TEST_GENERATOR, "inv-tg-pending", attempts=4)
     ok("an errored requirement stays pending",
-       doc(requirement_records=[rec(outcome=RunOutcome.ERROR, errors=[StageError(
-           stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
-           message="429", retry_count=3)])]
+       doc(requirement_records=[rec(outcome=RunOutcome.ERROR, errors=[tg_err],
+                                    attempts=tg_attempts)]
            ).pending_requirement_ids == [REQ_D.id, REQ_G.id, REQ_B.id])
     ok("an interrupted (IN_PROGRESS) requirement stays pending",
        doc(requirement_records=[rec()]).pending_requirement_ids
@@ -1040,13 +1356,14 @@ def test_retry_without_redoing_everything() -> None:
     section("Retry without redoing everything")
 
     finished = rec(outcome=RunOutcome.COMPLETED, **VALID_RECORDS[RunOutcome.COMPLETED])
-    degraded = doc(outcome=DocumentOutcome.DEGRADED, errors=[CE], dependency_report=DEP,
-                   requirement_records=[finished])
+    degraded = doc(outcome=DocumentOutcome.DEGRADED, errors=[CE], attempts=CE_ATTEMPTS,
+                   dependency_report=DEP, requirement_records=[finished])
     ok("degraded document is missing the failed stage's report",
        degraded.consistency_report is None)
 
-    retried = doc(outcome=DocumentOutcome.COMPLETED, errors=[CE], consistency_report=CONS,
-                  dependency_report=DEP, requirement_records=[finished])
+    retried = doc(outcome=DocumentOutcome.COMPLETED, errors=[CE], attempts=CE_ATTEMPTS,
+                  consistency_report=CONS, dependency_report=DEP,
+                  requirement_records=[finished])
     ok("the retry produces a completed document", retried.outcome is DocumentOutcome.COMPLETED)
     ok("the original failure is still on record",
        retried.errors[0].stage is DocumentStage.CONSISTENCY_CHECKER
@@ -1054,9 +1371,8 @@ def test_retry_without_redoing_everything() -> None:
     ok("the already-completed requirement work is kept",
        [r.requirement.id for r in retried.requirement_records] == [REQ_D.id])
 
-    errored = rec(outcome=RunOutcome.ERROR,
-                  errors=[StageError(stage=PipelineStage.TEST_GENERATOR,
-                                     kind=FailureKind.TRANSPORT, message="429")])
+    tg_err_a, tg_attempts_a = failed_stage(PipelineStage.TEST_GENERATOR, "inv-tg-a")
+    errored = rec(outcome=RunOutcome.ERROR, errors=[tg_err_a], attempts=tg_attempts_a)
     ok("an errored requirement is offered for retry",
        REQ_D.id in doc(requirement_records=[errored]).pending_requirement_ids)
     ok("retrying it in place is accepted",
@@ -1064,39 +1380,42 @@ def test_retry_without_redoing_everything() -> None:
 
     # Symmetry with the document record: a requirement-level failure survives a
     # successful retry too, so "how many requirements needed a retry" stays countable.
-    gen_failed = StageError(stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
-                            message="429", retry_count=3)
+    gen_failed, gen_failed_attempts = failed_stage(
+        PipelineStage.TEST_GENERATOR, "inv-tg-b", attempts=4)
     accepts("COMPLETED keeping an earlier stage failure",
-            lambda: rec(outcome=RunOutcome.COMPLETED,
-                        errors=[gen_failed], **VALID_RECORDS[RunOutcome.COMPLETED]))
+            lambda: rec(outcome=RunOutcome.COMPLETED, errors=[gen_failed],
+                        attempts=gen_failed_attempts, **VALID_RECORDS[RunOutcome.COMPLETED]))
     accepts("IN_PROGRESS carrying a failure it will retry",
-            lambda: rec(errors=[gen_failed], classification=CLS))
+            lambda: rec(errors=[gen_failed], attempts=gen_failed_attempts, classification=CLS))
     rejects("ERROR with no error recorded", lambda: rec(outcome=RunOutcome.ERROR))
     # The Quality Checker and Refiner run once per round, so unlike a document-level
-    # stage the same stage can legitimately fail more than once for one requirement.
-    qc = lambda msg: StageError(stage=PipelineStage.QUALITY_CHECKER, kind=FailureKind.TRANSPORT,
-                                message=msg)
+    # stage the same stage can legitimately fail more than once for one requirement --
+    # now via two distinct invocation ids, one per round.
+    qc = lambda msg, inv: failed_stage(PipelineStage.QUALITY_CHECKER, inv, message=msg)
+    qc1_err, qc1_attempts = qc("429 in round 1", "inv-qc-r1")
+    qc3_err, qc3_attempts = qc("429 in round 3", "inv-qc-r3")
     accepts("the same stage failing in two different rounds",
-            lambda: rec(outcome=RunOutcome.ERROR,
-                        errors=[qc("429 in round 1"), qc("429 in round 3")]))
+            lambda: rec(outcome=RunOutcome.ERROR, errors=[qc1_err, qc3_err],
+                        attempts=qc1_attempts + qc3_attempts))
+    tg_never_ran_err, tg_never_ran_attempts = failed_stage(
+        PipelineStage.TEST_GENERATOR, "inv-tg-never-ran")
     rejects("CAP_STOPPED recording a failure in a stage that never ran",
             lambda: rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS,
                         rounds=ROUNDS_CAPPED, cap_reason="x",
-                        errors=[StageError(stage=PipelineStage.TEST_GENERATOR,
-                                           kind=FailureKind.TRANSPORT,
-                                           message="429")]))
+                        errors=[tg_never_ran_err], attempts=tg_never_ran_attempts))
+    qc_did_run_err, qc_did_run_attempts = failed_stage(
+        PipelineStage.QUALITY_CHECKER, "inv-qc-did-run")
     accepts("CAP_STOPPED recording a failure in a stage that did run",
             lambda: rec(outcome=RunOutcome.CAP_STOPPED, classification=CLS,
                         rounds=ROUNDS_CAPPED, cap_reason="x",
-                        errors=[StageError(stage=PipelineStage.QUALITY_CHECKER,
-                                           kind=FailureKind.TRANSPORT,
-                                           message="429")]))
+                        errors=[qc_did_run_err], attempts=qc_did_run_attempts))
     rejects("ERROR when every stage produced its output",
             lambda: rec(outcome=RunOutcome.ERROR, errors=[gen_failed],
-                        **VALID_RECORDS[RunOutcome.COMPLETED]))
+                        attempts=gen_failed_attempts, **VALID_RECORDS[RunOutcome.COMPLETED]))
     ok("an ERROR record keeps the stages that did succeed",
        [f for f in ("classification", "rounds", "test_strategy", "test_plan")
-        if getattr(rec(outcome=RunOutcome.ERROR, errors=[gen_failed], classification=CLS,
+        if getattr(rec(outcome=RunOutcome.ERROR, errors=[gen_failed],
+                       attempts=gen_failed_attempts, classification=CLS,
                        rounds=ROUNDS_REFINED, test_strategy=STRATEGY), f)]
        == ["classification", "rounds", "test_strategy"])
 
@@ -1181,7 +1500,9 @@ def main() -> int:
     print("schemas.py regression")
     print("=" * 72)
     for fn in (test_non_empty_guards, test_gap1_both_paths_converge,
-               test_gap2_requirement_outcomes, test_failure_kind, test_token_usage,
+               test_gap2_requirement_outcomes, test_failure_kind,
+               test_stage_attempt_shape, test_attempts_well_formed,
+               test_errors_agree_with_attempts, test_attempts_are_source_of_truth_for_tokens,
                test_gap5_refinement_trajectory,
                test_gap3_document_record, test_gap4_provenance,
                test_cross_field_agreement, test_duplicate_keys,

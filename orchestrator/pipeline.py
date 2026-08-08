@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,12 +19,12 @@ from typing import Callable, NamedTuple, Optional
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    Classification, ConsistencyReport, DependencyReport, DocumentOutcome,
-    DocumentRunRecord, DocumentStage, DocumentStageError, DocumentTokenUsage,
+    AttemptResult, Classification, ConsistencyReport, DependencyReport, DocumentOutcome,
+    DocumentRunRecord, DocumentStage, DocumentStageAttempt, DocumentStageError,
     FailureKind, Issue, PipelineStage, QualityReport, RefinedRequirement,
     RefinementRound, RefinerAnswer, RefinerTurn, Requirement, RequirementRunRecord,
-    RequirementSet, RunMetadata, RunOutcome, StageConfig, StageError, TestPlan,
-    TestStrategy, TokenUsage,
+    RequirementSet, RunMetadata, RunOutcome, StageAttempt, StageConfig, StageError,
+    TestPlan, TestStrategy,
 )
 
 
@@ -125,15 +126,25 @@ def call_stage(
     args: tuple,
     model_cls: type[BaseModel],
     stage: PipelineStage,
+    invocation_id: str,
     model_name: str,
     throttle: Throttle,
-    usage_sink: list[TokenUsage],
+    attempt_sink: list[StageAttempt],
     req_id: str,
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> BaseModel:
     """Call one stage, validate its output, check it answers about the right
-    requirement, retry on failure, record usage.
+    requirement, retry on failure, record one StageAttempt per try -- success or
+    failure -- so a retry that ultimately succeeds still leaves a full record of what
+    came before it (see
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md).
+
+    invocation_id is required, no default -- same "a forgotten wire-up must fail loud"
+    reasoning as req_id below: it groups every attempt made by THIS call (including its
+    internal retries) into one invocation. The caller mints a fresh one per logical call
+    site (e.g. once per Quality Checker round), so two rounds of the same stage produce
+    two distinct invocation ids while one round's backoff retries share one.
 
     Only the stage_fn call itself is wrapped in `except Exception` -- not the
     validation that follows, and not any surrounding orchestrator code. A bug in the
@@ -164,22 +175,35 @@ def call_stage(
     last_message = "call_stage was invoked with max_attempts < 1"
 
     for attempt in range(max_attempts):
+        attempt_number = attempt + 1
         throttle.wait_for_slot(model_name)
         try:
             result = stage_fn(*args)
         except StageCallFailed as e:
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
+            attempt_sink.append(StageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.TRANSPORT_FAILURE, error_message=last_message))
         except Exception as e:
             last_kind, last_message = FailureKind.OTHER, f"{type(e).__name__}: {e}"
+            attempt_sink.append(StageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.OTHER_FAILURE, error_message=last_message))
         else:
-            usage_sink.append(TokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
-                                         completion_tokens=result.completion_tokens))
             try:
                 parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:
                 last_kind, last_message = FailureKind.VALIDATION, str(e)
+                attempt_sink.append(StageAttempt(
+                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
             else:
                 if parsed.requirement_id == req_id:
+                    attempt_sink.append(StageAttempt(
+                        stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                        result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
+                        completion_tokens=result.completion_tokens))
                     return parsed
                 last_kind = FailureKind.VALIDATION
                 last_message = (
@@ -187,6 +211,10 @@ def call_stage(
                     f"expected {req_id!r} -- the model answered about a different "
                     "requirement"
                 )
+                attempt_sink.append(StageAttempt(
+                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -199,14 +227,15 @@ def call_document_stage(
     args: tuple,
     model_cls: type[BaseModel],
     stage: DocumentStage,
+    invocation_id: str,
     model_name: str,
     throttle: Throttle,
-    usage_sink: list[DocumentTokenUsage],
+    attempt_sink: list[DocumentStageAttempt],
     doc_id: Optional[str],
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> BaseModel:
-    """Structurally identical to call_stage apart from the stage/usage types -- same
+    """Structurally identical to call_stage apart from the stage/attempt types -- same
     reasoning as the StageError/DocumentStageError split: a shared implementation
     parameterised by a PipelineStage | DocumentStage union would let a call meant for
     one level accidentally target the other.
@@ -220,35 +249,54 @@ def call_document_stage(
     DocumentRunRecord._references_resolve's own doc_id check in design/schemas.py:
     silence is not the same as disagreement, and a None on either side is not a claim
     the report was produced for a different document.
+
+    invocation_id is required, no default -- same reasoning as call_stage's.
     """
     last_kind: FailureKind = FailureKind.OTHER
     last_message = "call_document_stage was invoked with max_attempts < 1"
 
     for attempt in range(max_attempts):
+        attempt_number = attempt + 1
         throttle.wait_for_slot(model_name)
         try:
             result = stage_fn(*args)
         except StageCallFailed as e:
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
+            attempt_sink.append(DocumentStageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.TRANSPORT_FAILURE, error_message=last_message))
         except Exception as e:
             last_kind, last_message = FailureKind.OTHER, f"{type(e).__name__}: {e}"
+            attempt_sink.append(DocumentStageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.OTHER_FAILURE, error_message=last_message))
         else:
-            usage_sink.append(DocumentTokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
-                                                 completion_tokens=result.completion_tokens))
             try:
                 parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:
                 last_kind, last_message = FailureKind.VALIDATION, str(e)
+                attempt_sink.append(DocumentStageAttempt(
+                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
             else:
                 mismatch = (doc_id is not None and parsed.doc_id is not None
                             and parsed.doc_id != doc_id)
                 if not mismatch:
+                    attempt_sink.append(DocumentStageAttempt(
+                        stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                        result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
+                        completion_tokens=result.completion_tokens))
                     return parsed
                 last_kind = FailureKind.VALIDATION
                 last_message = (
                     f"{model_cls.__name__}.doc_id is {parsed.doc_id!r}, expected "
                     f"{doc_id!r} -- the model answered about a different document"
                 )
+                attempt_sink.append(DocumentStageAttempt(
+                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -264,35 +312,39 @@ def run_document_stages(
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> tuple[Optional[ConsistencyReport], Optional[DependencyReport],
-           list[DocumentStageError], list[DocumentTokenUsage]]:
+           list[DocumentStageError], list[DocumentStageAttempt]]:
     """Runs the two document-level stages independently -- one failing must not stop
     the other from running (contract item 8, D1=b)."""
     errors: list[DocumentStageError] = []
-    usage: list[DocumentTokenUsage] = []
+    attempts: list[DocumentStageAttempt] = []
 
     consistency_report: Optional[ConsistencyReport] = None
+    consistency_invocation_id = uuid.uuid4().hex
     try:
         consistency_report = call_document_stage(
             stage_fns.check_consistency, (requirement_set,), ConsistencyReport,
-            DocumentStage.CONSISTENCY_CHECKER,
-            stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, usage,
+            DocumentStage.CONSISTENCY_CHECKER, consistency_invocation_id,
+            stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, attempts,
             requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
-        errors.append(DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, kind=f.kind,
-                                         message=f.message, retry_count=f.retry_count))
+        errors.append(DocumentStageError(
+            stage=DocumentStage.CONSISTENCY_CHECKER, invocation_id=consistency_invocation_id,
+            kind=f.kind, message=f.message, retry_count=f.retry_count))
 
     dependency_report: Optional[DependencyReport] = None
+    dependency_invocation_id = uuid.uuid4().hex
     try:
         dependency_report = call_document_stage(
             stage_fns.map_dependencies, (requirement_set,), DependencyReport,
-            DocumentStage.DEPENDENCY_MAPPER,
-            stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, usage,
+            DocumentStage.DEPENDENCY_MAPPER, dependency_invocation_id,
+            stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, attempts,
             requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
-        errors.append(DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, kind=f.kind,
-                                         message=f.message, retry_count=f.retry_count))
+        errors.append(DocumentStageError(
+            stage=DocumentStage.DEPENDENCY_MAPPER, invocation_id=dependency_invocation_id,
+            kind=f.kind, message=f.message, retry_count=f.retry_count))
 
-    return consistency_report, dependency_report, errors, usage
+    return consistency_report, dependency_report, errors, attempts
 
 
 def resume_at(rec: RequirementRunRecord) -> Optional[PipelineStage]:
@@ -455,18 +507,22 @@ def _run_refine_loop(
             text_checked = rounds[-1].rewrite.refined_text if rounds else req.text
             suppressed_ids = sorted(_confirmed_issue_ids(rounds))
             current = Requirement(id=req.id, text=text_checked, source_doc_id=req.source_doc_id)
-            usage = list(record.usage)
+            attempts = list(record.attempts)
+            # A fresh invocation_id per round: round 1 and round 2's Quality Checker
+            # calls are distinct logical calls, even though both use the same stage.
+            qc_invocation_id = uuid.uuid4().hex
             try:
                 raw_report = call_stage(
                     stage_fns.check_quality, (current, record.classification, suppressed_ids),
-                    QualityReport, PipelineStage.QUALITY_CHECKER,
-                    stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, usage,
+                    QualityReport, PipelineStage.QUALITY_CHECKER, qc_invocation_id,
+                    stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, attempts,
                     req.id, max_attempts, backoff_seconds)
             except StageFailed as f:
-                record = record.model_copy(update={"rounds": rounds, "usage": usage})
-                return record, StageError(stage=PipelineStage.QUALITY_CHECKER, kind=f.kind,
-                                          message=f.message, retry_count=f.retry_count)
-            record = record.model_copy(update={"usage": usage})
+                record = record.model_copy(update={"rounds": rounds, "attempts": attempts})
+                return record, StageError(
+                    stage=PipelineStage.QUALITY_CHECKER, invocation_id=qc_invocation_id,
+                    kind=f.kind, message=f.message, retry_count=f.retry_count)
+            record = record.model_copy(update={"attempts": attempts})
             reconciled = _reconcile_issue_ids(
                 raw_report.issues, rounds[-1] if rounds else None, _all_issue_ids(rounds), req.id)
             # Enforce suppression regardless of whether the checker honored the
@@ -506,23 +562,24 @@ def _run_refine_loop(
             return record.model_copy(update={"rounds": rounds}), None
 
         current = Requirement(id=req.id, text=text_checked, source_doc_id=req.source_doc_id)
-        usage = list(record.usage)
+        attempts = list(record.attempts)
         if turn is None:
+            questioner_invocation_id = uuid.uuid4().hex
             try:
                 turn = call_stage(
                     stage_fns.refine_questioner, (current, quality_report), RefinerTurn,
-                    PipelineStage.REFINER_QUESTIONER,
+                    PipelineStage.REFINER_QUESTIONER, questioner_invocation_id,
                     stage_configs[PipelineStage.REFINER_QUESTIONER.value].model,
-                    throttle, usage, req.id, max_attempts, backoff_seconds)
+                    throttle, attempts, req.id, max_attempts, backoff_seconds)
             except StageFailed as f:
-                record = record.model_copy(update={"usage": usage})
+                record = record.model_copy(update={"attempts": attempts})
                 rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
                                               quality_report=quality_report,
                                               suppressed_issue_ids=suppressed_ids))
                 return record.model_copy(update={"rounds": rounds}), StageError(
-                    stage=PipelineStage.REFINER_QUESTIONER, kind=f.kind, message=f.message,
-                    retry_count=f.retry_count)
-            record = record.model_copy(update={"usage": usage})
+                    stage=PipelineStage.REFINER_QUESTIONER, invocation_id=questioner_invocation_id,
+                    kind=f.kind, message=f.message, retry_count=f.retry_count)
+            record = record.model_copy(update={"attempts": attempts})
             answers = human_fns.answer_questions(turn)
         elif not answers:
             # turn already exists (questioner finished, possibly on a prior attempt)
@@ -532,22 +589,23 @@ def _run_refine_loop(
             # "turn and answers both already exist" just below, which must NOT re-ask.
             answers = human_fns.answer_questions(turn)
 
-        usage = list(record.usage)
+        attempts = list(record.attempts)
+        rewriter_invocation_id = uuid.uuid4().hex
         try:
             rewrite = call_stage(
                 stage_fns.refine_rewriter, (current, answers), RefinedRequirement,
-                PipelineStage.REFINER_REWRITER,
+                PipelineStage.REFINER_REWRITER, rewriter_invocation_id,
                 stage_configs[PipelineStage.REFINER_REWRITER.value].model,
-                throttle, usage, req.id, max_attempts, backoff_seconds)
+                throttle, attempts, req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
-            record = record.model_copy(update={"usage": usage})
+            record = record.model_copy(update={"attempts": attempts})
             rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
                                           quality_report=quality_report, turn=turn,
                                           answers=answers, suppressed_issue_ids=suppressed_ids))
             return record.model_copy(update={"rounds": rounds}), StageError(
-                stage=PipelineStage.REFINER_REWRITER, kind=f.kind, message=f.message,
-                retry_count=f.retry_count)
-        record = record.model_copy(update={"usage": usage})
+                stage=PipelineStage.REFINER_REWRITER, invocation_id=rewriter_invocation_id,
+                kind=f.kind, message=f.message, retry_count=f.retry_count)
+        record = record.model_copy(update={"attempts": attempts})
 
         rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
                                       quality_report=quality_report, turn=turn,
@@ -600,21 +658,23 @@ def run_requirement(
     req = record.requirement
 
     if stage is PipelineStage.CLASSIFIER:
-        usage = list(record.usage)
+        attempts = list(record.attempts)
+        classifier_invocation_id = uuid.uuid4().hex
         try:
             classification = call_stage(
                 stage_fns.classify, (req, requirement_set), Classification,
-                PipelineStage.CLASSIFIER, stage_configs[PipelineStage.CLASSIFIER.value].model,
-                throttle, usage, req.id, max_attempts, backoff_seconds)
+                PipelineStage.CLASSIFIER, classifier_invocation_id,
+                stage_configs[PipelineStage.CLASSIFIER.value].model,
+                throttle, attempts, req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             errors = list(record.errors) + [StageError(
-                stage=PipelineStage.CLASSIFIER, kind=f.kind, message=f.message,
-                retry_count=f.retry_count)]
+                stage=PipelineStage.CLASSIFIER, invocation_id=classifier_invocation_id,
+                kind=f.kind, message=f.message, retry_count=f.retry_count)]
             return RequirementRunRecord.model_validate({
                 **record.model_dump(mode="json"), "outcome": "error",
                 "errors": [e.model_dump(mode="json") for e in errors],
-                "usage": [u.model_dump(mode="json") for u in usage]})
-        record = record.model_copy(update={"classification": classification, "usage": usage})
+                "attempts": [a.model_dump(mode="json") for a in attempts]})
+        record = record.model_copy(update={"classification": classification, "attempts": attempts})
 
     # Only CLASSIFIER/QUALITY_CHECKER/REFINER_QUESTIONER/REFINER_REWRITER positions need
     # the refine loop at all -- STRATEGY_SELECTOR and TEST_GENERATOR mean the loop
@@ -680,38 +740,41 @@ def run_requirement(
     if record.test_strategy is not None:
         strategy = record.test_strategy
     else:
-        usage = list(record.usage)
+        attempts = list(record.attempts)
+        strategy_invocation_id = uuid.uuid4().hex
         try:
             strategy = call_stage(
                 stage_fns.select_strategy, (current, record.classification), TestStrategy,
-                PipelineStage.STRATEGY_SELECTOR,
-                stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, usage,
+                PipelineStage.STRATEGY_SELECTOR, strategy_invocation_id,
+                stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, attempts,
                 req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             errors = list(record.errors) + [StageError(
-                stage=PipelineStage.STRATEGY_SELECTOR, kind=f.kind, message=f.message,
-                retry_count=f.retry_count)]
+                stage=PipelineStage.STRATEGY_SELECTOR, invocation_id=strategy_invocation_id,
+                kind=f.kind, message=f.message, retry_count=f.retry_count)]
             return RequirementRunRecord.model_validate(
                 {**record.model_dump(mode="json"), "outcome": "error",
                  "errors": [e.model_dump(mode="json") for e in errors],
-                 "usage": [u.model_dump(mode="json") for u in usage]})
-        record = record.model_copy(update={"test_strategy": strategy, "usage": usage})
+                 "attempts": [a.model_dump(mode="json") for a in attempts]})
+        record = record.model_copy(update={"test_strategy": strategy, "attempts": attempts})
 
-    usage = list(record.usage)
+    attempts = list(record.attempts)
+    generator_invocation_id = uuid.uuid4().hex
     try:
         plan = call_stage(
             stage_fns.generate_tests, (current, strategy), TestPlan,
-            PipelineStage.TEST_GENERATOR, stage_configs[PipelineStage.TEST_GENERATOR.value].model,
-            throttle, usage, req.id, max_attempts, backoff_seconds)
+            PipelineStage.TEST_GENERATOR, generator_invocation_id,
+            stage_configs[PipelineStage.TEST_GENERATOR.value].model,
+            throttle, attempts, req.id, max_attempts, backoff_seconds)
     except StageFailed as f:
         errors = list(record.errors) + [StageError(
-            stage=PipelineStage.TEST_GENERATOR, kind=f.kind, message=f.message,
-            retry_count=f.retry_count)]
+            stage=PipelineStage.TEST_GENERATOR, invocation_id=generator_invocation_id,
+            kind=f.kind, message=f.message, retry_count=f.retry_count)]
         return RequirementRunRecord.model_validate(
             {**record.model_dump(mode="json"), "outcome": "error",
              "errors": [e.model_dump(mode="json") for e in errors],
-             "usage": [u.model_dump(mode="json") for u in usage]})
-    record = record.model_copy(update={"test_plan": plan, "usage": usage})
+             "attempts": [a.model_dump(mode="json") for a in attempts]})
+    record = record.model_copy(update={"test_plan": plan, "attempts": attempts})
 
     return RequirementRunRecord.model_validate(
         {**record.model_dump(mode="json"), "outcome": final_outcome.value})
@@ -732,7 +795,7 @@ def run_document(
     continue DEGRADED if either fails independently), then every requirement in order.
     Writes to run_dir incrementally if given (D2b) -- document.json first, then one
     requirement file at a time, so an interruption leaves a resumable partial run."""
-    consistency_report, dependency_report, doc_errors, doc_usage = run_document_stages(
+    consistency_report, dependency_report, doc_errors, doc_attempts = run_document_stages(
         requirement_set, metadata.stages, stage_fns, throttle, max_attempts, backoff_seconds)
 
     doc_outcome = (DocumentOutcome.COMPLETED
@@ -741,7 +804,7 @@ def run_document(
     record = DocumentRunRecord(
         requirement_set=requirement_set, metadata=metadata, outcome=doc_outcome,
         errors=doc_errors, consistency_report=consistency_report,
-        dependency_report=dependency_report, usage=doc_usage)
+        dependency_report=dependency_report, attempts=doc_attempts)
     if run_dir is not None:
         write_document_run(run_dir, record)
 
@@ -768,10 +831,17 @@ def retry_document_stage(
 ) -> DocumentRunRecord:
     """Retries ONE failed document-level stage within the same run (contract item 6,
     'Retrying a failed document-level stage') rather than starting a new run, which
-    would orphan every already-completed requirement record. errors is a LOG of failed
-    attempts, not current state, so the original failure stays even after a successful
-    retry; a second failure of the same stage bumps retry_count on the existing entry
-    instead of appending a duplicate (document-level stages run once per run)."""
+    would orphan every already-completed requirement record.
+
+    A manual retry is a new invocation, symmetric with requirement-level stage
+    failures: it mints its own invocation_id and, if it fails, appends a new,
+    independent DocumentStageError rather than merging into an existing one. `errors`
+    stays a LOG of failed attempts, not current state -- the original failure(s) stay on
+    record even after a later retry succeeds -- but each entry now stands for exactly
+    one invocation, linked to it directly (invocation_id), instead of one entry
+    aggregating retry_count across every manual retry of a stage. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
+    """
     record = read_document_run(run_dir)
     stage_fn = {DocumentStage.CONSISTENCY_CHECKER: stage_fns.check_consistency,
                DocumentStage.DEPENDENCY_MAPPER: stage_fns.map_dependencies}[stage]
@@ -780,24 +850,20 @@ def retry_document_stage(
     field_name = {DocumentStage.CONSISTENCY_CHECKER: "consistency_report",
                  DocumentStage.DEPENDENCY_MAPPER: "dependency_report"}[stage]
 
-    usage: list[DocumentTokenUsage] = []
+    attempts: list[DocumentStageAttempt] = []
+    invocation_id = uuid.uuid4().hex
     try:
         report = call_document_stage(
-            stage_fn, (record.requirement_set,), model_cls, stage,
-            record.metadata.stages[stage.value].model, throttle, usage,
+            stage_fn, (record.requirement_set,), model_cls, stage, invocation_id,
+            record.metadata.stages[stage.value].model, throttle, attempts,
             record.requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
-        existing = next((e for e in record.errors if e.stage is stage), None)
-        errors = [e for e in record.errors if e.stage is not stage]
-        if existing is not None:
-            errors.append(existing.model_copy(
-                update={"retry_count": existing.retry_count + f.retry_count + 1}))
-        else:
-            errors.append(DocumentStageError(stage=stage, kind=f.kind, message=f.message,
-                                             retry_count=f.retry_count))
-        record = record.model_copy(update={"errors": errors, "usage": record.usage + usage})
+        errors = list(record.errors) + [DocumentStageError(
+            stage=stage, invocation_id=invocation_id, kind=f.kind, message=f.message,
+            retry_count=f.retry_count)]
+        record = record.model_copy(update={"errors": errors, "attempts": record.attempts + attempts})
     else:
-        record = record.model_copy(update={field_name: report, "usage": record.usage + usage})
+        record = record.model_copy(update={field_name: report, "attempts": record.attempts + attempts})
 
     both_present = record.consistency_report is not None and record.dependency_report is not None
     record = record.model_copy(update={

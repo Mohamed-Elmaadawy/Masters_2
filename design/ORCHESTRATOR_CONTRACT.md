@@ -162,13 +162,19 @@ records cannot be carried across runs (their `run_id` would not match), so every
 requirement would be reprocessed.
 
 Instead, retry the stage within the same run and write the report into the existing
-record. Keep the `DocumentStageError` where it is: `errors` is a log of failed attempts,
-not a statement of current state, so a stage may hold both an earlier failure and a
-later report. The outcome then moves from `DEGRADED` to `COMPLETED` on its own, because
-no report is missing any more.
+record. Keep the earlier `DocumentStageError` where it is: `errors` is a log of failed
+attempts, not a statement of current state, so a stage may hold both an earlier failure
+and a later report. The outcome then moves from `DEGRADED` to `COMPLETED` on its own,
+because no report is missing any more.
 
-If the same stage fails again, bump `retry_count` on the existing error rather than
-appending a second entry for that stage.
+**Changed 2026-08-08** (see
+`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md`): a manual
+retry is a new invocation and mints its own `invocation_id`. If it fails again, it
+appends a **new, independent** `DocumentStageError` linked to that invocation —
+`retry_document_stage` no longer looks up and bumps an existing entry's `retry_count`.
+This makes document-level and requirement-level failure recording symmetric (see item 7
+below) and removes the old asymmetry where `DocumentRunRecord.errors` allowed at most
+one entry per stage while `RequirementRunRecord.errors` did not.
 
 *(DESIGN_NOTES: "Retry without redoing everything".)*
 
@@ -197,15 +203,22 @@ Two constraints the schema enforces:
 - `ERROR` requires something to actually be missing. A record where every stage produced
   its output is `COMPLETED`, whatever failed on the way.
 
-Within a `StageError`, `retry_count` covers the backoff loop of a single attempt. A
-later manual retry that fails again should bump that count rather than append a second
-entry for the same stage at document level (where each stage runs once). At requirement
-level duplicates are allowed, since the Quality Checker, Refiner Questioner, and Refiner
-Rewriter each run once per round.
+Within a `StageError`, `retry_count` covers the backoff loop of a single invocation.
+Duplicates are allowed at **both** levels now: the Quality Checker, Refiner Questioner,
+and Refiner Rewriter can each fail more than once across rounds, and (as of 2026-08-08)
+a document-level stage can fail across more than one manual `retry_document_stage`
+call — each failure, at either level, gets its own `StageError`/`DocumentStageError`
+linked to the invocation that produced it via `invocation_id`, never merged into an
+earlier entry.
 
-Retries that succeeded on the *first* stage invocation leave no trace — `retry_count`
-describes calls that ultimately failed. Do not compute a success rate from it; the
-denominator is not in the schema.
+Retries that succeeded on the *first* stage invocation leave no trace in `errors` —
+`retry_count` there describes calls that ultimately failed. **This is no longer the
+full picture, however**: as of 2026-08-08, every attempt of every call — including one
+that succeeded on a retry — is recorded in `RequirementRunRecord.attempts` /
+`DocumentRunRecord.attempts` (`StageAttempt`/`DocumentStageAttempt`), so "how often did
+a call need retrying before succeeding" is now directly countable from the attempt log,
+even though it was never derivable from `errors`/`retry_count` alone. See
+`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md`.
 
 *(DESIGN_NOTES: "`StageError.retry_count`", "Retry without redoing everything",
 "Requirement-level errors made symmetric".)*
@@ -293,25 +306,44 @@ If the exact prompt text needs recovering later, save each unique prompt once as
 
 ---
 
-## 13. Token usage
+## 13. Per-attempt observability and token usage
 
-Every stage call that *returns* (success or a validation failure — both mean inference
-happened) gets one `TokenUsage`/`DocumentTokenUsage` entry appended, via
-`orchestrator.pipeline.call_stage`/`call_document_stage`. A `StageCallFailed` (transport
-failure) never gets one — the request was rejected before inference, so no tokens were
-spent, and the stage fn raises in that case with no result to carry counts.
+**Superseded 2026-08-08** (see
+`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md`): `TokenUsage`/
+`DocumentTokenUsage` — which recorded only calls that *returned* — are gone, replaced by
+a complete per-attempt log. `orchestrator.pipeline.call_stage`/`call_document_stage`
+append one `StageAttempt`/`DocumentStageAttempt` for **every** attempt, success or
+failure — including a `StageCallFailed` (transport failure), which now gets a row too
+(`result=TRANSPORT_FAILURE`, no tokens — the request was rejected before inference, so
+none were spent). This closes the exact gap item 7 used to name explicitly ("retries
+that succeeded on the first stage invocation leave no trace"): they now do, in
+`RequirementRunRecord.attempts`/`DocumentRunRecord.attempts`.
+
+Every attempt carries an `invocation_id`, grouping the retries of one logical call
+(one `call_stage` invocation); a fresh call — e.g. the next Quality Checker round —
+gets a fresh id. `StageError`/`DocumentStageError` now carry the `invocation_id` of the
+invocation they summarise directly, and the schema enforces two-way agreement: every
+error must reference a real, matching, failed invocation (same stage, matching
+`kind`/`message`/`retry_count`), and every failed invocation must be referenced by some
+error — with one named exception (a `RequirementRunRecord` with `outcome=CAP_STOPPED`
+may have a failed `STRATEGY_SELECTOR`/`TEST_GENERATOR` invocation with no error, since
+that outcome retroactively strips exactly those errors while never touching the
+append-only attempt log).
 
 `RequirementRunRecord.total_tokens` and `DocumentRunRecord.document_stage_tokens` are
-computed, never stored directly — the latter is deliberately not named `total_tokens`,
-since it can only ever sum the two document-level stages, never the requirement records
-(which arrive empty in `document.json` under D2b). Whole-document cost is
+still computed, never stored directly, now summing over `attempts` instead — the latter
+is deliberately not named `total_tokens`, since it can only ever sum the two
+document-level stages, never the requirement records (which arrive empty in
+`document.json` under D2b). Whole-document cost is still
 `doc.document_stage_tokens + sum(r.total_tokens for r in doc.requirement_records)`,
 computed by the caller.
 
 See `docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` for where to turn
 this into cost-per-document on the first real run.
 
-*(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.)*
+*(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md;
+superseded the same day, see
+docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.)*
 
 ---
 
@@ -323,9 +355,10 @@ contract — it surfaced from building `orchestrator/test_harness.py`'s scenario
 from a bug found in production. `call_stage`/`call_document_stage` treat it exactly like
 a transport failure for retry purposes (same backoff, same `StageError`/
 `DocumentStageError` shape), with two differences: `kind=VALIDATION` instead of
-`TRANSPORT`, and usage IS recorded, because inference happened and tokens were spent on
-output that got thrown away. That cost is itself a thesis-relevant number: how often,
-and at what cost, a given model produces schema-invalid output.
+`TRANSPORT`, and the attempt IS recorded with tokens (`AttemptResult.VALIDATION_FAILURE`,
+see item 13), because inference happened and tokens were spent on output that got
+thrown away. That cost is itself a thesis-relevant number: how often, and at what cost,
+a given model produces schema-invalid output.
 
 See `docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` for where to
 measure this (and which rule fired) on the first real run.

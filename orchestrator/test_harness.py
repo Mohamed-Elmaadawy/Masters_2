@@ -19,10 +19,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from design.schemas import (
-    ClarifyingQuestion, DocumentRunRecord, PipelineStage, QualityReport,
-    RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn, Requirement,
-    RequirementRunRecord, RequirementSet, RunOutcome, StageConfig, StageError,
-    RunMetadata, ALL_STAGES, FailureKind, prompt_fingerprint,
+    AttemptResult, ClarifyingQuestion, DocumentRunRecord, DocumentStageAttempt,
+    PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
+    RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunOutcome,
+    StageAttempt, StageConfig, StageError, RunMetadata, ALL_STAGES, FailureKind,
+    prompt_fingerprint,
 )
 from orchestrator.pipeline import (
     resume_at, StageCallResult, StageCallFailed, StageFns, HumanFns,
@@ -74,6 +75,26 @@ def rec(**kw) -> RequirementRunRecord:
     kw.setdefault("run_id", "run-harness-001")
     kw.setdefault("requirement", REQ_A)
     return RequirementRunRecord(**kw)
+
+
+def failed_stage(stage, invocation_id, kind=FailureKind.TRANSPORT, message="429",
+                 attempts=1) -> tuple:
+    """A StageError plus the matching minimal StageAttempt log an exhausted
+    `attempts`-try invocation would produce. Schema 1.1 requires every StageError to
+    reference a real, matching invocation -- no exceptions for hand-built fixtures --
+    so any test that constructs a bare StageError (rather than driving it through
+    call_stage) needs this. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
+    result = {FailureKind.TRANSPORT: AttemptResult.TRANSPORT_FAILURE,
+             FailureKind.VALIDATION: AttemptResult.VALIDATION_FAILURE,
+             FailureKind.OTHER: AttemptResult.OTHER_FAILURE}[kind]
+    tokens = dict(prompt_tokens=10, completion_tokens=5) if result is AttemptResult.VALIDATION_FAILURE else {}
+    log = [StageAttempt(stage=stage, invocation_id=invocation_id, attempt_number=i,
+                        result=result, error_message=message, **tokens)
+           for i in range(1, attempts + 1)]
+    err = StageError(stage=stage, invocation_id=invocation_id, kind=kind, message=message,
+                     retry_count=attempts - 1)
+    return err, log
 
 
 def mk_round(n, text, passed=True, rewrite_to=None, requirement_id=REQ_A.id) -> RefinementRound:
@@ -128,8 +149,11 @@ class Scripted:
 def test_resume_positions() -> None:
     """Scenario 5: a failure at any stage must resume at that stage -- nothing earlier redone."""
     section("Scenario 5 -- resume_at correctness")
-    err = lambda stage: [StageError(stage=stage, kind=FailureKind.TRANSPORT, message="429",
-                                    retry_count=3)]
+    # Each case needs its own invocation_id/attempts pair -- schema 1.1 requires every
+    # StageError to reference a real, matching, failed invocation.
+    def err(stage):
+        e, attempts = failed_stage(stage, f"inv-{stage.value}", attempts=4)
+        return [e], attempts
     mid_round = mk_round(1, T0, passed=False)                        # asked+answered, no rewrite yet
     rewritten = mk_round(1, T0, passed=False, rewrite_to=T1)
     from design.schemas import (
@@ -152,27 +176,31 @@ def test_resume_positions() -> None:
                  title="Temperature at limit", steps=["Set temperature to the limit value."],
                  expected_result="Value is output for subsequent processing.")])
 
+    def kw_with_err(stage, **rest):
+        errors, attempts = err(stage)
+        return dict(errors=errors, attempts=attempts, **rest)
+
     cases = [
-        ("classifier failed", dict(errors=err(PipelineStage.CLASSIFIER)), PipelineStage.CLASSIFIER),
+        ("classifier failed", kw_with_err(PipelineStage.CLASSIFIER), PipelineStage.CLASSIFIER),
         ("quality checker failed on round 1",
-         dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=cls),
+         kw_with_err(PipelineStage.QUALITY_CHECKER, classification=cls),
          PipelineStage.QUALITY_CHECKER),
         ("refiner questioner failed, nothing asked yet",
-         dict(errors=err(PipelineStage.REFINER_QUESTIONER), classification=cls,
-              rounds=[never_asked]),
+         kw_with_err(PipelineStage.REFINER_QUESTIONER, classification=cls,
+                     rounds=[never_asked]),
          PipelineStage.REFINER_QUESTIONER),
         ("refiner rewriter failed, asked and answered but not rewritten yet",
-         dict(errors=err(PipelineStage.REFINER_REWRITER), classification=cls, rounds=[mid_round]),
+         kw_with_err(PipelineStage.REFINER_REWRITER, classification=cls, rounds=[mid_round]),
          PipelineStage.REFINER_REWRITER),
         ("quality checker failed on round 2, round 1 already rewrote",
-         dict(errors=err(PipelineStage.QUALITY_CHECKER), classification=cls, rounds=[rewritten]),
+         kw_with_err(PipelineStage.QUALITY_CHECKER, classification=cls, rounds=[rewritten]),
          PipelineStage.QUALITY_CHECKER),
         ("strategy selector failed",
-         dict(errors=err(PipelineStage.STRATEGY_SELECTOR), classification=cls, rounds=rounds_refined),
+         kw_with_err(PipelineStage.STRATEGY_SELECTOR, classification=cls, rounds=rounds_refined),
          PipelineStage.STRATEGY_SELECTOR),
         ("test generator failed",
-         dict(errors=err(PipelineStage.TEST_GENERATOR), classification=cls, rounds=rounds_refined,
-              test_strategy=strategy), PipelineStage.TEST_GENERATOR),
+         kw_with_err(PipelineStage.TEST_GENERATOR, classification=cls, rounds=rounds_refined,
+                     test_strategy=strategy), PipelineStage.TEST_GENERATOR),
     ]
     for label, kw, expected in cases:
         got = resume_at(rec(outcome=RunOutcome.ERROR, **kw))
@@ -222,59 +250,78 @@ def test_stage_fns_typo_is_a_typeerror() -> None:
 
 def test_call_stage() -> None:
     """The narrow-except wrapper: success, TRANSPORT, VALIDATION, and scenario 14 --
-    OTHER, the one branch that must actually fire, not just be documented as possible."""
+    OTHER, the one branch that must actually fire, not just be documented as possible.
+    Also covers the per-attempt log itself (contract item 13's replacement): every
+    attempt gets a StageAttempt row, not just the ones that returned."""
     section("call_stage")
     from orchestrator.pipeline import call_stage, StageFailed, Throttle
-    from design.schemas import Classification, FailureKind, TokenUsage
+    from design.schemas import AttemptResult, Classification, FailureKind, StageAttempt
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
 
-    # -- success --
-    usage: list[TokenUsage] = []
+    # -- success: first attempt, one StageAttempt row --
+    attempts: list[StageAttempt] = []
     fn = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
-    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER,
-                        "fake-model", throttle, usage, "R1")
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1")
     ok("call_stage returns a validated model", isinstance(result, Classification))
-    ok("a successful call records one usage entry", len(usage) == 1)
-    ok("usage entry carries the right stage", usage[0].stage is PipelineStage.CLASSIFIER)
+    ok("a successful first attempt records exactly one attempt row", len(attempts) == 1)
+    ok("the attempt carries the right stage and invocation_id",
+       attempts[0].stage is PipelineStage.CLASSIFIER and attempts[0].invocation_id == "inv-1")
+    ok("the attempt is attempt_number=1, result=SUCCESS, tokens present",
+       attempts[0].attempt_number == 1 and attempts[0].result is AttemptResult.SUCCESS
+       and attempts[0].prompt_tokens is not None)
 
-    # -- TRANSPORT: exhausts retries, no usage recorded --
-    usage2: list[TokenUsage] = []
+    # -- TRANSPORT: exhausts retries, every attempt logged as a failure, no tokens --
+    attempts2: list[StageAttempt] = []
     fn2 = Scripted([StageCallFailed("429"), StageCallFailed("429"), StageCallFailed("429")])
     try:
-        call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage2, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
+        call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-2",
+                  "fake-model", throttle, attempts2, "R1", max_attempts=3,
+                  backoff_seconds=lambda a: 0.0)
         ok("TRANSPORT exhaustion raises StageFailed", False)
     except StageFailed as f:
         ok("TRANSPORT exhaustion raises StageFailed", True)
         ok("StageFailed.kind is TRANSPORT", f.kind is FailureKind.TRANSPORT)
         ok("retry_count is attempts-1", f.retry_count == 2)
-    ok("no usage recorded for pure transport failures", usage2 == [])
+    ok("every failed attempt is logged, none carrying tokens",
+       len(attempts2) == 3
+       and all(a.result is AttemptResult.TRANSPORT_FAILURE for a in attempts2)
+       and all(a.prompt_tokens is None for a in attempts2))
+    ok("attempt numbers are 1, 2, 3 in order, all under the same invocation_id",
+       [a.attempt_number for a in attempts2] == [1, 2, 3]
+       and {a.invocation_id for a in attempts2} == {"inv-2"})
 
     # -- VALIDATION: the call succeeded, tokens were spent on rejected output --
-    usage3: list[TokenUsage] = []
+    attempts3: list[StageAttempt] = []
     fn3 = Scripted([{"requirement_id": "R1"}])  # missing system_type, rationale
     try:
-        call_stage(fn3, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage3, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
+        call_stage(fn3, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-3",
+                  "fake-model", throttle, attempts3, "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
         ok("VALIDATION failure raises StageFailed", False)
     except StageFailed as f:
         ok("VALIDATION failure raises StageFailed", True)
         ok("StageFailed.kind is VALIDATION", f.kind is FailureKind.VALIDATION)
-    ok("a validation failure still records usage (tokens were spent)", len(usage3) == 1)
+    ok("a validation failure still logs an attempt with tokens (tokens were spent)",
+       len(attempts3) == 1 and attempts3[0].result is AttemptResult.VALIDATION_FAILURE
+       and attempts3[0].prompt_tokens is not None)
 
     # -- Scenario 14: OTHER, and the negative it's paired with --
-    usage4: list[TokenUsage] = []
+    attempts4: list[StageAttempt] = []
     fn4 = Scripted([KeyError("unexpected")])
     try:
-        call_stage(fn4, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage4, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
+        call_stage(fn4, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-4",
+                  "fake-model", throttle, attempts4, "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
         ok("an unexpected exception type raises StageFailed(OTHER)", False)
     except StageFailed as f:
         ok("an unexpected exception type raises StageFailed(OTHER)", True)
         ok("StageFailed.kind is OTHER", f.kind is FailureKind.OTHER)
         ok("message names the exception class", "KeyError" in f.message)
-    ok("no usage recorded for OTHER (never reached the model)", usage4 == [])
+    ok("OTHER is logged with no tokens (never reached the model)",
+       len(attempts4) == 1 and attempts4[0].result is AttemptResult.OTHER_FAILURE
+       and attempts4[0].prompt_tokens is None)
 
     # Negative: a bug in code CALLING call_stage (outside the guarded line) still
     # crashes, rather than being caught and filed as OTHER. call_stage itself has no
@@ -285,8 +332,8 @@ def test_call_stage() -> None:
     # caller's own code, not from stage_fn running dry.
     fn5 = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
     def broken_caller():
-        result = call_stage(fn5, ("R1",), Classification, PipelineStage.CLASSIFIER,
-                            "fake-model", throttle, usage, "R1")
+        result = call_stage(fn5, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-5",
+                            "fake-model", throttle, attempts, "R1")
         return result.nonexistent_attribute  # AttributeError, not from inside call_stage
     try:
         broken_caller()
@@ -366,18 +413,19 @@ def test_requirement_id_mismatch_is_validation_at_every_stage() -> None:
              "title": "t", "steps": ["s"], "expected_result": "e"}]}),
     ]
     for label, model_cls, raw in cases:
-        usage: list = []
+        attempts: list = []
         fn = Scripted([raw])
         try:
-            call_stage(fn, ("R1",), model_cls, PipelineStage.CLASSIFIER, "fake-model",
-                      throttle, usage, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
+            call_stage(fn, ("R1",), model_cls, PipelineStage.CLASSIFIER, "inv-mismatch",
+                      "fake-model", throttle, attempts, "R1", max_attempts=1,
+                      backoff_seconds=lambda a: 0.0)
             ok(f"{label}: requirement_id mismatch raises StageFailed", False)
         except StageFailed as f:
             ok(f"{label}: requirement_id mismatch raises StageFailed", True)
             ok(f"{label}: kind is VALIDATION, not OTHER or an uncaught crash",
                f.kind is FailureKind.VALIDATION)
-        ok(f"{label}: usage still recorded (the call succeeded; the id was just wrong)",
-           len(usage) == 1)
+        ok(f"{label}: attempt still logged (the call succeeded; the id was just wrong)",
+           len(attempts) == 1)
 
 
 def test_requirement_id_mismatch_end_to_end() -> None:
@@ -450,8 +498,8 @@ def test_backoff_timing() -> None:
     throttle_recording = Throttle(sleep_fn=slept.append, now_fn=lambda: FAKE_NOW)
     fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
                   {"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
-    call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-              throttle_recording, [], "R1", max_attempts=3,
+    call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+              "fake-model", throttle_recording, [], "R1", max_attempts=3,
               backoff_seconds=lambda a: (a + 1) * 10.0)
     ok("call_stage: backoff fires between attempts, not after the last (or the first)",
        slept == [10.0, 20.0])
@@ -461,7 +509,7 @@ def test_backoff_timing() -> None:
     doc_fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
                        {"doc_id": DOC.doc_id, "conflicts": []}])
     call_document_stage(doc_fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
-                        "fake-model", throttle_recording2, [], DOC.doc_id, max_attempts=3,
+                        "inv-2", "fake-model", throttle_recording2, [], DOC.doc_id, max_attempts=3,
                         backoff_seconds=lambda a: (a + 1) * 10.0)
     ok("call_document_stage: backoff fires between attempts, not after the last",
        slept2 == [10.0, 20.0])
@@ -483,14 +531,16 @@ def test_document_stages_degraded() -> None:
         select_strategy=None,
         generate_tests=None,
     )
-    cons, deps, errors, usage = run_document_stages(
+    cons, deps, errors, attempts = run_document_stages(
         DOC, STAGE_CONFIGS, stage_fns, throttle, max_attempts=3, backoff_seconds=lambda a: 0.0)
     ok("consistency checker failure leaves consistency_report None", cons is None)
     ok("dependency mapper still succeeds independently", deps is not None)
     ok("exactly one DocumentStageError recorded", len(errors) == 1)
     ok("the error names the failed stage", errors[0].stage.value == "consistency_checker")
     ok("the error's kind is TRANSPORT", errors[0].kind is FailureKind.TRANSPORT)
-    ok("dependency mapper's success recorded usage", len(usage) == 1)
+    ok("the error is linked to its invocation's attempts",
+       errors[0].invocation_id in {a.invocation_id for a in attempts})
+    ok("dependency mapper's success recorded one attempt", len(attempts) == 4)  # 3 failed + 1 success
 
     # No inline DocumentOutcome recomputation here: real DocumentOutcome derivation
     # coverage is in test_document_stage_retry_within_run (Task 12), which drives it
@@ -529,37 +579,67 @@ def test_document_id_mismatch_is_validation() -> None:
          {"doc_id": "WRONG-DOC", "dependencies": []}),
     ]
     for label, model_cls, stage, raw in cases:
-        usage: list = []
+        attempts: list = []
         fn = Scripted([raw])
         try:
-            call_document_stage(fn, (DOC,), model_cls, stage, "fake-model", throttle,
-                                usage, "REAL-DOC", max_attempts=1, backoff_seconds=lambda a: 0.0)
+            call_document_stage(fn, (DOC,), model_cls, stage, "inv-mismatch", "fake-model",
+                                throttle, attempts, "REAL-DOC", max_attempts=1,
+                                backoff_seconds=lambda a: 0.0)
             ok(f"{label}: doc_id mismatch raises StageFailed", False)
         except StageFailed as f:
             ok(f"{label}: doc_id mismatch raises StageFailed", True)
             ok(f"{label}: kind is VALIDATION, not OTHER or an uncaught crash",
                f.kind is FailureKind.VALIDATION)
-        ok(f"{label}: usage still recorded (the call succeeded; the doc_id was just wrong)",
-           len(usage) == 1)
+        ok(f"{label}: attempt still logged (the call succeeded; the doc_id was just wrong)",
+           len(attempts) == 1)
 
     # Silence is not disagreement: a None on either side must not be flagged.
-    usage_a: list = []
+    attempts_a: list = []
     result_a = call_document_stage(
         Scripted([{"doc_id": "SOME-DOC", "conflicts": []}]), (DOC,), ConsistencyReport,
-        DocumentStage.CONSISTENCY_CHECKER, "fake-model", throttle, usage_a,
+        DocumentStage.CONSISTENCY_CHECKER, "inv-a", "fake-model", throttle, attempts_a,
         None,  # requirement_set.doc_id is None -- no provenance recorded, not a claim
         max_attempts=1, backoff_seconds=lambda a: 0.0)
     ok("requirement_set.doc_id=None is not a mismatch against any reported doc_id",
        result_a.doc_id == "SOME-DOC")
 
-    usage_b: list = []
+    attempts_b: list = []
     result_b = call_document_stage(
         Scripted([{"doc_id": None, "conflicts": []}]), (DOC,), ConsistencyReport,
-        DocumentStage.CONSISTENCY_CHECKER, "fake-model", throttle, usage_b,
+        DocumentStage.CONSISTENCY_CHECKER, "inv-b", "fake-model", throttle, attempts_b,
         "REAL-DOC",  # the model didn't echo a doc_id back -- also not a claim
         max_attempts=1, backoff_seconds=lambda a: 0.0)
     ok("a report with doc_id=None is not a mismatch against any requirement_set.doc_id",
        result_b.doc_id is None)
+
+
+def test_document_wrong_doc_id_then_success() -> None:
+    """Document-level sibling of test_wrong_id_then_success: a doc_id mismatch
+    (contract item 15) followed by a correct retry is logged as its own
+    VALIDATION_FAILURE attempt, distinct from a malformed-payload validation failure,
+    and the eventual success shares its invocation_id -- symmetric with the
+    per-requirement case, per CLAUDE.md's "check the twin" rule."""
+    section("Document-level wrong doc_id, then a correct retry succeeds")
+    from orchestrator.pipeline import call_document_stage, Throttle
+    from design.schemas import AttemptResult, ConsistencyReport, DocumentStage
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts: list = []
+    fn = Scripted([
+        {"doc_id": "WRONG-DOC", "conflicts": []},
+        {"doc_id": DOC.doc_id, "conflicts": []},
+    ])
+    result = call_document_stage(fn, (DOC,), ConsistencyReport,
+                                 DocumentStage.CONSISTENCY_CHECKER, "inv-1", "fake-model",
+                                 throttle, attempts, DOC.doc_id, max_attempts=2,
+                                 backoff_seconds=lambda a: 0.0)
+    ok("the retry succeeds", isinstance(result, ConsistencyReport))
+    ok("two attempts logged under the same invocation_id",
+       len(attempts) == 2 and {a.invocation_id for a in attempts} == {"inv-1"})
+    ok("the first attempt is a validation failure naming the wrong doc_id",
+       attempts[0].result is AttemptResult.VALIDATION_FAILURE
+       and "WRONG-DOC" in attempts[0].error_message)
+    ok("the second attempt succeeded", attempts[1].result is AttemptResult.SUCCESS)
 
 
 def test_throttle() -> None:
@@ -628,6 +708,22 @@ def test_on_disk_round_trip() -> None:
         ok("reloaded document keeps its metadata", reloaded.metadata.run_id == metadata.run_id)
         ok("reloaded document reassembles requirement_records",
            [r.requirement.id for r in reloaded.requirement_records] == [REQ_A.id])
+
+        # JSON persistence and reload of the attempt log itself, including the direct
+        # invocation_id link between an error and its attempts (rev 2).
+        cls_err, cls_attempts = failed_stage(PipelineStage.CLASSIFIER, "inv-json", attempts=2)
+        req_record_with_attempts = rec(requirement=REQ_A, outcome=RunOutcome.ERROR,
+                                       errors=[cls_err], attempts=cls_attempts)
+        write_requirement_run(tmp_path, req_record_with_attempts)
+        reloaded_after = read_document_run(tmp_path)
+        reloaded_req = next(r for r in reloaded_after.requirement_records if r.requirement.id == REQ_A.id)
+        ok("attempts survive a JSON round trip", len(reloaded_req.attempts) == 2)
+        ok("the error's invocation_id still links to its attempts after reload",
+           reloaded_req.errors[0].invocation_id
+           == {a.invocation_id for a in reloaded_req.attempts}.pop())
+        ok("attempt_number and result survive the round trip",
+           [a.attempt_number for a in reloaded_req.attempts] == [1, 2]
+           and reloaded_req.attempts[-1].result.value == "transport_failure")
 
 
 def test_happy_path() -> None:
@@ -707,9 +803,16 @@ def test_happy_path() -> None:
        and refined_record.final_requirement.refined_text == refined_text)
     ok("stage 3/4 saw the refined text, not the original (contract item 2)",
        strategy_calls == [refined_text] and generate_calls == [refined_text])
-    ok("questioner and rewriter usage is attributed to their own stage, not shared",
-       sum(1 for u in refined_record.usage if u.stage is PipelineStage.REFINER_QUESTIONER) == 1
-       and sum(1 for u in refined_record.usage if u.stage is PipelineStage.REFINER_REWRITER) == 1)
+    ok("questioner and rewriter attempts are attributed to their own stage, not shared",
+       sum(1 for a in refined_record.attempts if a.stage is PipelineStage.REFINER_QUESTIONER) == 1
+       and sum(1 for a in refined_record.attempts if a.stage is PipelineStage.REFINER_REWRITER) == 1)
+    ok("the questioner and rewriter calls got distinct invocation ids",
+       len({a.invocation_id for a in refined_record.attempts
+            if a.stage in (PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER)}) == 2)
+    qc_invocation_ids = [a.invocation_id for a in refined_record.attempts
+                         if a.stage is PipelineStage.QUALITY_CHECKER]
+    ok("Quality Checker round 1 and round 2 are distinct invocations, each attributed",
+       len(qc_invocation_ids) == 2 and qc_invocation_ids[0] != qc_invocation_ids[1])
 
 
 def test_refiner_questioner_and_rewriter_have_independent_configs() -> None:
@@ -1560,11 +1663,11 @@ def test_resumed_cap_generated_then_stopped_strips_stage34() -> None:
                             techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
     capped_round1 = mk_round(1, REQ_A.text, passed=False, rewrite_to=T1)
     capped_round2 = mk_round(2, T1, passed=False)  # cap fires here (max_revisions=2 below)
-    prior_error = StageError(stage=PipelineStage.TEST_GENERATOR, kind=FailureKind.TRANSPORT,
-                             message="429", retry_count=3)
+    prior_error, prior_attempts = failed_stage(PipelineStage.TEST_GENERATOR, "inv-tg-prior",
+                                               attempts=4)
     resumed = rec(requirement=REQ_A, outcome=RunOutcome.ERROR, classification=cls,
                  rounds=[capped_round1, capped_round2], cap_reason="chose to generate anyway",
-                 errors=[prior_error], test_strategy=strategy)
+                 errors=[prior_error], attempts=prior_attempts, test_strategy=strategy)
     ok("fixture is a valid, already-capped-and-errored record (sanity check)",
        resumed.outcome is RunOutcome.ERROR)
     ok("resume_at sends an already-capped round to REFINER_REWRITER, same as a "
@@ -1642,9 +1745,12 @@ def test_run_document_happy_path() -> None:
 
 def test_document_stage_retry_within_run() -> None:
     """Scenario 6: a failed document-level stage is retried within the SAME run (not a
-    new one), the original failure stays in errors, a second failure bumps retry_count
-    rather than appending a new entry, and outcome climbs DEGRADED -> COMPLETED once
-    the retry succeeds."""
+    new one), the original failure stays in errors, outcome climbs DEGRADED ->
+    COMPLETED once the retry succeeds, and (rev 2: no more merging) a second failure
+    appends its OWN new DocumentStageError -- symmetric with the requirement-level
+    "same stage failing in two different rounds" case -- rather than bumping the
+    existing entry's retry_count. See
+    docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md."""
     section("Scenario 6 -- document-level stage retried within the same run")
     from orchestrator.pipeline import run_document, retry_document_stage, Throttle
     from design.schemas import DocumentStage, DocumentOutcome
@@ -1680,10 +1786,10 @@ def test_document_stage_retry_within_run() -> None:
                                        throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
         ok("retry succeeds: outcome climbs to COMPLETED", retried.outcome is DocumentOutcome.COMPLETED)
         ok("the original failure is still on record", len(retried.errors) == 1)
-        ok("no second entry was appended for the same stage",
+        ok("no second entry was appended for a SUCCESSFUL retry",
            sum(1 for e in retried.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER) == 1)
 
-        # -- second failure bumps retry_count instead of appending --
+        # -- a second FAILURE appends its own new entry, a new invocation (rev 2) --
         fail_again_fns = StageFns(
             check_consistency=Scripted([StageCallFailed("429")]), map_dependencies=None,
             classify=None, check_quality=None, refine_questioner=None,
@@ -1698,10 +1804,13 @@ def test_document_stage_retry_within_run() -> None:
         retried_again = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER,
                                              fail_again_fns, throttle, max_attempts=1,
                                              backoff_seconds=lambda a: 0.0)
-        ok("still only one error entry for the stage after a second failure",
-           sum(1 for e in retried_again.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER) == 1)
-        ok("retry_count bumped rather than reset",
-           retried_again.errors[0].retry_count > first_retry_count)
+        cc_errors = [e for e in retried_again.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER]
+        ok("a second failure appends a SECOND error entry for the stage, not a merge",
+           len(cc_errors) == 2)
+        ok("the original entry's retry_count is untouched",
+           cc_errors[0].retry_count == first_retry_count)
+        ok("the two entries reference two distinct invocations",
+           cc_errors[0].invocation_id != cc_errors[1].invocation_id)
 
 
 def test_error_resume_finish() -> None:
@@ -1770,7 +1879,7 @@ def test_interruption_mid_document_round_trip() -> None:
         # Simulate an interruption: document-level stages ran and were written, REQ_A
         # is untouched (no file at all -- "no record file" also counts as pending),
         # and then the process is abandoned. No run_document call spans this at all.
-        cons, deps, errors, usage = run_document_stages(
+        cons, deps, errors, attempts = run_document_stages(
             DOC, metadata.stages,
             StageFns(check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
                     map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
@@ -1780,7 +1889,7 @@ def test_interruption_mid_document_round_trip() -> None:
             throttle)
         partial = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
                                     outcome=DocumentOutcome.COMPLETED, consistency_report=cons,
-                                    dependency_report=deps, usage=usage)
+                                    dependency_report=deps, attempts=attempts)
         write_document_run(tmp_path, partial)
         # (No requirement files written at all -- both requirements are pending.)
 
@@ -1827,59 +1936,208 @@ def test_validation_failure() -> None:
     task, not treated as a special case."""
     section("Scenario 10 -- validation failure")
     from orchestrator.pipeline import call_stage, StageFailed, Throttle
-    from design.schemas import Classification, FailureKind
+    from design.schemas import AttemptResult, Classification, FailureKind
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
-    usage = []
+    attempts = []
     fn = Scripted([{"requirement_id": "R1", "system_type": "not-a-real-type", "rationale": "r"}])
     try:
-        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                  "fake-model", throttle, attempts, "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
         ok("an invalid enum value fails validation", False)
     except StageFailed as f:
         ok("an invalid enum value fails validation", f.kind is FailureKind.VALIDATION)
-    ok("the call still returned, so usage was recorded", len(usage) == 1)
+    ok("the call still returned, so an attempt with tokens was logged",
+       len(attempts) == 1 and attempts[0].result is AttemptResult.VALIDATION_FAILURE
+       and attempts[0].prompt_tokens is not None)
+
+
+def test_first_attempt_success() -> None:
+    """A call that succeeds on the very first try: exactly one attempt row, SUCCESS,
+    tokens present, no error_message."""
+    section("First-attempt success")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import AttemptResult, Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1")
+    ok("the call succeeds", isinstance(result, Classification))
+    ok("exactly one attempt row, SUCCESS, no error_message", len(attempts) == 1
+       and attempts[0].attempt_number == 1 and attempts[0].result is AttemptResult.SUCCESS
+       and attempts[0].error_message is None)
+
+
+def test_validation_then_success() -> None:
+    """A single schema-rejected output followed by a correct retry: two attempts under
+    one invocation, the first VALIDATION_FAILURE (with tokens -- inference happened),
+    the second SUCCESS."""
+    section("Validation failure, then a retry succeeds")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import AttemptResult, Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([
+        {"requirement_id": "R1"},  # missing system_type, rationale -> VALIDATION
+        {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
+    ])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1", max_attempts=2,
+                        backoff_seconds=lambda a: 0.0)
+    ok("the retry succeeds", isinstance(result, Classification))
+    ok("two attempts, one invocation", len(attempts) == 2
+       and attempts[0].invocation_id == attempts[1].invocation_id == "inv-1")
+    ok("first attempt: VALIDATION_FAILURE with tokens (inference happened)",
+       attempts[0].result is AttemptResult.VALIDATION_FAILURE
+       and attempts[0].prompt_tokens is not None)
+    ok("second attempt: SUCCESS", attempts[1].result is AttemptResult.SUCCESS)
+
+
+def test_wrong_id_then_success() -> None:
+    """A requirement_id mismatch (contract item 15) followed by a correct retry: the
+    mismatch is logged as its own VALIDATION_FAILURE attempt, distinct from a
+    malformed-payload validation failure, and the eventual success shares its
+    invocation_id."""
+    section("Wrong requirement_id, then a correct retry succeeds")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import AttemptResult, Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([
+        {"requirement_id": "WRONG-ID", "system_type": "web", "rationale": "r"},
+        {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
+    ])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1", max_attempts=2,
+                        backoff_seconds=lambda a: 0.0)
+    ok("the retry succeeds", isinstance(result, Classification))
+    ok("two attempts logged under the same invocation_id",
+       len(attempts) == 2 and {a.invocation_id for a in attempts} == {"inv-1"})
+    ok("the first attempt is a validation failure naming the wrong id",
+       attempts[0].result is AttemptResult.VALIDATION_FAILURE
+       and "WRONG-ID" in attempts[0].error_message)
+    ok("the second attempt succeeded", attempts[1].result is AttemptResult.SUCCESS)
+
+
+def test_mixed_failures_exhausting_retries() -> None:
+    """A transport failure, then a validation failure, then exhaustion: mixed failure
+    kinds within one invocation are each logged with their own result and shape, and
+    the final StageFailed reflects the LAST attempt (validation), not the first."""
+    section("Mixed failure kinds exhausting retries")
+    from orchestrator.pipeline import call_stage, StageFailed, Throttle
+    from design.schemas import AttemptResult, Classification, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([
+        StageCallFailed("429"),
+        {"requirement_id": "R1"},  # missing fields -> VALIDATION
+    ])
+    try:
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                  "fake-model", throttle, attempts, "R1", max_attempts=2,
+                  backoff_seconds=lambda a: 0.0)
+        ok("exhaustion raises StageFailed", False)
+    except StageFailed as f:
+        ok("exhaustion raises StageFailed", True)
+        ok("StageFailed reflects the LAST attempt's kind (VALIDATION), not the first",
+           f.kind is FailureKind.VALIDATION)
+    ok("both attempts logged with their own distinct result", len(attempts) == 2
+       and attempts[0].result is AttemptResult.TRANSPORT_FAILURE
+       and attempts[0].prompt_tokens is None
+       and attempts[1].result is AttemptResult.VALIDATION_FAILURE
+       and attempts[1].prompt_tokens is not None)
+
+
+def test_error_summary_agrees_with_final_attempt() -> None:
+    """End-to-end (not hand-built): run_requirement exhausting the Classifier must
+    produce a StageError whose invocation_id, kind, message, and retry_count all agree
+    with the final attempt of the invocation it names -- schema 1.1's agreement
+    validator, exercised through the real pipeline path rather than trusted by
+    construction alone."""
+    section("StageError agrees with its final recorded attempt, end to end")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import AttemptResult, RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    human_fns = HumanFns(answer_questions=lambda t: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([StageCallFailed("429"), StageCallFailed("429")]),
+        check_quality=None, refine_questioner=None, refine_rewriter=None,
+        select_strategy=None, generate_tests=None)
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS,
+                             max_attempts=2, backoff_seconds=lambda a: 0.0)
+    ok("the requirement errors out", result.outcome is RunOutcome.ERROR)
+    ok("exactly one error, exactly two attempts", len(result.errors) == 1
+       and len(result.attempts) == 2)
+    err = result.errors[0]
+    invocation = [a for a in result.attempts if a.invocation_id == err.invocation_id]
+    ok("the error's invocation_id resolves to attempts actually on the record",
+       len(invocation) == 2)
+    final = invocation[-1]
+    ok("kind, message, and retry_count all agree with the final attempt",
+       final.result is AttemptResult.TRANSPORT_FAILURE
+       and err.message == final.error_message
+       and err.retry_count == len(invocation) - 1 == 1)
 
 
 def test_token_usage_validation_failures() -> None:
-    """Scenario 12: two validation-failing calls then a success -> 3 usage entries,
-    every call returned so every call is metered."""
-    section("Scenario 12 -- token usage, validation failures")
+    """Scenario 12: two validation-failing calls then a success -> 3 attempt rows,
+    every call returned so every call is metered, including the two rejected ones."""
+    section("Scenario 12 -- token totals, validation failures")
     from orchestrator.pipeline import call_stage, Throttle
     from design.schemas import Classification
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
-    usage = []
+    attempts = []
     fn = Scripted([
         {"requirement_id": "R1"},                          # missing fields -> VALIDATION
         {"requirement_id": "R1", "system_type": "bogus"},  # bad enum -> VALIDATION
         {"requirement_id": "R1", "system_type": "web", "rationale": "r"},  # succeeds
     ])
-    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                        throttle, usage, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1", max_attempts=3,
+                        backoff_seconds=lambda a: 0.0)
     ok("the call eventually succeeds", isinstance(result, Classification))
-    ok("all three calls recorded usage (every call returned)", len(usage) == 3)
-    ok("total tokens sum all three calls", sum(u.prompt_tokens + u.completion_tokens for u in usage) == 45)
+    ok("all three calls logged an attempt (every call returned)", len(attempts) == 3)
+    ok("total tokens sum all three calls, including the two rejected outputs",
+       sum(a.prompt_tokens + a.completion_tokens for a in attempts) == 45)
+    ok("the record round-trips into a RequirementRunRecord.total_tokens matching that sum",
+       rec(attempts=attempts).total_tokens == 45)
 
 
 def test_token_usage_transport_failures() -> None:
-    """Scenario 13: two transport failures then a success -> 1 usage entry, the two
-    429s never reached the model. Kept separate from scenario 12 deliberately -- a
-    shared scenario would hide a wrong assumption about WHERE usage gets appended."""
-    section("Scenario 13 -- token usage, transport failures")
+    """Scenario 13: two transport failures then a success -> 3 attempt rows, but only
+    the one that returned carries tokens -- the two 429s never reached the model.
+    Kept separate from scenario 12 deliberately -- a shared scenario would hide a wrong
+    assumption about WHERE tokens get attributed."""
+    section("Scenario 13 -- token totals, transport failures")
     from orchestrator.pipeline import call_stage, Throttle
-    from design.schemas import Classification
+    from design.schemas import AttemptResult, Classification
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
-    usage = []
+    attempts = []
     fn = Scripted([
         StageCallFailed("429"), StageCallFailed("429"),
         {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
     ])
-    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                        throttle, usage, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1", max_attempts=3,
+                        backoff_seconds=lambda a: 0.0)
     ok("the call eventually succeeds", isinstance(result, Classification))
-    ok("only the one call that returned recorded usage", len(usage) == 1)
+    ok("all three attempts are logged, not just the one that returned", len(attempts) == 3)
+    ok("the two transport failures contribute zero tokens",
+       all(a.prompt_tokens is None for a in attempts if a.result is AttemptResult.TRANSPORT_FAILURE))
+    ok("only the successful call's tokens count toward the total",
+       rec(attempts=attempts).total_tokens == attempts[2].prompt_tokens + attempts[2].completion_tokens)
 
 
 def main() -> int:
@@ -1892,6 +2150,7 @@ def main() -> int:
               test_requirement_id_mismatch_end_to_end,
               test_backoff_timing, test_document_stages_degraded,
               test_document_id_mismatch_is_validation,
+              test_document_wrong_doc_id_then_success,
               test_on_disk_round_trip,
               test_happy_path,
               test_refiner_questioner_and_rewriter_have_independent_configs,
@@ -1908,6 +2167,9 @@ def main() -> int:
               test_run_document_happy_path,
               test_document_stage_retry_within_run, test_error_resume_finish,
               test_interruption_mid_document_round_trip, test_validation_failure,
+              test_first_attempt_success, test_validation_then_success,
+              test_wrong_id_then_success, test_mixed_failures_exhausting_retries,
+              test_error_summary_agrees_with_final_attempt,
               test_token_usage_validation_failures, test_token_usage_transport_failures):
         fn()
     print("\n" + "=" * 72)

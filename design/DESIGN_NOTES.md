@@ -1735,3 +1735,45 @@ illusory -- and `ALL_STAGES`, `RunMetadata._covers_every_stage`, `TokenUsage.sta
 `StageError.stage` already exist specifically to make "which stage" a first-class,
 countable value; adding a second axis under one stage duplicates that machinery instead
 of reusing it.
+
+## Per-attempt observability replaces the token-only usage log (2026-08-08)
+
+Full design, including the two revisions made during review and the exact agreement
+rules, is in
+`docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md` -- not restated
+here. Summary of what changed and why, for anyone scanning this file for the decision
+rather than the reasoning:
+
+- `TokenUsage`/`DocumentTokenUsage` deleted. `RequirementRunRecord.usage`/
+  `DocumentRunRecord.usage` renamed to `attempts: list[StageAttempt]`/
+  `list[DocumentStageAttempt]` -- one row per attempt, success or failure, not just
+  calls that returned. `total_tokens`/`document_stage_tokens` now sum over `attempts`.
+- New `AttemptResult` enum (`SUCCESS`/`TRANSPORT_FAILURE`/`VALIDATION_FAILURE`/
+  `OTHER_FAILURE`) -- kept separate from `FailureKind` rather than reusing it, since
+  `FailureKind` has no success case and was scoped to "why did the stage *finally*
+  fail," not "what happened on this one try."
+- `StageError`/`DocumentStageError` gained `invocation_id`, linking an error directly
+  to the attempts-log invocation it summarises. This replaced an earlier draft (rev 1
+  of the linked spec) that matched errors to attempts by list position at requirement
+  level and by aggregating retry counts across merged invocations at document level --
+  rejected on review for depending on append order and for a stale-`kind`/`message`
+  artifact in the document-level merge arithmetic.
+- `retry_document_stage` no longer merges a repeated failure into an existing
+  `DocumentStageError`; each manual retry is its own invocation and, if it fails,
+  appends its own error -- symmetric with how `RequirementRunRecord.errors` already
+  worked. `DocumentRunRecord` lost its "at most one error per stage" rule as a direct
+  consequence.
+- Schema version bumped `1.0` -> `1.1` on `RunMetadata` -- no real run predates this (no
+  `document.json`/`runs/` anywhere in the repo or its history), so nothing needed
+  migrating; the bump exists only so a future reader can tell the two record shapes
+  apart.
+- Two checks were written, then deleted after mutation-testing proved them
+  unreachable: a standalone "more than one SUCCESS" check (subsumed by "the first
+  SUCCESS's index must equal the last position," which already implies at most one),
+  and a `_require_unique` on `(invocation_id, attempt_number)` (subsumed by the
+  attempt-number-sequence check, since a duplicate number inside one invocation always
+  already breaks that group away from `range(1, len+1)`). Both are CLAUDE.md's "don't
+  write a check that can't fire" caught in the act, not by inspection but by mutation
+  runs -- the second and third time this exact failure mode has shown up in this
+  project (see `_run_refine_loop`'s already-capped-round short-circuit, deleted the
+  same way, in "Refiner split into REFINER_QUESTIONER / REFINER_REWRITER" above).
