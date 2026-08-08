@@ -92,6 +92,14 @@ the other two could not, three times.
 one case. It is now executed by `orchestrator/test_harness.py::test_resume_positions`. If
 a document describes logic, test the logic.
 
+**A fix at one level needs checking at the other, in the same change.**
+`RequirementRunRecord` and `DocumentRunRecord` mirror each other, as do their stage
+errors, token usage, and stage-call paths. Four separate times a change landed at one
+level and the twin was found later by review — `errors` as a log, `StageError`/
+`DocumentStageError`, `TokenUsage`/`DocumentTokenUsage`, and id-mismatch checking
+(`call_stage`'s `req_id` fixed, `call_document_stage`'s `doc_id` missed). When you touch
+one, check the other before committing.
+
 ---
 
 ## Known-open, deliberately

@@ -6,10 +6,11 @@ implementation bugs, review-found bugs) and every issue deliberately deferred or
 as documented tech debt, so none of it has to be rediscovered.
 
 Merged to master @ `d3d1d9f` (2026-08-08). Post-merge, an external review found two more
-issues (§7), and both of §5's deferred items are now closed (the requirement_id
-mismatch decision is `ORCHESTRATOR_CONTRACT.md` item 15) — current state:
+issues (§7), both of §5's deferred items are closed (the id-mismatch decision is
+`ORCHESTRATOR_CONTRACT.md` item 15, covering both the requirement and document levels),
+and mutation-testing that fix found three more follow-ons (also §5) — current state:
 `python -m design.test_schemas` → 270 checks, `python -m orchestrator.test_harness` →
-135 checks.
+145 checks.
 
 ---
 
@@ -204,6 +205,44 @@ to a real, nondeterministic LLM — not before:
   (`classification.requirement_id is 'DOC-REQ-B', but this record is for 'DOC-REQ-A'`)
   — confirming the fix closes precisely the hole it claims to, not something adjacent.
   111 → 135 checks.
+
+  **Three follow-ons found by mutation-testing this commit (6e9fc9c), all closed
+  2026-08-08:**
+
+  1. **The "`req_id` has no default" guarantee was itself untested.** The commit
+     message claimed a forgotten wire-up would fail loud because `req_id` has no
+     default — true in the code, but nothing pinned it: giving it a default
+     (`req_id: str = ''`) left all 135 harness checks and all 270 schema checks green,
+     verified before fixing. Same shape as the rules `test_rule_table_anchors` exists
+     to pin in `design/test_schemas.py` — a design guarantee with no test is a claim
+     that could silently stop holding. Added
+     `test_id_check_parameters_have_no_default`, an anchor test using
+     `inspect.signature(...).parameters[...].default is inspect.Parameter.empty`.
+     Mutation-tested: giving `req_id` a default now fails exactly that one check,
+     cleanly, nothing else affected.
+  2. **`call_document_stage` had the identical hole — missed because the original fix
+     was scoped to "all six per-requirement stages" and never considered the document
+     level.** Verified by construction first: a consistency checker returning a
+     `doc_id` for a different document was accepted by `run_document_stages`
+     (`errors=[]`) and only raised an uncaught `ValidationError` later, at
+     `DocumentRunRecord` construction — identical shape and timing to the pre-fix
+     per-requirement bug. Same decision (option B) applied — see
+     `design/ORCHESTRATOR_CONTRACT.md` item 15's document-level addendum for the one
+     genuine difference (doc_id's `Optional`-on-both-sides handling, mirroring
+     `DocumentRunRecord._references_resolve`). Added
+     `test_document_id_mismatch_is_validation` (both document stages, plus the two
+     "a `None` on either side is not a mismatch" cases). Mutation-tested twice: giving
+     `doc_id` a default failed the anchor test cleanly; disabling the mismatch check
+     itself failed exactly the two document-stage checks and reproduced the original
+     uncaught `ValidationError` verbatim when driven through `run_document_stages` +
+     `DocumentRunRecord` construction.
+  3. **The pattern itself got recorded in `CLAUDE.md`'s "Rules learned the hard way"**
+     (item 2 above is the fourth time a fix at one level needed the same fix at the
+     other level, found later by review rather than in the same change — after
+     `errors`-as-a-log, `StageError`/`DocumentStageError`, and `TokenUsage`/
+     `DocumentTokenUsage`).
+
+  135 → 145 checks.
 
 ## 6. Reviewed and deliberately left as documented tech debt
 

@@ -194,13 +194,25 @@ def call_document_stage(
     model_name: str,
     throttle: Throttle,
     usage_sink: list[DocumentTokenUsage],
+    doc_id: Optional[str],
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> BaseModel:
     """Structurally identical to call_stage apart from the stage/usage types -- same
     reasoning as the StageError/DocumentStageError split: a shared implementation
     parameterised by a PipelineStage | DocumentStage union would let a call meant for
-    one level accidentally target the other."""
+    one level accidentally target the other.
+
+    doc_id is required (no default), same reasoning as call_stage's req_id: a defaulted
+    parameter would silently skip the check at exactly the call site someone forgot to
+    wire it up. Unlike req_id, though, doc_id is genuinely Optional -- RequirementSet.doc_id
+    and ConsistencyReport/DependencyReport.doc_id can each legitimately be None (this
+    document's provenance was never recorded, or the model didn't echo it back). The
+    check below only fires when BOTH sides are present and disagree, mirroring
+    DocumentRunRecord._references_resolve's own doc_id check in design/schemas.py:
+    silence is not the same as disagreement, and a None on either side is not a claim
+    the report was produced for a different document.
+    """
     last_kind: FailureKind = FailureKind.OTHER
     last_message = "call_document_stage was invoked with max_attempts < 1"
 
@@ -216,9 +228,19 @@ def call_document_stage(
             usage_sink.append(DocumentTokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
                                                  completion_tokens=result.completion_tokens))
             try:
-                return model_cls.model_validate(result.raw)
+                parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:
                 last_kind, last_message = FailureKind.VALIDATION, str(e)
+            else:
+                mismatch = (doc_id is not None and parsed.doc_id is not None
+                            and parsed.doc_id != doc_id)
+                if not mismatch:
+                    return parsed
+                last_kind = FailureKind.VALIDATION
+                last_message = (
+                    f"{model_cls.__name__}.doc_id is {parsed.doc_id!r}, expected "
+                    f"{doc_id!r} -- the model answered about a different document"
+                )
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -246,7 +268,7 @@ def run_document_stages(
             stage_fns.check_consistency, (requirement_set,), ConsistencyReport,
             DocumentStage.CONSISTENCY_CHECKER,
             stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, usage,
-            max_attempts, backoff_seconds)
+            requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
         errors.append(DocumentStageError(stage=DocumentStage.CONSISTENCY_CHECKER, kind=f.kind,
                                          message=f.message, retry_count=f.retry_count))
@@ -257,7 +279,7 @@ def run_document_stages(
             stage_fns.map_dependencies, (requirement_set,), DependencyReport,
             DocumentStage.DEPENDENCY_MAPPER,
             stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, usage,
-            max_attempts, backoff_seconds)
+            requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
         errors.append(DocumentStageError(stage=DocumentStage.DEPENDENCY_MAPPER, kind=f.kind,
                                          message=f.message, retry_count=f.retry_count))
@@ -734,7 +756,7 @@ def retry_document_stage(
         report = call_document_stage(
             stage_fn, (record.requirement_set,), model_cls, stage,
             record.metadata.stages[stage.value].model, throttle, usage,
-            max_attempts, backoff_seconds)
+            record.requirement_set.doc_id, max_attempts, backoff_seconds)
     except StageFailed as f:
         existing = next((e for e in record.errors if e.stage is stage), None)
         errors = [e for e in record.errors if e.stage is not stage]

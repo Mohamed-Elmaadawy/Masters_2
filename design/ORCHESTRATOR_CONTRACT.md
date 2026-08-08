@@ -299,7 +299,7 @@ and at what cost, a given model produces schema-invalid output.
 *(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md,
 harness scenario 10.)*
 
-## 15. A requirement_id mismatch is a validation failure, uniformly
+## 15. An id mismatch is a validation failure, uniformly — at both levels
 
 Before this decision, a model answering about the wrong requirement (e.g. asked about
 `REQ-3`, its output's `requirement_id` says `REQ-9`) had three different outcomes
@@ -363,6 +363,33 @@ opposed to a missing/malformed field), and tally that count per stage and per mo
 A first run against THEMAS (8 requirements, ~40 calls) is cheap enough to do this on
 before running anything larger, and turns "is option A needed after all?" into a
 question with an answer instead of a guess.
+
+### The same hole exists at the document level — found by mutation-testing this fix
+
+The decision above was scoped to "all six per-requirement stages" and missed that
+`call_document_stage` (the consistency checker and dependency mapper) has the
+identical bug: a report's `doc_id` disagreeing with `RequirementSet.doc_id` was
+accepted by `run_document_stages` (`errors=[]`) and only raised an uncaught
+`ValidationError` later, at `DocumentRunRecord` construction — same silent-until-too-
+late shape, verified by construction before fixing.
+
+Same decision (option B) applies: `call_document_stage` now checks
+`parsed.doc_id != doc_id` immediately after `model_validate` succeeds, for both
+`check_consistency` and `map_dependencies`. One difference from the per-requirement
+case, decided deliberately rather than copied blindly: `doc_id` is `Optional` on both
+`RequirementSet.doc_id` and the report models (a document's provenance may legitimately
+never be recorded, or a model may not echo `doc_id` back at all), so the check only
+fires when **both** sides are present and disagree — a `None` on either side is not a
+claim of the wrong document, it's the absence of a claim. This mirrors
+`DocumentRunRecord._references_resolve`'s own `doc_id` check in `design/schemas.py`,
+which uses the identical `is not None` guard on both sides for the identical reason.
+
+`doc_id`, like `req_id`, is a required parameter with no default on `call_document_stage`
+— the same "a defaulted parameter silently skips the check at exactly the call site
+someone forgot to wire it up" reasoning, now pinned by an anchor test
+(`test_id_check_parameters_have_no_default`) after mutation-testing showed neither
+`req_id` nor `doc_id` lacking a default was actually verified anywhere: giving either
+one a default left every other check in the suite green.
 
 *(Added 2026-08-08, see
 docs/superpowers/plans/2026-08-08-orchestrator-harness-fixes-and-changes.md section 5.)*

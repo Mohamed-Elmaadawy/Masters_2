@@ -280,6 +280,26 @@ def test_call_stage() -> None:
         ok("a caller bug (outside call_stage's guarded line) still crashes", True)
 
 
+def test_id_check_parameters_have_no_default() -> None:
+    """Anchor test, same shape as design/test_schemas.py's test_rule_table_anchors: a
+    design guarantee with no test is a claim that could silently stop holding. The
+    commit message for the requirement_id/doc_id mismatch fix says req_id and doc_id
+    have no default so a forgotten wire-up fails loud instead of silently skipping the
+    check -- true in the code, but nothing pinned it. Verified by construction first:
+    giving req_id a default (`req_id: str = ''`) left all other checks in this file
+    passing, and giving doc_id a default did the same for call_document_stage's. This
+    test is what makes a future reintroduction of either default visible."""
+    section("Anchor -- call_stage/call_document_stage id-check parameters require no default")
+    import inspect
+    from orchestrator.pipeline import call_stage, call_document_stage
+
+    ok("call_stage.req_id has no default -- a forgotten wire-up must fail loud",
+       inspect.signature(call_stage).parameters["req_id"].default is inspect.Parameter.empty)
+    ok("call_document_stage.doc_id has no default -- a forgotten wire-up must fail loud",
+       inspect.signature(call_document_stage).parameters["doc_id"].default
+       is inspect.Parameter.empty)
+
+
 def test_requirement_id_mismatch_is_validation_at_every_stage() -> None:
     """ORCHESTRATOR_CONTRACT.md item 15 (option B): a stage answering about the wrong
     requirement is a FailureKind.VALIDATION failure, uniformly, at all six
@@ -424,7 +444,7 @@ def test_backoff_timing() -> None:
     doc_fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
                        {"doc_id": DOC.doc_id, "conflicts": []}])
     call_document_stage(doc_fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
-                        "fake-model", throttle_recording2, [], max_attempts=3,
+                        "fake-model", throttle_recording2, [], DOC.doc_id, max_attempts=3,
                         backoff_seconds=lambda a: (a + 1) * 10.0)
     ok("call_document_stage: backoff fires between attempts, not after the last",
        slept2 == [10.0, 20.0])
@@ -457,6 +477,71 @@ def test_document_stages_degraded() -> None:
     # No inline DocumentOutcome recomputation here: real DocumentOutcome derivation
     # coverage is in test_document_stage_retry_within_run (Task 12), which drives it
     # through the actual run_document code path.
+
+
+def test_document_id_mismatch_is_validation() -> None:
+    """ORCHESTRATOR_CONTRACT.md item 15's sibling at the document level: the
+    per-requirement req_id fix was scoped to "all six per-requirement stages" and
+    missed that call_document_stage has the identical hole. Verified by construction
+    first: a consistency checker returning a doc_id for a completely different
+    document was accepted by run_document_stages (errors=[]) and only raised an
+    uncaught ValidationError later, at DocumentRunRecord construction -- same shape,
+    same silent-until-too-late timing, as the pre-fix per-requirement bug.
+
+    Both document stages (check_consistency, map_dependencies) must now treat a doc_id
+    mismatch as FailureKind.VALIDATION, uniformly with the per-requirement fix.
+
+    Also covers the difference from the per-requirement case that has to be decided
+    deliberately, not copied blindly: doc_id is Optional on both
+    RequirementSet.doc_id and the report models, so a None on EITHER side must NOT be
+    treated as a mismatch -- silence is not disagreement, mirroring
+    DocumentRunRecord._references_resolve's own doc_id check in design/schemas.py
+    (which only fires when both sides are present).
+    """
+    section("Document id mismatch is uniformly a validation failure (contract item 15)")
+    from orchestrator.pipeline import call_document_stage, StageFailed, Throttle
+    from design.schemas import ConsistencyReport, DependencyReport, DocumentStage, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    cases = [
+        ("check_consistency", ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+         {"doc_id": "WRONG-DOC", "conflicts": []}),
+        ("map_dependencies", DependencyReport, DocumentStage.DEPENDENCY_MAPPER,
+         {"doc_id": "WRONG-DOC", "dependencies": []}),
+    ]
+    for label, model_cls, stage, raw in cases:
+        usage: list = []
+        fn = Scripted([raw])
+        try:
+            call_document_stage(fn, (DOC,), model_cls, stage, "fake-model", throttle,
+                                usage, "REAL-DOC", max_attempts=1, backoff_seconds=lambda a: 0.0)
+            ok(f"{label}: doc_id mismatch raises StageFailed", False)
+        except StageFailed as f:
+            ok(f"{label}: doc_id mismatch raises StageFailed", True)
+            ok(f"{label}: kind is VALIDATION, not OTHER or an uncaught crash",
+               f.kind is FailureKind.VALIDATION)
+        ok(f"{label}: usage still recorded (the call succeeded; the doc_id was just wrong)",
+           len(usage) == 1)
+
+    # Silence is not disagreement: a None on either side must not be flagged.
+    usage_a: list = []
+    result_a = call_document_stage(
+        Scripted([{"doc_id": "SOME-DOC", "conflicts": []}]), (DOC,), ConsistencyReport,
+        DocumentStage.CONSISTENCY_CHECKER, "fake-model", throttle, usage_a,
+        None,  # requirement_set.doc_id is None -- no provenance recorded, not a claim
+        max_attempts=1, backoff_seconds=lambda a: 0.0)
+    ok("requirement_set.doc_id=None is not a mismatch against any reported doc_id",
+       result_a.doc_id == "SOME-DOC")
+
+    usage_b: list = []
+    result_b = call_document_stage(
+        Scripted([{"doc_id": None, "conflicts": []}]), (DOC,), ConsistencyReport,
+        DocumentStage.CONSISTENCY_CHECKER, "fake-model", throttle, usage_b,
+        "REAL-DOC",  # the model didn't echo a doc_id back -- also not a claim
+        max_attempts=1, backoff_seconds=lambda a: 0.0)
+    ok("a report with doc_id=None is not a mismatch against any requirement_set.doc_id",
+       result_b.doc_id is None)
 
 
 def test_throttle() -> None:
@@ -1444,9 +1529,11 @@ def main() -> int:
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage, test_requirement_id_mismatch_is_validation_at_every_stage,
+              test_call_stage, test_id_check_parameters_have_no_default,
+              test_requirement_id_mismatch_is_validation_at_every_stage,
               test_requirement_id_mismatch_end_to_end,
               test_backoff_timing, test_document_stages_degraded,
+              test_document_id_mismatch_is_validation,
               test_on_disk_round_trip,
               test_happy_path, test_revision_cap, test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,
