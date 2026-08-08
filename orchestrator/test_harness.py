@@ -218,7 +218,7 @@ def test_call_stage() -> None:
     usage: list[TokenUsage] = []
     fn = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
     result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER,
-                        "fake-model", throttle, usage)
+                        "fake-model", throttle, usage, "R1")
     ok("call_stage returns a validated model", isinstance(result, Classification))
     ok("a successful call records one usage entry", len(usage) == 1)
     ok("usage entry carries the right stage", usage[0].stage is PipelineStage.CLASSIFIER)
@@ -228,7 +228,7 @@ def test_call_stage() -> None:
     fn2 = Scripted([StageCallFailed("429"), StageCallFailed("429"), StageCallFailed("429")])
     try:
         call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage2, max_attempts=3, backoff_seconds=lambda a: 0.0)
+                  throttle, usage2, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
         ok("TRANSPORT exhaustion raises StageFailed", False)
     except StageFailed as f:
         ok("TRANSPORT exhaustion raises StageFailed", True)
@@ -241,7 +241,7 @@ def test_call_stage() -> None:
     fn3 = Scripted([{"requirement_id": "R1"}])  # missing system_type, rationale
     try:
         call_stage(fn3, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage3, max_attempts=1, backoff_seconds=lambda a: 0.0)
+                  throttle, usage3, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
         ok("VALIDATION failure raises StageFailed", False)
     except StageFailed as f:
         ok("VALIDATION failure raises StageFailed", True)
@@ -253,7 +253,7 @@ def test_call_stage() -> None:
     fn4 = Scripted([KeyError("unexpected")])
     try:
         call_stage(fn4, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage4, max_attempts=1, backoff_seconds=lambda a: 0.0)
+                  throttle, usage4, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
         ok("an unexpected exception type raises StageFailed(OTHER)", False)
     except StageFailed as f:
         ok("an unexpected exception type raises StageFailed(OTHER)", True)
@@ -271,13 +271,131 @@ def test_call_stage() -> None:
     fn5 = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
     def broken_caller():
         result = call_stage(fn5, ("R1",), Classification, PipelineStage.CLASSIFIER,
-                            "fake-model", throttle, usage)
+                            "fake-model", throttle, usage, "R1")
         return result.nonexistent_attribute  # AttributeError, not from inside call_stage
     try:
         broken_caller()
         ok("a caller bug (outside call_stage's guarded line) still crashes", False)
     except AttributeError:
         ok("a caller bug (outside call_stage's guarded line) still crashes", True)
+
+
+def test_requirement_id_mismatch_is_validation_at_every_stage() -> None:
+    """ORCHESTRATOR_CONTRACT.md item 15 (option B): a stage answering about the wrong
+    requirement is a FailureKind.VALIDATION failure, uniformly, at all six
+    per-requirement stage models -- not three different behaviours depending on which
+    stage produced it. Before this fix, verified by construction (not assumed):
+    Classification/TestStrategy/an internally-consistent TestPlan crashed with an
+    uncaught ValidationError only once the record was finally re-validated (after later
+    stages had already run and been paid for); QualityReport was silently relabelled
+    with the correct id and the run completed as if nothing were wrong; RefinerTurn/
+    RefinedRequirement crashed immediately at RefinementRound construction. All six now
+    go through the exact same call_stage check and come out the same way: retried per
+    the normal policy, usage recorded (the call succeeded; it just answered about the
+    wrong requirement), StageFailed(kind=VALIDATION) on exhaustion.
+
+    Each payload below is otherwise completely valid and self-consistent -- the ONLY
+    thing wrong is requirement_id -- so a fixture that returned kind=OTHER or crashed
+    outright would mean call_stage's new check isn't what's catching it.
+    """
+    section("Requirement id mismatch is uniformly a validation failure (contract item 15)")
+    from orchestrator.pipeline import call_stage, StageFailed, Throttle
+    from design.schemas import (
+        Classification, FailureKind, QualityReport, RefinedRequirement, RefinerTurn,
+        TestPlan, TestStrategy,
+    )
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    WRONG = "SOME-OTHER-REQ"
+
+    cases = [
+        ("classify", Classification,
+         {"requirement_id": WRONG, "system_type": "web", "rationale": "r"}),
+        ("check_quality", QualityReport,
+         {"requirement_id": WRONG, "passed": True, "issues": []}),
+        ("refine (turn)", RefinerTurn,
+         {"requirement_id": WRONG, "revision_number": 1, "questions": [
+             {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]}),
+        ("refine (rewrite)", RefinedRequirement,
+         {"requirement_id": WRONG, "original_text": "a", "refined_text": "b",
+          "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]}),
+        ("select_strategy", TestStrategy,
+         {"requirement_id": WRONG, "system_type": "web", "techniques": ["exploratory"], "rationale": "r"}),
+        # Internally self-consistent on purpose (the plan's cases also say WRONG, not
+        # R1) -- isolates OUR check from TestPlan's own unrelated _cases_cover_this_
+        # requirement validator, which would otherwise catch an INCONSISTENT payload
+        # for an unrelated reason and give a false sense that this stage was covered.
+        ("generate_tests", TestPlan,
+         {"requirement_id": WRONG, "test_cases": [{
+             "id": "TC-1", "requirement_ids": [WRONG], "technique_used": "exploratory",
+             "title": "t", "steps": ["s"], "expected_result": "e"}]}),
+    ]
+    for label, model_cls, raw in cases:
+        usage: list = []
+        fn = Scripted([raw])
+        try:
+            call_stage(fn, ("R1",), model_cls, PipelineStage.CLASSIFIER, "fake-model",
+                      throttle, usage, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
+            ok(f"{label}: requirement_id mismatch raises StageFailed", False)
+        except StageFailed as f:
+            ok(f"{label}: requirement_id mismatch raises StageFailed", True)
+            ok(f"{label}: kind is VALIDATION, not OTHER or an uncaught crash",
+               f.kind is FailureKind.VALIDATION)
+        ok(f"{label}: usage still recorded (the call succeeded; the id was just wrong)",
+           len(usage) == 1)
+
+
+def test_requirement_id_mismatch_end_to_end() -> None:
+    """Same fix, proven through the full pipeline rather than call_stage in isolation --
+    confirms run_requirement actually threads req.id into all six call sites, not just
+    that call_stage's own check works when given the right id by hand.
+
+    Picks the two ends of the old three-way split: classify (used to crash uncaught,
+    late, after every later stage had already run) and check_quality (used to silently
+    relabel and let the run complete looking clean). Both must now produce the same
+    thing: outcome=ERROR, a single StageError naming the right stage with
+    kind=VALIDATION, and -- for classify specifically -- no later stage ever called.
+    """
+    section("Requirement id mismatch, end to end through run_requirement")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, FailureKind, RunOutcome, SystemType
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    human_fns = HumanFns(answer_questions=lambda t: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+    def never_called(*a, **k):
+        raise AssertionError("must never be called -- classify already failed terminally")
+
+    fns_classify = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_B.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=never_called, refine=never_called,
+        select_strategy=never_called, generate_tests=never_called)
+    result = run_requirement(rec(requirement=REQ_A), DOC, None, None, fns_classify, human_fns,
+                             throttle, max_revisions=3, stage_configs=STAGE_CONFIGS, max_attempts=1)
+    ok("classify wrong id -> outcome=ERROR (was: uncaught crash after later stages ran)",
+       result.outcome is RunOutcome.ERROR)
+    ok("classify wrong id -> exactly one StageError, kind=VALIDATION",
+       len(result.errors) == 1 and result.errors[0].kind is FailureKind.VALIDATION
+       and result.errors[0].stage is PipelineStage.CLASSIFIER)
+    ok("classify wrong id -> no later stage was ever reached", result.classification is None)
+
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    fns_quality = StageFns(
+        check_consistency=None, map_dependencies=None, classify=None,
+        check_quality=Scripted([{"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
+        refine=never_called, select_strategy=never_called, generate_tests=never_called)
+    result2 = run_requirement(rec(requirement=REQ_A, classification=cls), DOC, None, None,
+                              fns_quality, human_fns, throttle, max_revisions=3,
+                              stage_configs=STAGE_CONFIGS, max_attempts=1)
+    ok("check_quality wrong id -> outcome=ERROR (was: silently relabelled, run completed)",
+       result2.outcome is RunOutcome.ERROR)
+    ok("check_quality wrong id -> exactly one StageError, kind=VALIDATION",
+       len(result2.errors) == 1 and result2.errors[0].kind is FailureKind.VALIDATION
+       and result2.errors[0].stage is PipelineStage.QUALITY_CHECKER)
+    ok("check_quality wrong id -> no round was recorded (nothing to silently look clean)",
+       result2.rounds == [])
 
 
 def test_backoff_timing() -> None:
@@ -296,7 +414,7 @@ def test_backoff_timing() -> None:
     fn = Scripted([StageCallFailed("429"), StageCallFailed("429"),
                   {"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
     call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-              throttle_recording, [], max_attempts=3,
+              throttle_recording, [], "R1", max_attempts=3,
               backoff_seconds=lambda a: (a + 1) * 10.0)
     ok("call_stage: backoff fires between attempts, not after the last (or the first)",
        slept == [10.0, 20.0])
@@ -1273,7 +1391,7 @@ def test_validation_failure() -> None:
     fn = Scripted([{"requirement_id": "R1", "system_type": "not-a-real-type", "rationale": "r"}])
     try:
         call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                  throttle, usage, max_attempts=1, backoff_seconds=lambda a: 0.0)
+                  throttle, usage, "R1", max_attempts=1, backoff_seconds=lambda a: 0.0)
         ok("an invalid enum value fails validation", False)
     except StageFailed as f:
         ok("an invalid enum value fails validation", f.kind is FailureKind.VALIDATION)
@@ -1295,7 +1413,7 @@ def test_token_usage_validation_failures() -> None:
         {"requirement_id": "R1", "system_type": "web", "rationale": "r"},  # succeeds
     ])
     result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                        throttle, usage, max_attempts=3, backoff_seconds=lambda a: 0.0)
+                        throttle, usage, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
     ok("the call eventually succeeds", isinstance(result, Classification))
     ok("all three calls recorded usage (every call returned)", len(usage) == 3)
     ok("total tokens sum all three calls", sum(u.prompt_tokens + u.completion_tokens for u in usage) == 45)
@@ -1316,7 +1434,7 @@ def test_token_usage_transport_failures() -> None:
         {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
     ])
     result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
-                        throttle, usage, max_attempts=3, backoff_seconds=lambda a: 0.0)
+                        throttle, usage, "R1", max_attempts=3, backoff_seconds=lambda a: 0.0)
     ok("the call eventually succeeds", isinstance(result, Classification))
     ok("only the one call that returned recorded usage", len(usage) == 1)
 
@@ -1326,7 +1444,9 @@ def main() -> int:
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
-              test_call_stage, test_backoff_timing, test_document_stages_degraded,
+              test_call_stage, test_requirement_id_mismatch_is_validation_at_every_stage,
+              test_requirement_id_mismatch_end_to_end,
+              test_backoff_timing, test_document_stages_degraded,
               test_on_disk_round_trip,
               test_happy_path, test_revision_cap, test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,

@@ -6,9 +6,10 @@ implementation bugs, review-found bugs) and every issue deliberately deferred or
 as documented tech debt, so none of it has to be rediscovered.
 
 Merged to master @ `d3d1d9f` (2026-08-08). Post-merge, an external review found two more
-issues (§7), and one of §5's two deferred items has since been closed — current state:
+issues (§7), and both of §5's deferred items are now closed (the requirement_id
+mismatch decision is `ORCHESTRATOR_CONTRACT.md` item 15) — current state:
 `python -m design.test_schemas` → 270 checks, `python -m orchestrator.test_harness` →
-111 checks.
+135 checks.
 
 ---
 
@@ -160,13 +161,49 @@ to a real, nondeterministic LLM — not before:
   `_run_refine_loop`'s fresh-round branch — confirming the new test fails for the right
   reason (the resume mechanism itself, not an unrelated validator) rather than merely
   going red. 105 → 111 checks.
-- **`QualityReport` is rebuilt with `requirement_id=req.id`, silently discarding
-  whatever `raw_report.requirement_id` the LLM actually returned.** A checker
-  answering about the wrong requirement is currently relabeled instead of failing —
-  the same class of problem as `VAGUE_PRONOUN`'s documented noisiness (Known
-  Limitation 4), but silent. Needs a named design decision once a real model is
-  behind `check_quality`, not a quiet one-line fix now. **Still open** — being settled
-  separately.
+- ~~`QualityReport` is rebuilt with `requirement_id=req.id`, silently discarding
+  whatever `raw_report.requirement_id` the LLM actually returned~~ **Closed (2026-08-08)
+  — see `design/ORCHESTRATOR_CONTRACT.md` item 15.** Verified by construction first
+  (per CLAUDE.md's "verify before asserting") that the review's three-way split was, if
+  anything, an undercount: `check_quality` silently relabelled; `classify`,
+  `select_strategy`, and an internally-*consistent* `generate_tests` payload each
+  crashed with an uncaught `ValidationError`, but only at the final
+  `RequirementRunRecord.model_validate` — after every later stage had already run and
+  been paid for; `refine`'s turn and rewrite crashed immediately at `RefinementRound`
+  construction, a fourth timing the review never tested. The review's own
+  internally-*inconsistent* `generate_tests` test case (plan says one id, its cases say
+  another) only looked handled by coincidence — `TestPlan`'s own unrelated
+  `_cases_cover_this_requirement` check caught it, not anything id-mismatch-specific;
+  a consistently-wrong payload crashes exactly like `classify`/`select_strategy`.
+
+  **Decision: option B** (below), not A (silently overwrite everywhere — rejected,
+  destroys the "how often does model X answer about the wrong requirement" signal a
+  model-comparison chapter wants) or C (stop asking the model to restate
+  `requirement_id` at all — cleanest in principle, but needs six separate LLM-facing
+  payload models and in practice collapses into A anyway). `call_stage` now checks
+  `parsed.requirement_id == req_id` immediately after `model_validate` succeeds, before
+  ever returning — a mismatch becomes `FailureKind.VALIDATION`, retried per the normal
+  policy, usage recorded (the call succeeded; tokens were spent on an answer about the
+  wrong requirement). One outcome at all six per-requirement call sites, not three.
+
+  **Accepted risk:** a systematically-wrong model costs up to `max_attempts` tries per
+  affected call instead of one. Accepted because it's counted (`StageError.kind` +
+  `retry_count`), not silent — a first run on THEMAS (8 requirements, ~40 calls) makes
+  the real rate visible cheaply, turning "is option A needed after all?" into a
+  decision with a number behind it. **No rate is estimated here — there is none yet.**
+  See `ORCHESTRATOR_CONTRACT.md` item 15 for what to measure on that first run.
+
+  Added `test_requirement_id_mismatch_is_validation_at_every_stage` (all six stage
+  models, direct `call_stage` level) and `test_requirement_id_mismatch_end_to_end`
+  (through `run_requirement`, the two most distinct old behaviors — classify's
+  delayed-crash and check_quality's silent-relabel — both now `outcome=ERROR`,
+  `kind=VALIDATION`, one `StageError`, no later stage reached). Mutation-tested by
+  disabling the new check (`if parsed.requirement_id == req_id:` → `if True:`): the six
+  direct-call checks failed cleanly (red, not a crash), and the end-to-end test
+  reproduced the *exact* pre-fix uncaught `ValidationError` verbatim
+  (`classification.requirement_id is 'DOC-REQ-B', but this record is for 'DOC-REQ-A'`)
+  — confirming the fix closes precisely the hole it claims to, not something adjacent.
+  111 → 135 checks.
 
 ## 6. Reviewed and deliberately left as documented tech debt
 

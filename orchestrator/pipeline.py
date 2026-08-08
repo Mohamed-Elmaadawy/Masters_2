@@ -120,10 +120,12 @@ def call_stage(
     model_name: str,
     throttle: Throttle,
     usage_sink: list[TokenUsage],
+    req_id: str,
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> BaseModel:
-    """Call one stage, validate its output, retry on failure, record usage.
+    """Call one stage, validate its output, check it answers about the right
+    requirement, retry on failure, record usage.
 
     Only the stage_fn call itself is wrapped in `except Exception` -- not the
     validation that follows, and not any surrounding orchestrator code. A bug in the
@@ -131,6 +133,24 @@ def call_stage(
     which would otherwise be an enum member with no real producer (CLAUDE.md: "don't
     write a check that can't fire"). See design/ORCHESTRATOR_CONTRACT.md item 7 and
     the FailureKind docstring in design/schemas.py.
+
+    req_id is required, not optional: every model_cls this is called with (all six
+    per-requirement stage outputs) carries a requirement_id field, and a defaulted
+    (e.g. None) parameter here would silently skip the check at exactly the call sites
+    someone forgot to wire it up -- the same silent-gap shape this check exists to
+    close. A model answering about a different requirement is treated as a validation
+    failure, not a separate failure mode: before this, the six per-requirement stages
+    disagreed on what to do with a requirement_id mismatch three different ways (see
+    docs/superpowers/plans/2026-08-08-orchestrator-harness-fixes-and-changes.md
+    section 5) -- check_quality silently relabelled it, classify/select_strategy/a
+    consistently-wrong generate_tests payload crashed with an uncaught ValidationError
+    only once the record was finally re-validated (after later stages had already run
+    and been paid for), and refine's turn/rewrite crashed immediately at
+    RefinementRound construction. Folding the check in here, before any of those
+    paths are reached, makes it one outcome everywhere: FailureKind.VALIDATION,
+    retried per the normal policy, usage recorded (the call succeeded; the answer was
+    just about the wrong requirement) -- countable, the same way any other
+    schema-invalid output is countable (contract item 14).
     """
     last_kind: FailureKind = FailureKind.OTHER
     last_message = "call_stage was invoked with max_attempts < 1"
@@ -147,9 +167,18 @@ def call_stage(
             usage_sink.append(TokenUsage(stage=stage, prompt_tokens=result.prompt_tokens,
                                          completion_tokens=result.completion_tokens))
             try:
-                return model_cls.model_validate(result.raw)
+                parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:
                 last_kind, last_message = FailureKind.VALIDATION, str(e)
+            else:
+                if parsed.requirement_id == req_id:
+                    return parsed
+                last_kind = FailureKind.VALIDATION
+                last_message = (
+                    f"{model_cls.__name__}.requirement_id is {parsed.requirement_id!r}, "
+                    f"expected {req_id!r} -- the model answered about a different "
+                    "requirement"
+                )
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -392,7 +421,7 @@ def _run_refine_loop(
                     stage_fns.check_quality, (current, record.classification, suppressed_ids),
                     QualityReport, PipelineStage.QUALITY_CHECKER,
                     stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, usage,
-                    max_attempts, backoff_seconds)
+                    req.id, max_attempts, backoff_seconds)
             except StageFailed as f:
                 record = record.model_copy(update={"rounds": rounds, "usage": usage})
                 return record, StageError(stage=PipelineStage.QUALITY_CHECKER, kind=f.kind,
@@ -412,6 +441,12 @@ def _run_refine_loop(
             # suppression can turn a "failed" raw report into a passing round.
             suppressed_id_set = set(suppressed_ids)
             remaining = [i for i in reconciled if i.id not in suppressed_id_set]
+            # requirement_id=req.id here is not "fixing" a possibly-wrong value the way
+            # it looked before call_stage checked req_id itself: raw_report.requirement_id
+            # is now guaranteed equal to req.id already (a mismatch would have made
+            # call_stage retry and eventually raise StageFailed, caught above), so this is
+            # just restating a value already confirmed correct. `passed` is still
+            # recomputed here, deliberately -- see the suppression comment above.
             quality_report = QualityReport(requirement_id=req.id, passed=(len(remaining) == 0),
                                            issues=remaining)
             turn, answers = None, []
@@ -437,7 +472,7 @@ def _run_refine_loop(
                 turn = call_stage(
                     stage_fns.refine, (current, quality_report), RefinerTurn,
                     PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
-                    throttle, usage, max_attempts, backoff_seconds)
+                    throttle, usage, req.id, max_attempts, backoff_seconds)
             except StageFailed as f:
                 record = record.model_copy(update={"usage": usage})
                 rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
@@ -454,7 +489,7 @@ def _run_refine_loop(
             rewrite = call_stage(
                 stage_fns.refine, (current, answers), RefinedRequirement,
                 PipelineStage.REFINER, stage_configs[PipelineStage.REFINER.value].model,
-                throttle, usage, max_attempts, backoff_seconds)
+                throttle, usage, req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             record = record.model_copy(update={"usage": usage})
             rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
@@ -521,7 +556,7 @@ def run_requirement(
             classification = call_stage(
                 stage_fns.classify, (req, requirement_set), Classification,
                 PipelineStage.CLASSIFIER, stage_configs[PipelineStage.CLASSIFIER.value].model,
-                throttle, usage, max_attempts, backoff_seconds)
+                throttle, usage, req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             errors = list(record.errors) + [StageError(
                 stage=PipelineStage.CLASSIFIER, kind=f.kind, message=f.message,
@@ -600,7 +635,7 @@ def run_requirement(
                 stage_fns.select_strategy, (current, record.classification), TestStrategy,
                 PipelineStage.STRATEGY_SELECTOR,
                 stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, usage,
-                max_attempts, backoff_seconds)
+                req.id, max_attempts, backoff_seconds)
         except StageFailed as f:
             errors = list(record.errors) + [StageError(
                 stage=PipelineStage.STRATEGY_SELECTOR, kind=f.kind, message=f.message,
@@ -616,7 +651,7 @@ def run_requirement(
         plan = call_stage(
             stage_fns.generate_tests, (current, strategy), TestPlan,
             PipelineStage.TEST_GENERATOR, stage_configs[PipelineStage.TEST_GENERATOR.value].model,
-            throttle, usage, max_attempts, backoff_seconds)
+            throttle, usage, req.id, max_attempts, backoff_seconds)
     except StageFailed as f:
         errors = list(record.errors) + [StageError(
             stage=PipelineStage.TEST_GENERATOR, kind=f.kind, message=f.message,

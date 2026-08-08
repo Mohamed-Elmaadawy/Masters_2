@@ -299,6 +299,74 @@ and at what cost, a given model produces schema-invalid output.
 *(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md,
 harness scenario 10.)*
 
+## 15. A requirement_id mismatch is a validation failure, uniformly
+
+Before this decision, a model answering about the wrong requirement (e.g. asked about
+`REQ-3`, its output's `requirement_id` says `REQ-9`) had three different outcomes
+depending on which of the six per-requirement stages produced it — an external review
+found this by construction, not by reading the code:
+
+- `check_quality`: silently relabelled. `_run_refine_loop` rebuilt `QualityReport` with
+  `requirement_id=req.id` regardless of what the raw output said, so the run completed
+  and the record looked clean. The mismatch left no trace anywhere.
+- `classify`, `select_strategy`, an internally-*consistent* `generate_tests` payload
+  (plan and its cases agreeing with each other, just both wrong): an uncaught
+  `ValidationError` from `RequirementRunRecord`'s own `requirement_id`-agreement check
+  (`_denormalised_fields_agree`), but only at the *final* `model_validate` call —
+  meaning it surfaced after every later stage had already run and been paid for. Same
+  class of defect as the pre-Task-10 `Issue.id` collision bug (contract item 4): a stage
+  output silently accepted, then blowing up somewhere the caller isn't watching.
+- `refine`'s turn and rewrite: an uncaught `ValidationError`, but immediately, at
+  `RefinementRound` construction inside `_run_refine_loop` — `RefinementRound`'s own
+  coherence check compares `turn.requirement_id`/`rewrite.requirement_id` against the
+  round's `quality_report.requirement_id`.
+
+**Decision: option B.** A `requirement_id` mismatch at any of the six per-requirement
+stages is treated as a schema-validation failure — the same path a malformed payload
+already takes. `call_stage` checks `parsed.requirement_id == req_id` immediately after
+`model_validate` succeeds, before returning; a mismatch produces `kind=VALIDATION`
+(never a separate failure kind — option B rejects treating "answered about the wrong
+requirement" as categorically different from "answered with the wrong shape"), retried
+per the normal backoff policy, with usage recorded (the call succeeded; the answer was
+just about the wrong requirement, so tokens were genuinely spent). One mistake, one
+consequence, at every one of the six call sites — the three-way split was the bug, not
+any one of its three branches individually.
+
+**Rejected alternatives:**
+
+- *A — overwrite silently everywhere* (i.e. keep `check_quality`'s current behavior and
+  extend it to the other five). Rejected because it destroys the signal: "how often
+  does model X answer about the wrong requirement" is an instruction-following measure
+  this thesis wants, and is exactly what a model-comparison chapter reports. Silent
+  overwriting makes that number permanently unrecoverable from the records.
+- *C — stop asking the model to state the requirement_id at all* (derive it from call
+  context instead of parsing it out of the response). Cleanest in principle — a model
+  can't disagree about something it was never asked to restate — but needs six separate
+  LLM-facing payload models (one per stage, each missing the field the other five carry)
+  instead of the current six models sharing the same shape, and in practice collapses
+  into A anyway: the id still has to be threaded from context onto the record
+  somewhere, and that assignment is exactly as "silent" as the current `check_quality`
+  behavior generalised everywhere.
+
+**Known risk, accepted deliberately:** if a model gets the requirement_id wrong
+systematically (not just occasionally), every affected call now costs up to
+`max_attempts` tries instead of one — 3x the API calls, on the free tier this project
+runs on. Accepted because the cost is *counted*, not silent: `StageError.kind` and
+`retry_count` make the rate visible from the very first real run, so switching to A
+later (if the rate turns out to be high enough to matter) becomes an informed decision
+made from a number, not a guess made in advance of ever running the pipeline for real.
+
+**Measure on the first real run** (do not estimate this in the docs beforehand — there
+is no measurement yet): for each `StageError`/requirement record where `kind=VALIDATION`,
+check whether the failure message names a `requirement_id` mismatch specifically (as
+opposed to a missing/malformed field), and tally that count per stage and per model.
+A first run against THEMAS (8 requirements, ~40 calls) is cheap enough to do this on
+before running anything larger, and turns "is option A needed after all?" into a
+question with an answer instead of a guess.
+
+*(Added 2026-08-08, see
+docs/superpowers/plans/2026-08-08-orchestrator-harness-fixes-and-changes.md section 5.)*
+
 ---
 
 ## Things the schema does NOT check, by design
