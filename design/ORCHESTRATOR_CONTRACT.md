@@ -284,6 +284,23 @@ computed by the caller.
 
 ---
 
+## 14. Validation failures are a real, recorded outcome
+
+A stage's raw output can fail `model_cls.model_validate(...)` even though the call
+itself succeeded (see `FailureKind.VALIDATION`, item 7). This was not originally in this
+contract — it surfaced from building `orchestrator/test_harness.py`'s scenario 10, not
+from a bug found in production. `call_stage`/`call_document_stage` treat it exactly like
+a transport failure for retry purposes (same backoff, same `StageError`/
+`DocumentStageError` shape), with two differences: `kind=VALIDATION` instead of
+`TRANSPORT`, and usage IS recorded, because inference happened and tokens were spent on
+output that got thrown away. That cost is itself a thesis-relevant number: how often,
+and at what cost, a given model produces schema-invalid output.
+
+*(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md,
+harness scenario 10.)*
+
+---
+
 ## Things the schema does NOT check, by design
 
 Worth knowing so they are not assumed handled:

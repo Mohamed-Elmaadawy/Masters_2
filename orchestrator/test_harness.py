@@ -977,6 +977,243 @@ def test_run_document_happy_path() -> None:
        all(metadata.stages[s].prompt_hash for s in ALL_STAGES))
 
 
+def test_document_stage_retry_within_run() -> None:
+    """Scenario 6: a failed document-level stage is retried within the SAME run (not a
+    new one), the original failure stays in errors, a second failure bumps retry_count
+    rather than appending a new entry, and outcome climbs DEGRADED -> COMPLETED once
+    the retry succeeds."""
+    section("Scenario 6 -- document-level stage retried within the same run")
+    from orchestrator.pipeline import run_document, retry_document_stage, Throttle
+    from design.schemas import DocumentStage, DocumentOutcome, FailureKind
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        # RequirementSet requires min_length=1, so there is no empty-document stand-in
+        # to isolate the document-level outcome from requirement processing -- instead
+        # classify is scripted to fail fast too, and the test only asserts on the
+        # document-level fields (outcome, errors), ignoring requirement_records.
+        first_fns = StageFns(
+            check_consistency=Scripted([StageCallFailed("429")] * 2),
+            map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+            classify=Scripted([StageCallFailed("429")] * 2),
+            check_quality=None, refine=None, select_strategy=None, generate_tests=None)
+        metadata = make_metadata()
+        result = run_document(DOC, metadata, first_fns, HumanFns(
+            answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None)),
+            throttle, max_revisions=3, run_dir=tmp_path, max_attempts=2,
+            backoff_seconds=lambda a: 0.0)
+        ok("first run is DEGRADED", result.outcome is DocumentOutcome.DEGRADED)
+        ok("first run recorded one consistency_checker error", len(result.errors) == 1)
+        first_retry_count = result.errors[0].retry_count
+
+        retry_fns = StageFns(
+            check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
+            map_dependencies=None, classify=None, check_quality=None, refine=None,
+            select_strategy=None, generate_tests=None)
+        retried = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER, retry_fns,
+                                       throttle, max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("retry succeeds: outcome climbs to COMPLETED", retried.outcome is DocumentOutcome.COMPLETED)
+        ok("the original failure is still on record", len(retried.errors) == 1)
+        ok("no second entry was appended for the same stage",
+           sum(1 for e in retried.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER) == 1)
+
+        # -- second failure bumps retry_count instead of appending --
+        fail_again_fns = StageFns(
+            check_consistency=Scripted([StageCallFailed("429")]), map_dependencies=None,
+            classify=None, check_quality=None, refine=None, select_strategy=None,
+            generate_tests=None)
+        # Reset the fixture run_dir to the post-first-run DEGRADED state to test this
+        # branch in isolation: write it back down before retrying again.
+        degraded_again = retried.model_copy(update={
+            "outcome": DocumentOutcome.DEGRADED, "consistency_report": None})
+        from orchestrator.pipeline import write_document_run
+        write_document_run(tmp_path, degraded_again)
+        retried_again = retry_document_stage(tmp_path, DocumentStage.CONSISTENCY_CHECKER,
+                                             fail_again_fns, throttle, max_attempts=1,
+                                             backoff_seconds=lambda a: 0.0)
+        ok("still only one error entry for the stage after a second failure",
+           sum(1 for e in retried_again.errors if e.stage is DocumentStage.CONSISTENCY_CHECKER) == 1)
+        ok("retry_count bumped rather than reset",
+           retried_again.errors[0].retry_count > first_retry_count)
+
+
+def test_error_resume_finish() -> None:
+    """Scenario 8: not just 'retries exhaust and outcome=ERROR is recorded' -- continue
+    past that. A fresh resume pass must find the requirement in pending_requirement_ids,
+    restart it at the failed stage, and reach a terminal outcome."""
+    section("Scenario 8 -- transport failure -> error -> resume -> finish")
+    from orchestrator.pipeline import run_document, resume_document, Throttle
+    from design.schemas import RunOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        # doc_id must match REQ_A.source_doc_id ("harness-doc") -- RequirementSet
+        # rejects a set whose declared doc_id disagrees with a requirement's recorded
+        # source document (design/schemas.py::_requirements_belong_to_this_document).
+        # The brief's literal "one-req" collides with that check; fixed here the same
+        # way Task 10's implementer fixed self-contradictory hand-built fixtures.
+        one_req_doc = RequirementSet(doc_id="harness-doc", requirements=[REQ_A])
+        failing_fns = StageFns(
+            check_consistency=Scripted([{"doc_id": "harness-doc", "conflicts": []}]),
+            map_dependencies=Scripted([{"doc_id": "harness-doc", "dependencies": []}]),
+            classify=Scripted([StageCallFailed("429")] * 2),  # exhausts at max_attempts=2
+            check_quality=None, refine=None, select_strategy=None, generate_tests=None)
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+        metadata = make_metadata(run_id="run-scenario-8")
+        result = run_document(one_req_doc, metadata, failing_fns, human_fns, throttle,
+                              max_revisions=3, run_dir=tmp_path, max_attempts=2,
+                              backoff_seconds=lambda a: 0.0)
+        ok("the requirement errored", result.requirement_records[0].outcome is RunOutcome.ERROR)
+        ok("it shows up as pending", REQ_A.id in result.pending_requirement_ids)
+
+        recovering_fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+            refine=None,
+            select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+        resumed = resume_document(tmp_path, recovering_fns, human_fns, throttle, max_revisions=3)
+        ok("resume finds and finishes the errored requirement",
+           resumed.requirement_records[0].outcome is RunOutcome.COMPLETED)
+        ok("nothing is pending after resume", resumed.pending_requirement_ids == [])
+
+
+def test_interruption_mid_document_round_trip() -> None:
+    """Scenario 9: write partial files, abandon the in-memory orchestrator entirely,
+    construct a NEW one from disk, continue to completion. Distinct from resume_at as a
+    pure function and from serialization round-trip checks -- this is the only scenario
+    proving resumability works end to end."""
+    section("Scenario 9 -- interruption mid-document, full round trip")
+    from orchestrator.pipeline import (
+        run_document_stages, write_document_run, write_requirement_run, resume_document,
+        read_document_run, Throttle)
+    from design.schemas import DocumentOutcome, RunOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-scenario-9")
+
+        # Simulate an interruption: document-level stages ran and were written, REQ_A
+        # is untouched (no file at all -- "no record file" also counts as pending),
+        # and then the process is abandoned. No run_document call spans this at all.
+        cons, deps, errors, usage = run_document_stages(
+            DOC, metadata.stages,
+            StageFns(check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
+                    map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+                    classify=None, check_quality=None, refine=None, select_strategy=None,
+                    generate_tests=None),
+            throttle)
+        partial = DocumentRunRecord(requirement_set=DOC, metadata=metadata,
+                                    outcome=DocumentOutcome.COMPLETED, consistency_report=cons,
+                                    dependency_report=deps, usage=usage)
+        write_document_run(tmp_path, partial)
+        # (No requirement files written at all -- both requirements are pending.)
+
+        reloaded_before = read_document_run(tmp_path)
+        ok("both requirements are pending on the interrupted, freshly-read record",
+           set(reloaded_before.pending_requirement_ids) == {REQ_A.id, REQ_B.id})
+
+        # A brand new orchestrator "process" picks up from disk -- nothing here reuses
+        # any in-memory state from the run_document_stages call above.
+        def classification_for(req_id):
+            return {"requirement_id": req_id, "system_type": "other", "rationale": "r"}
+        finishing_fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
+            check_quality=Scripted([
+                {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+                {"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
+            refine=None,
+            select_strategy=Scripted([
+                {"requirement_id": REQ_A.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"},
+                {"requirement_id": REQ_B.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([
+                {"requirement_id": REQ_A.id, "test_cases": [{
+                    "id": "TC-A-1", "requirement_ids": [REQ_A.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]},
+                {"requirement_id": REQ_B.id, "test_cases": [{
+                    "id": "TC-B-1", "requirement_ids": [REQ_B.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]}]))
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+        finished = resume_document(tmp_path, finishing_fns, human_fns, throttle, max_revisions=3)
+        ok("both requirements finished after the full round trip",
+           all(r.outcome is RunOutcome.COMPLETED for r in finished.requirement_records))
+        ok("re-reading from disk after resume shows nothing pending",
+           read_document_run(tmp_path).pending_requirement_ids == [])
+
+
+def test_validation_failure() -> None:
+    """Scenario 10: a stage returns output that fails model_validate. New ground
+    relative to design/ORCHESTRATOR_CONTRACT.md as written -- added there in this same
+    task, not treated as a special case."""
+    section("Scenario 10 -- validation failure")
+    from orchestrator.pipeline import call_stage, StageFailed, Throttle
+    from design.schemas import Classification, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    usage = []
+    fn = Scripted([{"requirement_id": "R1", "system_type": "not-a-real-type", "rationale": "r"}])
+    try:
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                  throttle, usage, max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("an invalid enum value fails validation", False)
+    except StageFailed as f:
+        ok("an invalid enum value fails validation", f.kind is FailureKind.VALIDATION)
+    ok("the call still returned, so usage was recorded", len(usage) == 1)
+
+
+def test_token_usage_validation_failures() -> None:
+    """Scenario 12: two validation-failing calls then a success -> 3 usage entries,
+    every call returned so every call is metered."""
+    section("Scenario 12 -- token usage, validation failures")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    usage = []
+    fn = Scripted([
+        {"requirement_id": "R1"},                          # missing fields -> VALIDATION
+        {"requirement_id": "R1", "system_type": "bogus"},  # bad enum -> VALIDATION
+        {"requirement_id": "R1", "system_type": "web", "rationale": "r"},  # succeeds
+    ])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                        throttle, usage, max_attempts=3, backoff_seconds=lambda a: 0.0)
+    ok("the call eventually succeeds", isinstance(result, Classification))
+    ok("all three calls recorded usage (every call returned)", len(usage) == 3)
+    ok("total tokens sum all three calls", sum(u.prompt_tokens + u.completion_tokens for u in usage) == 45)
+
+
+def test_token_usage_transport_failures() -> None:
+    """Scenario 13: two transport failures then a success -> 1 usage entry, the two
+    429s never reached the model. Kept separate from scenario 12 deliberately -- a
+    shared scenario would hide a wrong assumption about WHERE usage gets appended."""
+    section("Scenario 13 -- token usage, transport failures")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    usage = []
+    fn = Scripted([
+        StageCallFailed("429"), StageCallFailed("429"),
+        {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
+    ])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "fake-model",
+                        throttle, usage, max_attempts=3, backoff_seconds=lambda a: 0.0)
+    ok("the call eventually succeeds", isinstance(result, Classification))
+    ok("only the one call that returned recorded usage", len(usage) == 1)
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
@@ -990,7 +1227,10 @@ def main() -> int:
               test_resume_skips_finished_strategy_selector,
               test_max_revisions_must_be_at_least_two,
               test_resumed_cap_generated_then_stopped_strips_stage34,
-              test_run_document_happy_path):
+              test_run_document_happy_path,
+              test_document_stage_retry_within_run, test_error_resume_finish,
+              test_interruption_mid_document_round_trip, test_validation_failure,
+              test_token_usage_validation_failures, test_token_usage_transport_failures):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

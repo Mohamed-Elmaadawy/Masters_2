@@ -669,6 +669,88 @@ def run_document(
     return record.model_copy(update={"requirement_records": requirement_records})
 
 
+def retry_document_stage(
+    run_dir: Path,
+    stage: DocumentStage,
+    stage_fns: StageFns,
+    throttle: Throttle,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> DocumentRunRecord:
+    """Retries ONE failed document-level stage within the same run (contract item 6,
+    'Retrying a failed document-level stage') rather than starting a new run, which
+    would orphan every already-completed requirement record. errors is a LOG of failed
+    attempts, not current state, so the original failure stays even after a successful
+    retry; a second failure of the same stage bumps retry_count on the existing entry
+    instead of appending a duplicate (document-level stages run once per run)."""
+    record = read_document_run(run_dir)
+    stage_fn = {DocumentStage.CONSISTENCY_CHECKER: stage_fns.check_consistency,
+               DocumentStage.DEPENDENCY_MAPPER: stage_fns.map_dependencies}[stage]
+    model_cls = {DocumentStage.CONSISTENCY_CHECKER: ConsistencyReport,
+                DocumentStage.DEPENDENCY_MAPPER: DependencyReport}[stage]
+    field_name = {DocumentStage.CONSISTENCY_CHECKER: "consistency_report",
+                 DocumentStage.DEPENDENCY_MAPPER: "dependency_report"}[stage]
+
+    usage: list[DocumentTokenUsage] = []
+    try:
+        report = call_document_stage(
+            stage_fn, (record.requirement_set,), model_cls, stage,
+            record.metadata.stages[stage.value].model, throttle, usage,
+            max_attempts, backoff_seconds)
+    except StageFailed as f:
+        existing = next((e for e in record.errors if e.stage is stage), None)
+        errors = [e for e in record.errors if e.stage is not stage]
+        if existing is not None:
+            errors.append(existing.model_copy(
+                update={"retry_count": existing.retry_count + f.retry_count + 1}))
+        else:
+            errors.append(DocumentStageError(stage=stage, kind=f.kind, message=f.message,
+                                             retry_count=f.retry_count))
+        record = record.model_copy(update={"errors": errors, "usage": record.usage + usage})
+    else:
+        record = record.model_copy(update={field_name: report, "usage": record.usage + usage})
+
+    both_present = record.consistency_report is not None and record.dependency_report is not None
+    record = record.model_copy(update={
+        "outcome": DocumentOutcome.COMPLETED if both_present else DocumentOutcome.DEGRADED})
+    record = DocumentRunRecord.model_validate(record.model_dump(mode="json"))  # re-validate before persisting
+    write_document_run(run_dir, record)
+    return record
+
+
+def resume_document(
+    run_dir: Path,
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> DocumentRunRecord:
+    """A resume pass: read the document from disk, process everything in
+    pending_requirement_ids (no record at all, or IN_PROGRESS/ERROR), starting each at
+    its derived resume_at position. A requirement that never had a file gets a fresh
+    IN_PROGRESS record; one that errored gets its existing record continued in place."""
+    record = read_document_run(run_dir)
+    pending = set(record.pending_requirement_ids)
+    by_id = {r.requirement.id: r for r in record.requirement_records}
+
+    updated_records = []
+    for req in record.requirement_set.requirements:
+        if req.id not in pending:
+            updated_records.append(by_id[req.id])
+            continue
+        base = by_id.get(req.id) or RequirementRunRecord(requirement=req, run_id=record.metadata.run_id)
+        updated = run_requirement(
+            base, record.requirement_set, record.consistency_report, record.dependency_report,
+            stage_fns, human_fns, throttle, max_revisions, record.metadata.stages,
+            max_attempts, backoff_seconds)
+        updated_records.append(updated)
+        write_requirement_run(run_dir, updated)
+
+    return record.model_copy(update={"requirement_records": updated_records})
+
+
 def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
     """Writes document.json with an EMPTY requirement_records list (decision D2b) --
     each requirement is its own file, written separately by write_requirement_run.
