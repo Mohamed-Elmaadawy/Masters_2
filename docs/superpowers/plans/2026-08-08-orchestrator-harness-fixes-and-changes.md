@@ -5,7 +5,7 @@ every bug found and fixed during implementation (plan-text bugs, self-caught
 implementation bugs, review-found bugs) and every issue deliberately deferred or left
 as documented tech debt, so none of it has to be rediscovered.
 
-Merged to master @ `dcb1c80` (2026-08-08). Post-merge, an external review found two more
+Merged to master @ `d3d1d9f` (2026-08-08). Post-merge, an external review found two more
 issues (§7) — final state after both: `python -m design.test_schemas` → 270 checks,
 `python -m orchestrator.test_harness` → 105 checks.
 
