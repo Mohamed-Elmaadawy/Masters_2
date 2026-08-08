@@ -280,6 +280,9 @@ since it can only ever sum the two document-level stages, never the requirement 
 `doc.document_stage_tokens + sum(r.total_tokens for r in doc.requirement_records)`,
 computed by the caller.
 
+See `docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` for where to turn
+this into cost-per-document on the first real run.
+
 *(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.)*
 
 ---
@@ -295,6 +298,9 @@ a transport failure for retry purposes (same backoff, same `StageError`/
 `TRANSPORT`, and usage IS recorded, because inference happened and tokens were spent on
 output that got thrown away. That cost is itself a thesis-relevant number: how often,
 and at what cost, a given model produces schema-invalid output.
+
+See `docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` for where to
+measure this (and which rule fired) on the first real run.
 
 *(Added 2026-08-08, see docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md,
 harness scenario 10.)*
@@ -357,12 +363,11 @@ later (if the rate turns out to be high enough to matter) becomes an informed de
 made from a number, not a guess made in advance of ever running the pipeline for real.
 
 **Measure on the first real run** (do not estimate this in the docs beforehand — there
-is no measurement yet): for each `StageError`/requirement record where `kind=VALIDATION`,
-check whether the failure message names a `requirement_id` mismatch specifically (as
-opposed to a missing/malformed field), and tally that count per stage and per model.
-A first run against THEMAS (8 requirements, ~40 calls) is cheap enough to do this on
-before running anything larger, and turns "is option A needed after all?" into a
-question with an answer instead of a guess.
+is no measurement yet) — see
+`docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` for exactly where to
+look. A first run against THEMAS (8 requirements, ~40 calls) is cheap enough to measure
+this on before running anything larger, and turns "is option A needed after all?" into
+a question with an answer instead of a guess.
 
 ### The same hole exists at the document level — found by mutation-testing this fix
 
