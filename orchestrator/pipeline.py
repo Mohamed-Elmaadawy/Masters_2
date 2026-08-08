@@ -18,11 +18,12 @@ from typing import Callable, NamedTuple, Optional
 from pydantic import BaseModel, ValidationError
 
 from design.schemas import (
-    Classification, ConsistencyReport, DependencyReport, DocumentRunRecord,
-    DocumentStage, DocumentStageError, DocumentTokenUsage, FailureKind, Issue,
-    PipelineStage, QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer,
-    RefinerTurn, Requirement, RequirementRunRecord, RequirementSet, RunOutcome,
-    StageConfig, StageError, TestPlan, TestStrategy, TokenUsage,
+    Classification, ConsistencyReport, DependencyReport, DocumentOutcome,
+    DocumentRunRecord, DocumentStage, DocumentStageError, DocumentTokenUsage,
+    FailureKind, Issue, PipelineStage, QualityReport, RefinedRequirement,
+    RefinementRound, RefinerAnswer, RefinerTurn, Requirement, RequirementRunRecord,
+    RequirementSet, RunMetadata, RunOutcome, StageConfig, StageError, TestPlan,
+    TestStrategy, TokenUsage,
 )
 
 
@@ -625,6 +626,47 @@ def run_requirement(
 
     return RequirementRunRecord.model_validate(
         {**record.model_dump(mode="json"), "outcome": final_outcome.value})
+
+
+def run_document(
+    requirement_set: RequirementSet,
+    metadata: RunMetadata,
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    run_dir: Optional[Path] = None,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+) -> DocumentRunRecord:
+    """Runs the whole pipeline for one document: consistency/dependency checks (D1=b:
+    continue DEGRADED if either fails independently), then every requirement in order.
+    Writes to run_dir incrementally if given (D2b) -- document.json first, then one
+    requirement file at a time, so an interruption leaves a resumable partial run."""
+    consistency_report, dependency_report, doc_errors, doc_usage = run_document_stages(
+        requirement_set, metadata.stages, stage_fns, throttle, max_attempts, backoff_seconds)
+
+    doc_outcome = (DocumentOutcome.COMPLETED
+                  if consistency_report is not None and dependency_report is not None
+                  else DocumentOutcome.DEGRADED)
+    record = DocumentRunRecord(
+        requirement_set=requirement_set, metadata=metadata, outcome=doc_outcome,
+        errors=doc_errors, consistency_report=consistency_report,
+        dependency_report=dependency_report, usage=doc_usage)
+    if run_dir is not None:
+        write_document_run(run_dir, record)
+
+    requirement_records = []
+    for req in requirement_set.requirements:
+        req_record = run_requirement(
+            RequirementRunRecord(requirement=req, run_id=metadata.run_id), requirement_set,
+            consistency_report, dependency_report, stage_fns, human_fns, throttle,
+            max_revisions, metadata.stages, max_attempts, backoff_seconds)
+        requirement_records.append(req_record)
+        if run_dir is not None:
+            write_requirement_run(run_dir, req_record)
+
+    return record.model_copy(update={"requirement_records": requirement_records})
 
 
 def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:

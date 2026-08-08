@@ -932,6 +932,51 @@ def test_resumed_cap_generated_then_stopped_strips_stage34() -> None:
        result.cap_reason == "changed my mind, stop here")
 
 
+def test_run_document_happy_path() -> None:
+    """run_document wires the document-level stages and both requirements together.
+    Also scenario 11: every stage in RunMetadata.stages carries a prompt_hash from
+    prompt_fingerprint -- a property of the fixture, verified here rather than assumed."""
+    section("run_document -- full document, scenario 11 (prompt provenance)")
+    from orchestrator.pipeline import run_document, Throttle
+    from design.schemas import DocumentOutcome, ALL_STAGES
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def classification_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other", "rationale": "r"}
+
+    def passing_quality(req_id):
+        return {"requirement_id": req_id, "passed": True, "issues": []}
+
+    def strategy_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other",
+                "techniques": ["boundary_value_analysis"], "rationale": "r"}
+
+    def plan_for(req_id):
+        return {"requirement_id": req_id, "test_cases": [{
+            "id": f"TC-{req_id}-1", "requirement_ids": [req_id],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]}
+
+    fns = StageFns(
+        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
+        map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+        classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
+        check_quality=Scripted([passing_quality(REQ_A.id), passing_quality(REQ_B.id)]),
+        refine=None,
+        select_strategy=Scripted([strategy_for(REQ_A.id), strategy_for(REQ_B.id)]),
+        generate_tests=Scripted([plan_for(REQ_A.id), plan_for(REQ_B.id)]))
+    human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
+    metadata = make_metadata()
+
+    result = run_document(DOC, metadata, fns, human_fns, throttle, max_revisions=3)
+    ok("document outcome is COMPLETED", result.outcome.value == "completed")
+    ok("both requirements completed",
+       all(r.outcome.value == "completed" for r in result.requirement_records))
+    ok("every stage in metadata.stages carries a prompt_hash (scenario 11)",
+       all(metadata.stages[s].prompt_hash for s in ALL_STAGES))
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
@@ -944,7 +989,8 @@ def main() -> int:
               test_suppressed_issue_reflagged_is_dropped,
               test_resume_skips_finished_strategy_selector,
               test_max_revisions_must_be_at_least_two,
-              test_resumed_cap_generated_then_stopped_strips_stage34):
+              test_resumed_cap_generated_then_stopped_strips_stage34,
+              test_run_document_happy_path):
         fn()
     print("\n" + "=" * 72)
     if FAILED:
