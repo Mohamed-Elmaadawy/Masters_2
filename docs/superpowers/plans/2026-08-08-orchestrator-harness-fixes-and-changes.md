@@ -6,8 +6,9 @@ implementation bugs, review-found bugs) and every issue deliberately deferred or
 as documented tech debt, so none of it has to be rediscovered.
 
 Merged to master @ `d3d1d9f` (2026-08-08). Post-merge, an external review found two more
-issues (§7) — final state after both: `python -m design.test_schemas` → 270 checks,
-`python -m orchestrator.test_harness` → 105 checks.
+issues (§7), and one of §5's two deferred items has since been closed — current state:
+`python -m design.test_schemas` → 270 checks, `python -m orchestrator.test_harness` →
+111 checks.
 
 ---
 
@@ -140,16 +141,32 @@ Re-review: all 8 addressed, no new breakage.
 Flagged by the final review as reachable only once `orchestrator/stages.py` is wired
 to a real, nondeterministic LLM — not before:
 
-- **No test covers `_run_refine_loop`'s genuinely-mid-refinement resume branch**
-  (a round where the human has been asked a question but the rewrite is still
-  outstanding). Structurally distinct from the already-capped resume case Task 10
-  covers. Add this scenario before real LLM calls can actually interrupt mid-round.
+- ~~No test covers `_run_refine_loop`'s genuinely-mid-refinement resume branch~~
+  **Closed (2026-08-08).** Added `test_resume_mid_round_completes` to
+  `orchestrator/test_harness.py`, covering the case where the human has already been
+  asked and has already answered but the rewrite that answer was supposed to produce
+  never happened. Confirmed by code trace first (per CLAUDE.md's "verify before
+  asserting") that `_run_refine_loop`'s existing `pending_round` branch already handles
+  this correctly — it was a real test gap, not a code bug. The new test asserts:
+  `human_fns.answer_questions` is not called again for the already-answered question
+  (call count stays 0), the outstanding rewrite completes rather than crashing, the
+  completed round is internally coherent (`rewrite.original_text` matches
+  `text_checked`, `rewrite.answers_used` matches the round's own pre-existing
+  `answers`), and the run reaches a terminal outcome. Mutation-tested by disabling the
+  `pending_round` detection itself (`if rounds and not rounds[-1].quality_report.passed
+  and rounds[-1].rewrite is None:` → `if False:`): the harness crashed with an uncaught
+  `AttributeError: 'NoneType' object has no attribute 'refined_text'`, tracing through
+  exactly `test_resume_mid_round_completes` → `run_requirement` →
+  `_run_refine_loop`'s fresh-round branch — confirming the new test fails for the right
+  reason (the resume mechanism itself, not an unrelated validator) rather than merely
+  going red. 105 → 111 checks.
 - **`QualityReport` is rebuilt with `requirement_id=req.id`, silently discarding
   whatever `raw_report.requirement_id` the LLM actually returned.** A checker
   answering about the wrong requirement is currently relabeled instead of failing —
   the same class of problem as `VAGUE_PRONOUN`'s documented noisiness (Known
   Limitation 4), but silent. Needs a named design decision once a real model is
-  behind `check_quality`, not a quiet one-line fix now.
+  behind `check_quality`, not a quiet one-line fix now. **Still open** — being settled
+  separately.
 
 ## 6. Reviewed and deliberately left as documented tech debt
 

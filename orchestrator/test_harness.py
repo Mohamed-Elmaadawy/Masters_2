@@ -728,6 +728,74 @@ def test_resume_skips_finished_refine_loop() -> None:
         ok("resuming at the strategy selector still completes", False)
 
 
+def test_resume_mid_round_completes() -> None:
+    """Regression: resuming INSIDE an unfinished round -- the human has already been
+    asked and has already answered, but the rewrite that answer was supposed to produce
+    never happened (e.g. the process died between the Refiner's turn call and its
+    rewrite call, or the rewrite call itself failed and this is a later retry).
+    resume_at already covers the *position* (test_resume_positions: "refiner failed
+    mid-round" -> REFINER); this covers _run_refine_loop actually resuming from that
+    state and finishing, which is structurally distinct from the two other resume cases
+    already covered:
+      - test_resume_skips_finished_refine_loop -> resuming PAST the loop entirely
+      - the already-capped resume case (see the comment above the pending_round branch
+        in _run_refine_loop) -> resuming AT an already-capped round
+      - this one -> resuming INSIDE a round that is neither finished nor capped
+
+    Confirmed by code trace before writing this test: _run_refine_loop's pending_round
+    branch sets `turn = pending_round.turn` (non-None), so the `if turn is None:` guard
+    that would call stage_fns.refine for a fresh turn AND human_fns.answer_questions is
+    skipped entirely -- only the rewrite call runs, using the round's existing answers.
+    """
+    section("Regression -- resuming inside an unfinished round (turn asked, rewrite outstanding)")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, RunOutcome, SystemType
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    pending = mk_round(1, T0, passed=False)  # turn asked, answered; rewrite=None
+    resuming_record = rec(requirement=REQ_A, classification=cls, rounds=[pending])
+    ok("fixture actually resumes at the refiner (sanity check)",
+       resume_at(resuming_record) is PipelineStage.REFINER)
+
+    answer_calls: list = []
+    def answer_questions(turn):
+        answer_calls.append(turn)
+        return [RefinerAnswer(question_id=q.id, answer_text="new answer") for q in turn.questions]
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=None,  # must never be called -- classification already exists
+        check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+        refine=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": T0, "refined_text": T1,
+             "revision_number": 1, "answers_used": [
+                 {"question_id": "Q1", "answer_text": "answer"}]},
+        ]),  # only ONE scripted call -- the turn/ask call must not happen
+        select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
+                                   "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+        generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+    human_fns = HumanFns(answer_questions=answer_questions,
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+    result = run_requirement(resuming_record, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS)
+
+    ok("human is not re-asked for a question already answered", answer_calls == [])
+    completed_round = result.rounds[0]
+    ok("the outstanding rewrite was completed rather than crashing",
+       completed_round.rewrite is not None)
+    ok("rewrite.original_text matches the round's own text_checked",
+       completed_round.rewrite is not None
+       and completed_round.rewrite.original_text == completed_round.text_checked)
+    ok("rewrite.answers_used matches the round's own pre-existing answers",
+       completed_round.rewrite is not None
+       and completed_round.rewrite.answers_used == completed_round.answers)
+    ok("the run reaches a terminal outcome", result.outcome is RunOutcome.COMPLETED)
+
+
 def test_id_reconciliation_mints_fresh_ids_on_collision() -> None:
     """Regression for task review finding Important #1: _reconcile_issue_ids must mint
     a fresh, orchestrator-owned id for anything that does NOT match the previous round
@@ -1262,6 +1330,7 @@ def main() -> int:
               test_on_disk_round_trip,
               test_happy_path, test_revision_cap, test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,
+              test_resume_mid_round_completes,
               test_id_reconciliation_mints_fresh_ids_on_collision,
               test_suppressed_issue_reflagged_is_dropped,
               test_resume_skips_finished_strategy_selector,
