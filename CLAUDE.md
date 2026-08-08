@@ -31,11 +31,11 @@ path. A generation failure is a real signal, not a nuisance.
 
 | File | What it is |
 |---|---|
-| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 12 things the orchestrator must do that the schema deliberately does not enforce. |
+| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 14 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
 | `design/DESIGN_NOTES.md` | 1,678 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
-| `design/test_schemas.py` | 265 checks. Also the best worked example of how the models fit together. |
+| `design/test_schemas.py` | 270 checks. Also the best worked example of how the models fit together. |
 | `datasets/EVALUATION_DATASETS.md` | Corpora reserved for the evaluation phase, plus one planned experiment. |
 
 Do not restate design reasoning in new files — link to the `DESIGN_NOTES.md` section.

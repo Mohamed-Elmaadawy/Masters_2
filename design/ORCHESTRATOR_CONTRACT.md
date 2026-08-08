@@ -114,7 +114,7 @@ document: a round whose check failed **and** which already produced a rewrite ha
 finished its refinement, so the next step is checking that rewrite, not refining again.
 Without the branch the Refiner re-runs on a round it already completed. Verified against
 constructed records at all six failure points; the test lives in
-`test_schemas.py::test_resume_positions`.
+`orchestrator/test_harness.py::test_resume_positions`.
 
 At document level, `DocumentRunRecord.pending_requirement_ids` gives everything that
 still needs work: no record file, **or** a record whose outcome is `IN_PROGRESS`

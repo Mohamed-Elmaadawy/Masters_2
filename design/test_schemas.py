@@ -1,7 +1,7 @@
 """
 Regression tests for schemas.py. Run after every schema change:
 
-    python design/test_schemas.py
+    python -m design.test_schemas
 
 Plain script, no pytest -- one less dependency, and it prints a readable report rather
 than a dot per test. Exits non-zero if anything fails, so it can be wired into CI later.

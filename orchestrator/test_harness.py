@@ -210,7 +210,7 @@ def test_call_stage() -> None:
     OTHER, the one branch that must actually fire, not just be documented as possible."""
     section("call_stage")
     from orchestrator.pipeline import call_stage, StageFailed, Throttle
-    from design.schemas import Classification, SystemType, FailureKind, TokenUsage
+    from design.schemas import Classification, FailureKind, TokenUsage
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
 
@@ -285,7 +285,7 @@ def test_document_stages_degraded() -> None:
     run continues without whichever one failed, per contract D1=b."""
     section("Scenario 7 -- DEGRADED document")
     from orchestrator.pipeline import run_document_stages, Throttle
-    from design.schemas import DocumentOutcome, FailureKind
+    from design.schemas import FailureKind
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
     stage_fns = StageFns(
@@ -304,8 +304,9 @@ def test_document_stages_degraded() -> None:
     ok("the error's kind is TRANSPORT", errors[0].kind is FailureKind.TRANSPORT)
     ok("dependency mapper's success recorded usage", len(usage) == 1)
 
-    outcome = DocumentOutcome.COMPLETED if cons is not None and deps is not None else DocumentOutcome.DEGRADED
-    ok("both-independent-failures-considered outcome is DEGRADED", outcome is DocumentOutcome.DEGRADED)
+    # No inline DocumentOutcome recomputation here: real DocumentOutcome derivation
+    # coverage is in test_document_stage_retry_within_run (Task 12), which drives it
+    # through the actual run_document code path.
 
 
 def test_throttle() -> None:
@@ -938,7 +939,7 @@ def test_run_document_happy_path() -> None:
     prompt_fingerprint -- a property of the fixture, verified here rather than assumed."""
     section("run_document -- full document, scenario 11 (prompt provenance)")
     from orchestrator.pipeline import run_document, Throttle
-    from design.schemas import DocumentOutcome, ALL_STAGES
+    from design.schemas import DocumentOutcome
 
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
 
@@ -970,11 +971,17 @@ def test_run_document_happy_path() -> None:
     metadata = make_metadata()
 
     result = run_document(DOC, metadata, fns, human_fns, throttle, max_revisions=3)
-    ok("document outcome is COMPLETED", result.outcome.value == "completed")
+    ok("document outcome is COMPLETED", result.outcome is DocumentOutcome.COMPLETED)
     ok("both requirements completed",
        all(r.outcome.value == "completed" for r in result.requirement_records))
-    ok("every stage in metadata.stages carries a prompt_hash (scenario 11)",
-       all(metadata.stages[s].prompt_hash for s in ALL_STAGES))
+    # Not a schema tautology (RunMetadata._covers_every_stage/StageConfig.prompt_hash
+    # already guarantee every stage has a hash on any RunMetadata that constructs at
+    # all) -- this instead tests real orchestrator behavior: that the metadata passed
+    # INTO run_document is the SAME object threaded onto the RETURNED record, i.e.
+    # provenance (contract item 12) actually flows through the call rather than being
+    # rebuilt or dropped along the way.
+    ok("run_document threads the same metadata object through to the record (scenario 11)",
+       result.metadata is metadata)
 
 
 def test_document_stage_retry_within_run() -> None:
@@ -984,7 +991,7 @@ def test_document_stage_retry_within_run() -> None:
     the retry succeeds."""
     section("Scenario 6 -- document-level stage retried within the same run")
     from orchestrator.pipeline import run_document, retry_document_stage, Throttle
-    from design.schemas import DocumentStage, DocumentOutcome, FailureKind
+    from design.schemas import DocumentStage, DocumentOutcome
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)

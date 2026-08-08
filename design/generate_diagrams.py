@@ -1,7 +1,7 @@
 """
 Generates two Mermaid diagrams from `schemas.py`. Run after every schema change:
 
-    python design/generate_diagrams.py
+    python -m design.generate_diagrams
 
 Outputs (both overwritten in place, both plain text so git diffs show what changed):
 

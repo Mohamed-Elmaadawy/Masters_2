@@ -410,7 +410,8 @@ def _run_refine_loop(
             # normal-path risk on free-tier models, not a corner case. `passed` is
             # recomputed from what's left, not taken from the raw report, since
             # suppression can turn a "failed" raw report into a passing round.
-            remaining = [i for i in reconciled if i.id not in set(suppressed_ids)]
+            suppressed_id_set = set(suppressed_ids)
+            remaining = [i for i in reconciled if i.id not in suppressed_id_set]
             quality_report = QualityReport(requirement_id=req.id, passed=(len(remaining) == 0),
                                            issues=remaining)
             turn, answers = None, []
@@ -556,6 +557,8 @@ def run_requirement(
         if outcome not in (RunOutcome.CAP_GENERATED, RunOutcome.CAP_STOPPED):
             raise ValueError(
                 f"decide_at_cap returned {outcome!r}, must be CAP_GENERATED or CAP_STOPPED")
+        if not cap_reason:
+            raise ValueError("decide_at_cap returned an empty cap_reason")
         if outcome is RunOutcome.CAP_STOPPED:
             # This decision can be re-asked on a resumed record (e.g. an earlier call
             # chose CAP_GENERATED, then the Strategy Selector or Test Generator failed,
@@ -757,7 +760,7 @@ def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
     Re-validates before persisting (contract item 10): mutation after construction
     bypasses Pydantic's checks, so this re-runs them right before the bytes hit disk."""
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "requirements").mkdir(exist_ok=True)
+    (run_dir / "requirements").mkdir(parents=True, exist_ok=True)
     on_disk = DocumentRunRecord.model_validate(
         {**record.model_dump(mode="json"), "requirement_records": []})
     (run_dir / "document.json").write_text(on_disk.model_dump_json(indent=2))
