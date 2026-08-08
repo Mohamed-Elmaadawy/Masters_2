@@ -5,9 +5,9 @@ every bug found and fixed during implementation (plan-text bugs, self-caught
 implementation bugs, review-found bugs) and every issue deliberately deferred or left
 as documented tech debt, so none of it has to be rediscovered.
 
-Merged to master @ `dcb1c80` (2026-08-08). Final state:
-`python -m design.test_schemas` → 270 checks, `python -m orchestrator.test_harness` →
-103 checks.
+Merged to master @ `dcb1c80` (2026-08-08). Post-merge, an external review found two more
+issues (§7) — final state after both: `python -m design.test_schemas` → 270 checks,
+`python -m orchestrator.test_harness` → 105 checks.
 
 ---
 
@@ -189,3 +189,61 @@ value versus fixing later if it ever becomes reachable.
   true for that specific scenario. Real coverage of that property lives in Task 10's
   two dedicated resume-skip regression tests, not scenario 8 — noted so nobody
   mistakes scenario 8 alone as proving it.
+
+## 7. Post-merge — external review (found by mutation testing, not a task/branch review)
+
+Two findings surfaced after merge, both independently verified before fixing.
+
+### Backoff had no test anywhere in the suite
+
+Mutation-tested `orchestrator/pipeline.py`: 12 deliberate breakages, 11 caught.
+The one that slipped through was the backoff guard itself:
+
+```python
+if attempt < max_attempts - 1:
+    throttle.sleep_fn(backoff_seconds(attempt))
+```
+
+Every scenario in the suite passes `backoff_seconds=lambda a: 0.0`, so the schedule is
+stubbed to zero everywhere and nothing observes the sleep calls. Deleting the guard
+entirely (`if False:`) still passed all 103 harness checks and all 270 schema checks —
+verified independently before fixing, not just taken on the report's word.
+
+This mattered because the throttle+backoff design exists specifically to avoid 429
+storms on free-tier quotas; a future edit that moved or dropped that line would have
+caused retries to fire back-to-back with no delay, and nothing in the suite would have
+noticed until a real run hit it.
+
+**Fix:** added `test_backoff_timing`, mirroring `test_throttle`'s existing discipline
+of asserting the actual recorded delay values (`[10.0, 20.0]` for a 3-attempt run with
+a distinguishable schedule), not just that a sleep happened — covering both
+`call_stage` and `call_document_stage`. Re-ran the same mutation afterward to confirm
+the new test catches it: it does, failing exactly the two new checks and nothing else.
+
+### Line-ending churn on tracked files
+
+An external review reported 16 evaluation-dataset XMLs showing as modified with
+byte-identical content after normalizing line endings, attributing it to "some tool"
+since `core.autocrlf` read as unset.
+
+**Root cause, found on verification:** `core.autocrlf=true` is set at the **system**
+git config level (`C:/Program Files/Git/etc/gitconfig`), not local — a local-only check
+reads it as unset and misses this. With `core.autocrlf=true`, git converts LF↔CRLF on
+checkout/commit; the specific pattern this branch also hit was
+`design/generate_diagrams.py` writing its output in Python's default text mode, which
+uses the platform line separator (CRLF on Windows) regardless of git config — so every
+`python -m design.generate_diagrams` run reintroduced churn on the five `.mermaid`
+files, independent of the dataset-XML issue.
+
+No datasets/ files or CLAUDE.md were actually dirty at the point this was checked
+(clean tree at verification time) — the churn is real and reproducible, just transient
+depending on what last touched the working tree.
+
+**Fix:** added `.gitattributes` (`* text=auto eol=lf`) at the repo root, pinning line
+endings explicitly regardless of the user's `core.autocrlf` setting. Verified by
+running `git add --renormalize .` (no unexpected diffs beyond the pending real change)
+and by regenerating diagrams twice in a row post-fix (zero diff the second time).
+`design/generate_diagrams.py` itself was left unchanged — the generator's CRLF output
+on Windows is real but harmless now that `.gitattributes` normalizes it back to LF on
+the next `git add`; switching the generator to `newline="\n"` would remove the need for
+that normalization step but wasn't part of what was asked.
