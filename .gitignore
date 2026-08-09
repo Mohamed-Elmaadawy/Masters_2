@@ -1,5 +1,10 @@
-# NOTE: this folder is not currently a git repository -- this file does nothing until
-# `git init` is run. Written now so the first commit doesn't pick up build artefacts.
+# Secrets -- API keys (GEMINI_API_KEY/GROQ_API_KEY) are read from the environment only
+# (see orchestrator/providers/*.py's from_env()), never from a file this project reads.
+# These entries exist purely as a backstop against an operator dropping a .env file
+# into the repo out of habit -- nothing here loads one.
+.env
+.env.*
+!.env.example
 
 __pycache__/
 *.py[cod]
