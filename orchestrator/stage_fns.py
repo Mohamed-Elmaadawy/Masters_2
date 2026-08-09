@@ -112,13 +112,13 @@ class CheckQualityFn(Protocol):
 
 class RefineQuestionerFn(Protocol):
     def __call__(
-        self, requirement: Requirement, quality_report: QualityReport,
+        self, requirement: Requirement, quality_report: QualityReport, revision_number: int,
     ) -> StageCallResult: ...
 
 
 class RefineRewriterFn(Protocol):
     def __call__(
-        self, requirement: Requirement, answers: list[RefinerAnswer],
+        self, requirement: Requirement, answers: list[RefinerAnswer], revision_number: int,
     ) -> StageCallResult: ...
 
 
@@ -158,6 +158,15 @@ class StageFns:
     PipelineStage identity, and one model config -- neither could be configured,
     measured, or retried independently. See design/DESIGN_NOTES.md, "Refiner split
     into REFINER_QUESTIONER / REFINER_REWRITER".
+
+    Both gained a `revision_number: int` parameter (2026-08-09, stages.py real-prompt
+    phase): neither stage's *given* args (Requirement/QualityReport for the questioner,
+    Requirement/RefinerAnswer[] for the rewriter) contain the round number their own
+    output schema requires (RefinerTurn.revision_number, RefinedRequirement.
+    revision_number, both checked against RefinementRound's round counter). Without it,
+    no real implementation of either Protocol could know what round it's answering for
+    -- a demonstrated blocker, not a style choice. See design/DESIGN_NOTES.md, "Real
+    stage functions -- cross-stage validation".
 
     check_quality/select_strategy/generate_tests gained filtered document context
     (2026-08-08, see

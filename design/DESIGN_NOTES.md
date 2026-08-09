@@ -2088,3 +2088,270 @@ argument's runtime type against the Protocol via `typing.get_type_hints()` (not 
 `from __future__ import annotations`). The hand-stub comparison is kept as a secondary,
 honestly-scoped layer (it still catches a Protocol's own internal inconsistency) -- it
 just no longer stands in for the real-call-site check on its own.
+
+## Real stage functions -- cross-stage validation (2026-08-09)
+
+`orchestrator/stages.py` (the 8 real LLM-calling stage functions) surfaced two classes
+of bug in the already-built, already-tested `pipeline.py`/`stage_fns.py` -- neither
+found by inspection, both found by asking "what does a REAL stage function, wired to a
+real model, actually need to guarantee its own output, given only what its Protocol
+hands it?" the same way item 14 (`ORCHESTRATOR_CONTRACT.md`) was found by building the
+harness rather than by reading the code.
+
+**Bug 1 (blocking): `RefineQuestionerFn`/`RefineRewriterFn` could not know the round
+number.** `RefinerTurn.revision_number`/`RefinedRequirement.revision_number` are
+checked against the orchestrator's own round counter `n` inside
+`RefinementRound._round_is_coherent` -- but neither Protocol's given arguments
+(`Requirement`/`QualityReport` for the questioner; `Requirement`/`RefinerAnswer[]` for
+the rewriter) contain `n` anywhere, and neither does anything reachable from them. Round
+1 happened to work by accident (`RefinerTurn.revision_number` defaults to `1`); round 2
+onward could never work, for any implementation, real or fixture -- confirmed by
+tracing `test_harness.py`'s own fixtures, which only ever "work" because the *test
+author*, who already knows the round number when writing the fixture, hardcodes the
+right value into each scripted response. A real stage fn has no such foreknowledge.
+Fixed by adding `revision_number: int` to both Protocols (`orchestrator/stage_fns.py`)
+and threading `_run_refine_loop`'s own local `n` into both call sites -- the value was
+already computed there, just never passed to the callable that needed it.
+
+**Bug 2 (probabilistic, but real): several cross-stage agreements were checked only at
+final record assembly, unguarded.** Contract item 15 fixed this exact shape for
+`requirement_id`/`doc_id` specifically -- `call_stage`/`call_document_stage` check
+immediately after `model_validate` succeeds, before returning, so a mismatch becomes an
+ordinary retried `VALIDATION` failure instead of an uncaught `pydantic.ValidationError`
+surfacing deep inside `RefinementRound`/`RequirementRunRecord`/`DocumentRunRecord`
+construction after later stages already ran and were paid for. That fix was never
+generalized to every OTHER field with the same shape. A full audit of every
+`model_validator` in `design/schemas.py` found the complete set (bucket labels are
+"which of the three groups every validator fell into," not schema terms):
+
+- **Bucket A -- self-contained, already safe.** Both sides of the check live in the
+  same object from one stage call (e.g. `TestPlan._cases_cover_this_requirement`,
+  `TestStrategy._techniques_are_eligible`). Caught immediately inside `call_stage`'s
+  existing `model_cls.model_validate(...)` already -- no new work needed.
+- **Bucket B -- orchestrator-internal bookkeeping.** Built entirely from `pipeline.py`'s
+  own control flow (attempt logs, outcome labels, round text-chaining). A bug here is an
+  orchestrator bug and correctly still crashes, per `FailureKind.OTHER`'s own docstring
+  ("must never be used for a bug in the orchestrator's own control flow").
+- **Bucket C -- genuine cross-stage risk, needed the new mechanism** (13 rows,
+  enumerated in the table below): compares a freshly-parsed stage output against an
+  *earlier* stage's output, or against a full id-set no single object holds.
+- **Bucket D -- a different shape, not fixable the same way.** Document-wide test-case
+  id uniqueness (`DocumentRunRecord._references_resolve`'s whole-document
+  `_require_unique`) can't be checked inside one requirement's `call_stage` invocation
+  at all -- no single call has visibility into another requirement's output. Solved
+  differently (see "TC-id convention" below), not via `extra_check`.
+
+**The mechanism: `extra_check`, one new optional parameter on both `call_stage` and
+`call_document_stage`.** `ExtraCheck = Callable[[BaseModel], Optional[str]]` -- `None`
+means the parsed object is fine, a string is a failure message. Run immediately after
+the existing `requirement_id`/`doc_id` check passes, before returning `SUCCESS`; a
+non-`None` return is recorded exactly like any other `VALIDATION_FAILURE` (tokens
+preserved, normal retry/backoff, an exhausted `StageError`/`DocumentStageError` gets
+`kind=VALIDATION`). Default is a no-op lambda, so every one of `test_harness.py`'s ~25
+existing direct `call_stage`/`call_document_stage` calls kept working unchanged --
+confirmed by grep before adding the parameter, not assumed. Each of `pipeline.py`'s 9
+real call sites (2 in `run_document_stages`, 2 in `retry_document_stage`'s stage-keyed
+dispatch, 5 in `_run_refine_loop`/`run_requirement`) now builds its own closure from
+data already in scope there:
+
+| Stage | Checked |
+|---|---|
+| `check_consistency` | every `ConsistencyConflict.requirement_ids` names only ids in the document |
+| `map_dependencies` | every `DependencyLink.from/to` names only ids in the document |
+| `check_quality` | every `Issue.related_requirement_ids` excludes this requirement's own id, and names only other known ids |
+| `refine_questioner` | `RefinerTurn.revision_number == n`; each question's `issue_id`/`issue_category` matches a real issue raised this round; no duplicate question id within the turn |
+| `refine_rewriter` | `RefinedRequirement.revision_number == n`; `original_text == text_checked`; `answers_used` is a subset of this round's actual answers |
+| `select_strategy` | `TestStrategy.system_type is Classification.system_type` |
+| `generate_tests` | every `TestCase.technique_used ∈ strategy.techniques`; every `TestCase.requirement_ids` names only known document ids; every `TestCase.id` follows the required prefix convention (below) |
+
+One new required parameter, `known_requirement_ids: frozenset[str]` (keyword-only),
+had to be threaded into `_run_refine_loop` -- it didn't previously receive the document's
+id set at all, needed for `check_quality`'s row. `run_document_stages`/
+`retry_document_stage` already had `requirement_set` directly, no new parameter needed
+there.
+
+**Values are never silently corrected.** `extra_check` only ever returns a message or
+`None` -- it never mutates the parsed object. A model that disagrees with an earlier
+stage either retries or exhausts into a recorded, countable `StageError`; it is never
+quietly patched to look consistent. This was floated (overwrite `TestStrategy.
+system_type` with the Classifier's value, since it's mechanically always knowable) and
+explicitly rejected: contract item 15 already rejected the identical move for
+`requirement_id` ("option A -- overwrite silently everywhere"), specifically because it
+destroys the "how often does this model produce internally-inconsistent output"
+measurement this thesis wants. Applying that same silent fix here, to a different
+field, would be the exact same mistake with new paint. Every one of the 13 rows above is
+tested twice in `orchestrator/test_harness.py::test_cross_stage_extra_checks` -- an
+invalid attempt followed by a corrected retry (ends cleanly, no `StageError`, both
+attempts token-accounted) and all-invalid exhaustion (`StageFailed(kind=VALIDATION)`,
+every attempt token-accounted, and critically: returns normally, does not raise a bare
+`pydantic.ValidationError` up through the caller the way it would have before this bug
+was found).
+
+**TC-id convention: `TC-<len>-<id>-<suffix>`, not `TC-<id>-<suffix>`.** Bucket D's
+whole-document test-case-id collision can be prevented structurally at the SOURCE
+(the Test Generator's own output) rather than caught after the fact, but only if the
+prefix scheme is genuinely unambiguous. A first draft used `TC-{requirement_id}-`,
+rejected on review: a requirement id can be a prefix of another's (`"REQ-1"` and
+`"REQ-1-X"`), so a case in `"REQ-1"`'s namespace suffixed `"X-5"` and a case in
+`"REQ-1-X"`'s namespace suffixed `"5"` are the byte-identical string
+`"TC-REQ-1-X-5"` -- the exact collision the convention exists to prevent, just moved
+from "detected too late" to "not detected at all." Announcing the id's length up front
+(`test_case_id_prefix()`, `orchestrator/pipeline.py`) removes the ambiguity the same way
+a netstring removes it from length-prefixed byte strings: for two different `(len, id)`
+pairs to produce the same `TC-<len>-<id>-` text, the length digits would have to match
+(forcing equal length, hence identical content) or differ (visible at the first
+differing character) -- either way, two different ids can never produce the same
+prefix. Combined with `RequirementSet._ids_are_unique` (document-wide) and
+`TestPlan._case_ids_are_unique` (already-existing, bucket A, within one plan), this
+makes cross-requirement collision structurally impossible, not merely checked for --
+proven, not just asserted, in
+`test_harness.py::test_test_case_id_prefix_avoids_requirement_id_ambiguity` (constructs
+the naive scheme's actual collision, then shows the adopted scheme's prefixes are
+provably distinct and non-prefixing). `test_case_id_prefix` lives in `pipeline.py`
+(where the enforcing `extra_check` lives) and is imported, not duplicated, by
+`stages.py` (which needs the identical literal string to embed in the Test Generator's
+prompt) -- one function, two call sites, so the enforced convention and the documented
+one can never drift apart.
+
+## Real stage functions -- prompt provenance (2026-08-09)
+
+**The gap.** `resolve_run_config` (`orchestrator/config.py`) computes
+`StageConfig.prompt_hash` from `prompt_path.read_text()` alone -- a hash of the prompt
+FILE, nothing else. A first draft of `stages.py` built each stage's actual prompt by
+appending the JSON output schema and the untrusted-content delimiters/warning in Python
+code at call time, on top of the file's own instructional text. That is real,
+model-facing prompt text `prompt_hash` would never see -- two runs sharing an identical
+`prompt_hash` could, under that design, send genuinely different prompts to the model if
+either unrecorded piece ever changed, silently defeating the exact guarantee
+`prompt_fingerprint()` exists for ("two runs labelled the same but hashed differently
+are visibly mislabelled" -- the inverse failure, hashed the same but actually different,
+was never guarded against because nothing generating the hash's input was ever supposed
+to be incomplete).
+
+**Fix: the prompt file IS the complete static prompt.** Every one of the 8
+`orchestrator/example_prompts/*.txt` files now contains everything that does not vary
+per call: stage instructions, the untrusted-content warning and its
+`<<<UNTRUSTED_CONTENT_START>>>`/`<<<UNTRUSTED_CONTENT_END>>>` delimiter markers, and the
+literal, pretty-printed output-schema JSON between
+`<<<OUTPUT_SCHEMA_START>>>`/`<<<OUTPUT_SCHEMA_END>>>` markers -- captured once, by
+running `model_cls.model_json_schema()` at authoring time and pasting the result in, not
+generated at request time. `stages.py` never appends anything: it only replaces
+`<<<FIELD:name>>>` tokens already present in the file with per-call dynamic values
+(a `Requirement`'s text, a document's requirement list, a computed id prefix). The
+prompt sent to the model is therefore always `template.replace(placeholders)`, verified
+by `_render_prompt`'s own contract (below) -- never `template + extra_static_text`.
+Consequence: prompt content is now provably identical across `TEXT`/`JSON_OBJECT`/
+`JSON_SCHEMA` output modes for a given stage/version, since `output_mode` only changes
+the separate `response_schema`/`schema_name` parameters passed to
+`ProviderAdapter.complete()`, never the prompt text itself.
+
+Two places the schema now legitimately appears, reconciled by a test rather than by
+sharing code: (1) the static JSON block in the file, hashed, is what the model reads in
+every mode; (2) `model_cls.model_json_schema()` computed live is used only as the
+`JSON_SCHEMA`-mode API parameter, never as prompt text. `test_stages.py::
+test_embedded_schema_matches_pydantic_schema` extracts (1) via the markers and asserts
+it equals a fresh computation of (2) for all 8 stages -- a `design/schemas.py` change
+with no matching prompt-file edit fails this test immediately, and since the file must
+then change to fix it, `prompt_fingerprint()` changes too: schema drift cannot happen
+without also producing a new, honestly-labelled prompt identity.
+
+**`_render_prompt`: one pass over the ORIGINAL template, validated against the
+template, never the rendered result, raising `ValueError` not `assert`.** Three
+rejected designs, in the order they were tried:
+
+1. *Sequential `str.replace()` per field.* Rejected: an untrusted field value can
+   itself contain text shaped like a DIFFERENT placeholder (`<<<FIELD:other_field>>>`).
+   Substituting field A first inserts that literal text; a later, separate
+   `.replace()` call for field B would then find and wrongly substitute it -- the
+   order of substitution becomes an attacker-controllable variable. `re.sub` with a
+   callback, in one pass over the original `template` string, never re-scans inserted
+   replacement text for further matches, by construction -- this is not a performance
+   optimization, it is the actual safety property. Proven, not just asserted, by
+   `test_stages.py::test_render_prompt_one_pass_no_double_substitution`.
+2. *Validating "did every placeholder get resolved" by scanning the rendered output.*
+   Rejected: untrusted content can legitimately contain text that looks like a
+   placeholder or a marker (that's the whole point of the adversarial tests below).
+   Scanning `rendered` for leftover `<<<...>>>`-shaped text would either wrongly flag
+   inert data as an unresolved placeholder, or -- worse, if "found one, so substitute
+   it" logic were ever added -- wrongly treat untrusted content as template syntax on
+   a notional second pass. `_render_prompt` discovers every placeholder name from
+   `template` ONCE, validates that discovered set against the supplied fields (both
+   directions -- a placeholder with no field, and a field with no placeholder, are both
+   `ValueError`s), and only then substitutes -- so "left unresolved" is impossible by
+   construction, not something checked for afterward. A separate marker-shaped-token
+   scan (`_ANY_MARKER_RE`) additionally catches a typo'd/malformed marker in the
+   TEMPLATE itself (e.g. `<<<FEILD:x>>>`) that would otherwise sit there forever,
+   neither substituted nor erroring -- also validated against `template`, never
+   `rendered`.
+3. *`assert` for a missing placeholder/field.* Rejected outright, per this project's
+   general practice of not using bare `assert` for anything that isn't a pure internal
+   invariant check with test coverage proving it fires -- a missing field, an unused
+   field, and an unrecognized marker-shaped token in the template are all ordinary,
+   expected-to-happen-sometimes authoring mistakes, not "should never happen" bugs, so
+   each raises `ValueError` with a message naming exactly what's wrong.
+
+**`_json_dynamic`: JSON-encode, then escape `<`/`>` as their Unicode JSON escape
+sequences, applied uniformly to every dynamic value, no exceptions.** Even with one-pass substitution
+(above), a value could still contain the LITERAL text of a real marker
+(`<<<UNTRUSTED_CONTENT_END>>>`) -- harmless to `_render_prompt`'s own logic (it never
+re-scans replacement text) but not obviously harmless to the MODEL reading the final
+prompt, which has no such guarantee about how it parses lookalike delimiters. Every
+dynamic value is JSON-encoded (so it's syntactically quoted data) and then has its `<`/
+`>` characters replaced with the six-character Unicode JSON escape sequences for them
+(backslash, u, 0, 0, 3, c for `<`; backslash, u, 0, 0, 3, e for `>`) -- both are
+valid JSON string escapes, so `json.loads` (or a model reading the prompt) recovers the
+exact original text, but no raw `<`/`>` character survives in the rendered prompt to be
+mistaken for `<<<...>>>` syntax by anything scanning for it, human or model. Applied to
+EVERY dynamic value, including ones that look obviously safe (a bare requirement id) --
+"this field is surely fine unescaped" is exactly the assumption that stops being true
+the next time the helper is reused for a new field, so there is deliberately no
+per-field judgment call to get wrong. `test_stages.py::
+test_adversarial_requirement_text_cannot_break_out` drives three payloads
+(`<<<FIELD:doc_id>>>`, `<<<UNTRUSTED_CONTENT_END>>>`, `<<<OUTPUT_SCHEMA_START>>>`)
+through a real requirement's text and a real factory function, and proves: the
+untrusted-content and output-schema marker pairs each still appear exactly once in the
+rendered prompt (the payload created no second, fake pair), no `<<<FIELD:` token is
+left unresolved, exactly 4 marker-shaped tokens exist in the whole rendered prompt (the
+2 real pairs, nothing else), and the payload itself survives only in its escaped,
+inert form inside the untrusted-content section.
+
+**Duplication accepted, deliberately, as the cost of the fix.** The untrusted-content
+warning paragraph is now near-duplicated across all 8 prompt files rather than shared
+from one Python constant, because anything living only in Python code is invisible to
+`prompt_hash` by definition -- sharing it at runtime would silently reintroduce exactly
+the gap this section closes. `test_stages.py::
+test_golden_safety_sentence_present_in_every_template` keeps one canonical reference
+sentence (the safety-critical core, not the whole paragraph -- the surrounding wording
+legitimately differs slightly per stage, e.g. `refiner_rewriter.txt` describes human
+answers, not "an earlier pipeline stage") and asserts it survives, verbatim, in every
+file -- a test fixture only, never touched by `stages.py`'s runtime rendering path, so
+it cannot itself become a second source of truth the hash misses.
+
+**Groq + `JSON_SCHEMA` rejected for v1 at the capability table, not inside
+`stages.py`.** Every stage's `response_schema` is `model_cls.model_json_schema()`,
+unadapted to Groq's own structured-outputs constraints (strict mode's
+`additionalProperties`/`required` conventions -- `orchestrator/providers/
+capabilities.py`'s own citations). A first version rejected the combination inside
+`stages.py`'s `_complete_and_parse`, per-stage, at call time -- caught on review as the
+wrong layer: `resolve_run_config` (`orchestrator/config.py`) already calls
+`supports_output_mode()` for every stage before any run starts, so a rejection living
+one layer further out (inside a single stage fn) let every EARLIER stage in the same
+run spend real tokens before the run ever reached the one that would fail. Moved into
+`supports_output_mode()` itself instead: `provider == "groq" and output_mode is
+JSON_SCHEMA` now returns `False` unconditionally, regardless of model. One function,
+already called by both `resolve_run_config` (primary, pre-run) and every adapter's own
+`complete()` (defensive, secondary) -- the same shared gate item 12's prompt-hash
+validation and the rest of `resolve_run_config`'s checks already run through, so a YAML
+config requesting this combination now fails at config-resolution time, before any API
+key is read, same as every other unsupported (provider, model, output_mode) triple.
+`stages.py` carries no rejection of its own -- duplicating a check the adapter already
+performs defensively would just be a second place for the two to drift apart. The
+allowlist tables and `groq_json_schema_is_strict()` in `capabilities.py` are left in
+place, unchanged, as accurate documentation of what Groq's docs actually say -- not
+deleted, just not reachable through `supports_output_mode()` for v1. Three
+`test_providers.py` tests that drove a previously-allowlisted model's JSON_SCHEMA
+request all the way to a successful/mismatched response (to exercise request-body-shape
+and error-classification code paths beneath the capability check) were removed, not
+adapted -- that code path is now genuinely unreachable through the public API, and
+CLAUDE.md's "don't write a check that can't fire" applies equally to a test exercising
+a scenario that can't occur.

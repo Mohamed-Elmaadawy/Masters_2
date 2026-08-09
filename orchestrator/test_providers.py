@@ -466,48 +466,17 @@ def test_groq_error_classification() -> None:
         ok("unparseable 502 body falls back to StageCallFailed", True)
 
 
-def test_groq_best_effort_schema_mismatch_is_retryable() -> None:
-    section("Groq: best-effort JSON Schema mismatch (documented) is retryable, not fatal")
-    mismatch_body = {"error": {"type": "invalid_request_error",
-                               "message": "Generated JSON does not match the expected "
-                                          "schema. Please adjust your prompt."}}
-    schema = {"type": "object"}
-
-    # openai/gpt-oss-safeguard-20b is best-effort ONLY (capabilities.py) -- strict=False.
-    session = FakeSession([FakeResponse(400, mismatch_body)])
-    adapter = GroqAdapter(api_key="k", session=session)
-    try:
-        adapter.complete("hi", model="openai/gpt-oss-safeguard-20b", temperature=1.0, timeout_seconds=30,
-                         output_mode=OutputMode.JSON_SCHEMA, response_schema=schema)
-        ok("documented best-effort mismatch message -> StageCallFailed", False)
-    except StageCallFailed:
-        ok("documented best-effort mismatch message -> StageCallFailed", True)
-    except StageCallFatal:
-        ok("documented best-effort mismatch message -> StageCallFailed (got StageCallFatal)", False)
-
-    # Same message, but this model is STRICT (schema-guaranteed) -- the mismatch case
-    # isn't supposed to happen there per Groq's own guarantee, so it stays fatal rather
-    # than being blanket-retried just because the message string matches.
-    session2 = FakeSession([FakeResponse(400, mismatch_body)])
-    adapter2 = GroqAdapter(api_key="k", session=session2)
-    try:
-        adapter2.complete("hi", model="openai/gpt-oss-20b", temperature=1.0, timeout_seconds=30,
-                          output_mode=OutputMode.JSON_SCHEMA, response_schema=schema)
-        ok("same message on a STRICT model stays fatal", False)
-    except StageCallFatal:
-        ok("same message on a STRICT model stays fatal", True)
-
-    # An unrelated invalid_request_error in best-effort mode must NOT be swept into
-    # retryable just because we're in best-effort JSON_SCHEMA mode.
-    other_body = {"error": {"type": "invalid_request_error", "message": "model does not exist"}}
-    session3 = FakeSession([FakeResponse(400, other_body)])
-    adapter3 = GroqAdapter(api_key="k", session=session3)
-    try:
-        adapter3.complete("hi", model="openai/gpt-oss-safeguard-20b", temperature=1.0, timeout_seconds=30,
-                          output_mode=OutputMode.JSON_SCHEMA, response_schema=schema)
-        ok("an unrelated invalid_request_error stays fatal even in best-effort mode", False)
-    except StageCallFatal:
-        ok("an unrelated invalid_request_error stays fatal even in best-effort mode", True)
+# test_groq_best_effort_schema_mismatch_is_retryable removed (2026-08-09): it drove
+# GroqAdapter.complete() with output_mode=JSON_SCHEMA on previously-allowlisted models,
+# expecting the request to actually be attempted so the best-effort-mismatch error-
+# classification logic below it could be exercised. supports_output_mode() now returns
+# False for provider=groq + JSON_SCHEMA unconditionally (orchestrator/providers/
+# capabilities.py, v1 scope decision -- see design/DESIGN_NOTES.md, "Real stage
+# functions -- prompt provenance"), so complete() raises StageCallFatal before ever
+# reaching that code -- the scenario this test drove can no longer occur through the
+# public API. The classification code itself is untouched, not deleted; it is simply
+# unreachable for v1, same as the request-body-shape code test_groq_json_schema_
+# request_body_shape used to cover (also removed for the identical reason).
 
 
 def test_groq_missing_schema_rejected_before_any_request() -> None:
@@ -534,77 +503,23 @@ def test_groq_json_object_allowed_broadly() -> None:
        session.requests[0]["json"]["response_format"] == {"type": "json_object"})
 
 
-def test_groq_json_schema_capability_is_allowlisted() -> None:
-    section("Groq: JSON_SCHEMA is allowlist-only, unlike JSON_OBJECT")
-    session = FakeSession([])
-    adapter = GroqAdapter(api_key="k", session=session)
-    try:
-        adapter.complete("hi", model="llama-3.3-70b-versatile", temperature=1.0, timeout_seconds=30,
-                         output_mode=OutputMode.JSON_SCHEMA, response_schema={"type": "object"})
-        ok("unsupported model rejected before any request", False)
-    except StageCallFatal:
-        ok("unsupported model rejected before any request", True)
-    ok("no HTTP request was made", session.requests == [])
-
-
-def test_groq_json_schema_request_body_shape() -> None:
-    section("Groq: json_schema request nests name/strict/schema per the documented shape")
-    schema = {"type": "object", "title": "My Stage Output!"}
-
-    session = FakeSession([GROQ_SUCCESS])
-    adapter = GroqAdapter(api_key="k", session=session)
-    adapter.complete("hi", model="openai/gpt-oss-20b", temperature=1.0, timeout_seconds=30,
-                     output_mode=OutputMode.JSON_SCHEMA, response_schema=schema)
-    rf = session.requests[0]["json"]["response_format"]
-    ok("type is json_schema", rf["type"] == "json_schema")
-    ok("strict is NOT at the top level of response_format", "strict" not in rf)
-    ok("json_schema is a nested object", isinstance(rf.get("json_schema"), dict))
-    ok("strict lives inside json_schema (strict model -> True)", rf["json_schema"]["strict"] is True)
-    ok("schema is forwarded inside json_schema, unchanged", rf["json_schema"]["schema"] == schema)
-    ok("name is present inside json_schema", bool(rf["json_schema"].get("name")))
-    ok("name is sanitized to a valid-looking identifier (derived from title)",
-       rf["json_schema"]["name"] == "My_Stage_Output")
-
-    session2 = FakeSession([GROQ_SUCCESS])
-    adapter2 = GroqAdapter(api_key="k", session=session2)
-    adapter2.complete("hi", model="openai/gpt-oss-safeguard-20b", temperature=1.0, timeout_seconds=30,
-                      output_mode=OutputMode.JSON_SCHEMA, response_schema={"type": "object"})
-    rf2 = session2.requests[0]["json"]["response_format"]
-    ok("best-effort-only model -> strict=False", rf2["json_schema"]["strict"] is False)
-    ok("no title in schema -> falls back to a fixed default name",
-       rf2["json_schema"]["name"] == "stage_output")
-
-
-def test_groq_2025_07_18_changelog_models_are_best_effort_capable() -> None:
-    """console.groq.com/docs/changelog, entry dated Jul 18 2025 (fetched 2026-08-09,
-    on review -- omitted from the first pass of this allowlist, built only from the
-    structured-outputs reference page which never listed these three): "Groq now
-    supports structured outputs with JSON schema output for the following models:
-    moonshotai/kimi-k2-instruct, meta-llama/llama-4-maverick-17b-128e-instruct,
-    meta-llama/llama-4-scout-17b-16e-instruct." That entry predates the gpt-oss
-    strict/best-effort distinction (Aug 5 2025) and never mentions a `strict` field for
-    these three, so they're classified best-effort (strict=False) here, not assumed
-    strict-capable just because the changelog calls the feature "guaranteed"."""
-    section("Groq: the Jul 18 2025 changelog models are JSON_SCHEMA-capable, best-effort only")
-    for model in ("moonshotai/kimi-k2-instruct",
-                  "meta-llama/llama-4-maverick-17b-128e-instruct",
-                  "meta-llama/llama-4-scout-17b-16e-instruct"):
-        session = FakeSession([GROQ_SUCCESS])
+def test_groq_json_schema_rejected_for_every_model() -> None:
+    """Was 'allowlist-only, unlike JSON_OBJECT' -- rewritten (2026-08-09) now that
+    supports_output_mode() rejects provider=groq + JSON_SCHEMA unconditionally for v1
+    (orchestrator/providers/capabilities.py), not just for models outside an allowlist.
+    Covers a previously-strict-capable model, a previously-best-effort-capable model,
+    and an arbitrary one -- all three now rejected identically, before any request."""
+    section("Groq: JSON_SCHEMA is rejected for every model, not just unsupported ones (v1)")
+    for model in ("openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b", "llama-3.3-70b-versatile"):
+        session = FakeSession([])
         adapter = GroqAdapter(api_key="k", session=session)
-        adapter.complete("hi", model=model, temperature=1.0, timeout_seconds=30,
-                         output_mode=OutputMode.JSON_SCHEMA, response_schema={"type": "object"})
-        ok(f"{model}: JSON_SCHEMA is accepted (no StageCallFatal)", session.requests != [])
-        rf = session.requests[0]["json"]["response_format"]
-        ok(f"{model}: strict=False (best-effort, not assumed strict-capable)",
-           rf["json_schema"]["strict"] is False)
-
-    session3 = FakeSession([GROQ_SUCCESS])
-    adapter3 = GroqAdapter(api_key="k", session=session3)
-    adapter3.complete("hi", model="openai/gpt-oss-20b", temperature=1.0, timeout_seconds=30,
-                      output_mode=OutputMode.JSON_SCHEMA, response_schema={"type": "object"},
-                      schema_name="explicit_name")
-    rf3 = session3.requests[0]["json"]["response_format"]
-    ok("an explicitly passed schema_name takes priority", rf3["json_schema"]["name"] == "explicit_name")
+        try:
+            adapter.complete("hi", model=model, temperature=1.0, timeout_seconds=30,
+                             output_mode=OutputMode.JSON_SCHEMA, response_schema={"type": "object"})
+            ok(f"{model}: rejected before any request", False)
+        except StageCallFatal:
+            ok(f"{model}: rejected before any request", True)
+        ok(f"{model}: no HTTP request was made", session.requests == [])
 
 
 def main() -> int:
@@ -624,11 +539,9 @@ def main() -> int:
         test_groq_from_env, test_groq_key_in_header, test_groq_successful_extraction,
         test_groq_malformed_with_usage_is_partial, test_groq_malformed_without_usage_is_failed,
         test_groq_transport_exceptions, test_groq_generic_request_exception,
-        test_groq_error_classification, test_groq_best_effort_schema_mismatch_is_retryable,
+        test_groq_error_classification,
         test_groq_missing_schema_rejected_before_any_request,
-        test_groq_json_object_allowed_broadly, test_groq_json_schema_capability_is_allowlisted,
-        test_groq_json_schema_request_body_shape,
-        test_groq_2025_07_18_changelog_models_are_best_effort_capable,
+        test_groq_json_object_allowed_broadly, test_groq_json_schema_rejected_for_every_model,
     ):
         fn()
     print("\n" + "=" * 72)

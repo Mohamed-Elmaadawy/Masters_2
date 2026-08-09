@@ -96,7 +96,19 @@ def groq_json_schema_is_strict(model: str) -> bool:
 def supports_output_mode(provider: str, model: str, output_mode: OutputMode) -> bool:
     """Pure function, no I/O: called by orchestrator/config.py's resolve_run_config()
     (primary check, before any API key is read) and defensively again by each provider
-    adapter's complete() (secondary, in case something bypasses config resolution)."""
+    adapter's complete() (secondary, in case something bypasses config resolution).
+
+    Groq + JSON_SCHEMA always returns False for v1 (2026-08-09), regardless of model --
+    NOT because Groq doesn't support it (the allowlist tables above remain accurate to
+    what Groq's docs say) but because orchestrator/stages.py builds every stage's
+    response_schema from model_cls.model_json_schema() with no adaptation to Groq's
+    structured-outputs constraints (strict mode's additionalProperties/required
+    conventions), and building that adaptation is out of scope for v1. Rejecting the
+    combination here, at the single shared capability gate BOTH resolve_run_config and
+    every adapter's complete() call through, means a YAML config requesting it fails at
+    config-resolution time -- before any API key is read, before any other stage's
+    tokens are spent -- rather than only when that specific stage's turn comes up mid-
+    run. See design/DESIGN_NOTES.md, "Real stage functions -- prompt provenance"."""
     if output_mode is OutputMode.TEXT:
         return True
 
@@ -107,6 +119,6 @@ def supports_output_mode(provider: str, model: str, output_mode: OutputMode) -> 
         if output_mode is OutputMode.JSON_OBJECT:
             return True  # documented broadly available, see module docstring above
         if output_mode is OutputMode.JSON_SCHEMA:
-            return model in _GROQ_JSON_SCHEMA_STRICT or model in _GROQ_JSON_SCHEMA_BEST_EFFORT_ONLY
+            return False  # not supported for v1 -- see docstring above
 
     return False

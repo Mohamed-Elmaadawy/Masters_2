@@ -52,7 +52,7 @@ from design.schemas import (
     RequirementSet, RunMetadata, RunOutcome, StageConfig, TestStrategy,
     prompt_fingerprint,
 )
-from orchestrator.pipeline import HumanFns, StageFns, Throttle, run_document
+from orchestrator.pipeline import HumanFns, StageFns, Throttle, run_document, test_case_id_prefix
 from orchestrator.stage_fns import (
     AnswerQuestionsFn, CheckConsistencyFn, CheckQualityFn, ClassifyFn, DecideAtCapFn,
     GenerateTestsFn, MapDependenciesFn, RefineQuestionerFn, RefineRewriterFn,
@@ -123,12 +123,12 @@ def stub_check_quality(
 
 
 def stub_refine_questioner(
-    requirement: Requirement, quality_report: QualityReport,
+    requirement: Requirement, quality_report: QualityReport, revision_number: int,
 ) -> StageCallResult: ...
 
 
 def stub_refine_rewriter(
-    requirement: Requirement, answers: list[RefinerAnswer],
+    requirement: Requirement, answers: list[RefinerAnswer], revision_number: int,
 ) -> StageCallResult: ...
 
 
@@ -268,7 +268,8 @@ def _run_end_to_end() -> dict:
     select_strategy = Recorder([{"requirement_id": "R1", "system_type": "web",
                                  "techniques": ["boundary_value_analysis"], "rationale": "r"}])
     generate_tests = Recorder([{"requirement_id": "R1", "test_cases": [{
-        "id": "TC-R1-1", "requirement_ids": ["R1"], "technique_used": "boundary_value_analysis",
+        "id": f"{test_case_id_prefix('R1')}1", "requirement_ids": ["R1"],
+        "technique_used": "boundary_value_analysis",
         "title": "t", "steps": ["s"], "expected_result": "e"}]}])
     answer_questions = RecordingAnswerQuestions()
     decide_at_cap = RecordingDecideAtCap()

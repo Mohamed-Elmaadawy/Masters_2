@@ -85,6 +85,15 @@ class StageFailed(Exception):
         super().__init__(message)
 
 
+ExtraCheck = Callable[[BaseModel], Optional[str]]
+
+
+def _no_extra_check(parsed: BaseModel) -> Optional[str]:
+    """Default extra_check: no cross-stage invariant to verify beyond requirement_id/
+    doc_id, which call_stage/call_document_stage already check unconditionally."""
+    return None
+
+
 def call_stage(
     stage_fn: Callable[..., StageCallResult],
     args: tuple,
@@ -97,6 +106,7 @@ def call_stage(
     req_id: str,
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    extra_check: ExtraCheck = _no_extra_check,
 ) -> BaseModel:
     """Call one stage, validate its output, check it answers about the right
     requirement, retry on failure, record one StageAttempt per try -- success or
@@ -142,6 +152,24 @@ def call_stage(
     retried per the normal policy, usage recorded (the call succeeded; the answer was
     just about the wrong requirement) -- countable, the same way any other
     schema-invalid output is countable (contract item 14).
+
+    extra_check (2026-08-09, stages.py real-prompt phase): an optional callable, run
+    immediately after the requirement_id check passes, before returning. Generalizes
+    the exact mechanism above -- "check immediately after model_validate succeeds,
+    before returning; a mismatch is kind=VALIDATION, retried per the normal policy,
+    usage recorded" -- to every OTHER cross-stage agreement a stage's output must
+    satisfy that model_cls's own validators cannot check in isolation (they compare
+    against an earlier stage's output, or against a full id-set no single object
+    holds). Returns an error message string to fail this attempt as a normal
+    VALIDATION_FAILURE, or None to let it succeed. Default is a no-op, so every
+    existing call site/test that doesn't pass one keeps its exact current behavior.
+    Never mutates parsed -- a stage output that disagrees with an earlier stage either
+    retries or exhausts into a StageError; it is never silently corrected, which would
+    destroy the exact "how often does this model produce internally-inconsistent
+    output" signal this project treats as a thesis-relevant measurement (see
+    design/ORCHESTRATOR_CONTRACT.md item 15's identical reasoning for requirement_id).
+    See design/DESIGN_NOTES.md, "Real stage functions -- cross-stage validation", for
+    the full audit of which fields needed this and why the others didn't.
     """
     if max_attempts < 1:
         # range(max_attempts) below would be empty, the for loop body would never run,
@@ -196,22 +224,31 @@ def call_stage(
                     result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
                     prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
             else:
-                if parsed.requirement_id == req_id:
+                if parsed.requirement_id != req_id:
+                    last_kind = FailureKind.VALIDATION
+                    last_message = (
+                        f"{model_cls.__name__}.requirement_id is {parsed.requirement_id!r}, "
+                        f"expected {req_id!r} -- the model answered about a different "
+                        "requirement"
+                    )
                     attempt_sink.append(StageAttempt(
                         stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
-                        result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
-                        completion_tokens=result.completion_tokens))
-                    return parsed
-                last_kind = FailureKind.VALIDATION
-                last_message = (
-                    f"{model_cls.__name__}.requirement_id is {parsed.requirement_id!r}, "
-                    f"expected {req_id!r} -- the model answered about a different "
-                    "requirement"
-                )
-                attempt_sink.append(StageAttempt(
-                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
-                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
-                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
+                        result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
+                else:
+                    extra_error = extra_check(parsed)
+                    if extra_error is None:
+                        attempt_sink.append(StageAttempt(
+                            stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                            result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
+                            completion_tokens=result.completion_tokens))
+                        return parsed
+                    last_kind = FailureKind.VALIDATION
+                    last_message = extra_error
+                    attempt_sink.append(StageAttempt(
+                        stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                        result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -236,6 +273,7 @@ def call_document_stage(
     doc_id: Optional[str],
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    extra_check: ExtraCheck = _no_extra_check,
 ) -> BaseModel:
     """Structurally identical to call_stage apart from the stage/attempt types -- same
     reasoning as the StageError/DocumentStageError split: a shared implementation
@@ -253,6 +291,11 @@ def call_document_stage(
     the report was produced for a different document.
 
     invocation_id is required, no default -- same reasoning as call_stage's.
+
+    extra_check: same mechanism as call_stage's own extra_check (see its docstring) --
+    run after the doc_id check passes, before returning; a non-None return is a normal
+    VALIDATION_FAILURE. Used for e.g. checking every id a ConsistencyConflict/
+    DependencyLink names actually exists in the document's RequirementSet.
     """
     if max_attempts < 1:
         raise ValueError(
@@ -300,21 +343,30 @@ def call_document_stage(
             else:
                 mismatch = (doc_id is not None and parsed.doc_id is not None
                             and parsed.doc_id != doc_id)
-                if not mismatch:
+                if mismatch:
+                    last_kind = FailureKind.VALIDATION
+                    last_message = (
+                        f"{model_cls.__name__}.doc_id is {parsed.doc_id!r}, expected "
+                        f"{doc_id!r} -- the model answered about a different document"
+                    )
                     attempt_sink.append(DocumentStageAttempt(
                         stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
-                        result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
-                        completion_tokens=result.completion_tokens))
-                    return parsed
-                last_kind = FailureKind.VALIDATION
-                last_message = (
-                    f"{model_cls.__name__}.doc_id is {parsed.doc_id!r}, expected "
-                    f"{doc_id!r} -- the model answered about a different document"
-                )
-                attempt_sink.append(DocumentStageAttempt(
-                    stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
-                    result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
-                    prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
+                        result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
+                else:
+                    extra_error = extra_check(parsed)
+                    if extra_error is None:
+                        attempt_sink.append(DocumentStageAttempt(
+                            stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                            result=AttemptResult.SUCCESS, prompt_tokens=result.prompt_tokens,
+                            completion_tokens=result.completion_tokens))
+                        return parsed
+                    last_kind = FailureKind.VALIDATION
+                    last_message = extra_error
+                    attempt_sink.append(DocumentStageAttempt(
+                        stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                        result=AttemptResult.VALIDATION_FAILURE, error_message=last_message,
+                        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens))
 
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
@@ -325,6 +377,142 @@ def call_document_stage(
     # many attempts actually ran before a fatal break (0 if fatal on the very first try),
     # matching StageFailed's own "0 means failed on the first try with no retry".
     raise StageFailed(last_kind, last_message, retry_count=attempt)
+
+
+def _known_requirement_ids(requirement_set: RequirementSet) -> frozenset[str]:
+    return frozenset(r.id for r in requirement_set.requirements)
+
+
+def _consistency_extra_check(known_ids: frozenset[str]) -> ExtraCheck:
+    def check(parsed: ConsistencyReport) -> Optional[str]:
+        for conflict in parsed.conflicts:
+            unknown = sorted(set(conflict.requirement_ids) - known_ids)
+            if unknown:
+                return (f"ConsistencyConflict references unknown requirement id(s) "
+                        f"{unknown} -- not in this document's requirement set")
+        return None
+    return check
+
+
+def _dependency_extra_check(known_ids: frozenset[str]) -> ExtraCheck:
+    def check(parsed: DependencyReport) -> Optional[str]:
+        for dep in parsed.dependencies:
+            unknown = sorted({dep.from_requirement_id, dep.to_requirement_id} - known_ids)
+            if unknown:
+                return (f"DependencyLink references unknown requirement id(s) {unknown} "
+                        f"-- not in this document's requirement set")
+        return None
+    return check
+
+
+def _quality_checker_extra_check(req_id: str, other_known_ids: frozenset[str]) -> ExtraCheck:
+    """other_known_ids must already exclude req_id -- an Issue's related_requirement_ids
+    is a claim about OTHER requirements (contract item 4/RefinementRound's own
+    self-reference check), so req_id itself is never a valid entry, known-id or not."""
+    def check(parsed: QualityReport) -> Optional[str]:
+        for issue in parsed.issues:
+            if req_id in issue.related_requirement_ids:
+                return (f"Issue {issue.id!r} lists {req_id!r} as a related requirement, "
+                        "but that is the requirement it is about")
+            unknown = sorted(set(issue.related_requirement_ids) - other_known_ids)
+            if unknown:
+                return (f"Issue {issue.id!r} references unknown requirement id(s) "
+                        f"{unknown} -- not in this document's requirement set")
+        return None
+    return check
+
+
+def _refiner_questioner_extra_check(n: int, quality_report: QualityReport) -> ExtraCheck:
+    issues_by_id = {i.id: i for i in quality_report.issues}
+
+    def check(parsed: RefinerTurn) -> Optional[str]:
+        if parsed.revision_number != n:
+            return (f"RefinerTurn.revision_number is {parsed.revision_number}, expected "
+                    f"{n} -- the model answered for the wrong round")
+        seen_question_ids: set[str] = set()
+        for q in parsed.questions:
+            if q.id in seen_question_ids:
+                return f"question id {q.id!r} appears more than once in this turn"
+            seen_question_ids.add(q.id)
+            issue = issues_by_id.get(q.issue_id)
+            if issue is None:
+                return (f"question {q.id!r} addresses issue {q.issue_id!r}, which this "
+                        "round's quality_report did not raise")
+            if q.issue_category is not issue.category:
+                return (f"question {q.id!r} says its issue is {q.issue_category.value!r}, "
+                        f"but issue {issue.id!r} is {issue.category.value!r}")
+        return None
+    return check
+
+
+def _refiner_rewriter_extra_check(
+    n: int, text_checked: str, answers: list[RefinerAnswer],
+) -> ExtraCheck:
+    def check(parsed: RefinedRequirement) -> Optional[str]:
+        if parsed.revision_number != n:
+            return (f"RefinedRequirement.revision_number is {parsed.revision_number}, "
+                    f"expected {n} -- the model answered for the wrong round")
+        if parsed.original_text != text_checked:
+            return "RefinedRequirement.original_text is not the text that was checked this round"
+        for a in parsed.answers_used:
+            if a not in answers:
+                return (f"RefinedRequirement used an answer to {a.question_id!r} that is "
+                        "not among this round's answers")
+        return None
+    return check
+
+
+def _strategy_selector_extra_check(classification: Classification) -> ExtraCheck:
+    def check(parsed: TestStrategy) -> Optional[str]:
+        if parsed.system_type is not classification.system_type:
+            return (f"TestStrategy.system_type is {parsed.system_type.value!r}, but the "
+                    f"Classifier said {classification.system_type.value!r}")
+        return None
+    return check
+
+
+def test_case_id_prefix(requirement_id: str) -> str:
+    """Length-prefixed test case id namespace for one requirement: 'TC-<len>-<id>-'.
+
+    Plain 'TC-<id>-' is ambiguous when one requirement's id is a prefix of another's:
+    'REQ-1' and 'REQ-1-X' would both accept a case named 'TC-REQ-1-X-5' -- a case in
+    REQ-1's namespace with suffix 'X-5' is byte-identical to a case in REQ-1-X's
+    namespace with suffix '5'. Announcing the id's length up front removes the
+    ambiguity the same way a netstring removes it from length-prefixed byte strings:
+    for two different (len, id) pairs to produce the same 'TC-<len>-<id>-' text, either
+    the length digits must match (forcing len1 == len2, hence id1/id2 have equal
+    length) and then the id characters must match position-for-position (forcing
+    id1 == id2), or the length digits must differ, which is visible at the first
+    differing character -- either way, two different ids can never produce the same
+    prefix. Combined with RequirementSet's own id-uniqueness and TestPlan's own
+    within-plan case-id uniqueness, this makes cross-requirement test-case id
+    collisions structurally impossible, not just unlikely. See
+    design/DESIGN_NOTES.md, "Real stage functions -- cross-stage validation".
+    """
+    return f"TC-{len(requirement_id)}-{requirement_id}-"
+
+
+def _test_generator_extra_check(
+    req_id: str, strategy: TestStrategy, known_ids: frozenset[str],
+) -> ExtraCheck:
+    allowed_techniques = set(strategy.techniques)
+    prefix = test_case_id_prefix(req_id)
+
+    def check(parsed: TestPlan) -> Optional[str]:
+        for case in parsed.test_cases:
+            if not case.id.startswith(prefix) or case.id == prefix:
+                return (f"test case id {case.id!r} does not follow the required "
+                        f"convention {prefix}<suffix>")
+            if case.technique_used not in allowed_techniques:
+                return (f"test case {case.id!r} uses {case.technique_used.value!r}, "
+                        "which the strategy did not select "
+                        f"({sorted(t.value for t in allowed_techniques)})")
+            unknown = sorted(set(case.requirement_ids) - known_ids)
+            if unknown:
+                return (f"test case {case.id!r} references unknown requirement id(s) "
+                        f"{unknown} -- not in this document's requirement set")
+        return None
+    return check
 
 
 def run_document_stages(
@@ -340,6 +528,7 @@ def run_document_stages(
     the other from running (contract item 8, D1=b)."""
     errors: list[DocumentStageError] = []
     attempts: list[DocumentStageAttempt] = []
+    known_ids = _known_requirement_ids(requirement_set)
 
     consistency_report: Optional[ConsistencyReport] = None
     consistency_invocation_id = uuid.uuid4().hex
@@ -348,7 +537,8 @@ def run_document_stages(
             stage_fns.check_consistency, (requirement_set,), ConsistencyReport,
             DocumentStage.CONSISTENCY_CHECKER, consistency_invocation_id,
             stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, attempts,
-            requirement_set.doc_id, max_attempts, backoff_seconds)
+            requirement_set.doc_id, max_attempts, backoff_seconds,
+            extra_check=_consistency_extra_check(known_ids))
     except StageFailed as f:
         errors.append(DocumentStageError(
             stage=DocumentStage.CONSISTENCY_CHECKER, invocation_id=consistency_invocation_id,
@@ -361,7 +551,8 @@ def run_document_stages(
             stage_fns.map_dependencies, (requirement_set,), DependencyReport,
             DocumentStage.DEPENDENCY_MAPPER, dependency_invocation_id,
             stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, attempts,
-            requirement_set.doc_id, max_attempts, backoff_seconds)
+            requirement_set.doc_id, max_attempts, backoff_seconds,
+            extra_check=_dependency_extra_check(known_ids))
     except StageFailed as f:
         errors.append(DocumentStageError(
             stage=DocumentStage.DEPENDENCY_MAPPER, invocation_id=dependency_invocation_id,
@@ -491,6 +682,8 @@ def _run_refine_loop(
     stage_configs: dict,
     max_attempts: int,
     backoff_seconds: Callable[[int], float],
+    *,
+    known_requirement_ids: frozenset[str],
     checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
 ) -> tuple[RequirementRunRecord, Optional[StageError]]:
     """Runs quality-check/refine rounds until one passes, the cap is hit, or a stage
@@ -566,7 +759,9 @@ def _run_refine_loop(
                      suppressed_ids),
                     QualityReport, PipelineStage.QUALITY_CHECKER, qc_invocation_id,
                     stage_configs[PipelineStage.QUALITY_CHECKER.value].model, throttle, attempts,
-                    req.id, max_attempts, backoff_seconds)
+                    req.id, max_attempts, backoff_seconds,
+                    extra_check=_quality_checker_extra_check(
+                        req.id, known_requirement_ids - {req.id}))
             except StageFailed as f:
                 record = record.model_copy(update={"rounds": rounds, "attempts": attempts})
                 return record, StageError(
@@ -617,10 +812,11 @@ def _run_refine_loop(
             questioner_invocation_id = uuid.uuid4().hex
             try:
                 turn = call_stage(
-                    stage_fns.refine_questioner, (current, quality_report), RefinerTurn,
+                    stage_fns.refine_questioner, (current, quality_report, n), RefinerTurn,
                     PipelineStage.REFINER_QUESTIONER, questioner_invocation_id,
                     stage_configs[PipelineStage.REFINER_QUESTIONER.value].model,
-                    throttle, attempts, req.id, max_attempts, backoff_seconds)
+                    throttle, attempts, req.id, max_attempts, backoff_seconds,
+                    extra_check=_refiner_questioner_extra_check(n, quality_report))
             except StageFailed as f:
                 record = record.model_copy(update={"attempts": attempts})
                 rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
@@ -667,10 +863,11 @@ def _run_refine_loop(
         rewriter_invocation_id = uuid.uuid4().hex
         try:
             rewrite = call_stage(
-                stage_fns.refine_rewriter, (current, answers), RefinedRequirement,
+                stage_fns.refine_rewriter, (current, answers, n), RefinedRequirement,
                 PipelineStage.REFINER_REWRITER, rewriter_invocation_id,
                 stage_configs[PipelineStage.REFINER_REWRITER.value].model,
-                throttle, attempts, req.id, max_attempts, backoff_seconds)
+                throttle, attempts, req.id, max_attempts, backoff_seconds,
+                extra_check=_refiner_rewriter_extra_check(n, text_checked, answers))
         except StageFailed as f:
             record = record.model_copy(update={"attempts": attempts})
             rounds.append(RefinementRound(revision_number=n, text_checked=text_checked,
@@ -745,6 +942,7 @@ def run_requirement(
         consistency_report.conflicts_for(req.id) if consistency_report is not None else None)
     relevant_dependencies = (
         dependency_report.dependencies_for(req.id) if dependency_report is not None else None)
+    known_requirement_ids = _known_requirement_ids(requirement_set)
 
     if stage is PipelineStage.CLASSIFIER:
         attempts = list(record.attempts)
@@ -779,7 +977,7 @@ def run_requirement(
         record, refine_error = _run_refine_loop(
             record, relevant_conflicts, relevant_dependencies, stage_fns, human_fns,
             throttle, max_revisions, stage_configs, max_attempts, backoff_seconds,
-            checkpoint)
+            known_requirement_ids=known_requirement_ids, checkpoint=checkpoint)
         if refine_error is not None:
             errors = list(record.errors) + [refine_error]
             return RequirementRunRecord.model_validate(
@@ -840,7 +1038,8 @@ def run_requirement(
                 (current, record.classification, relevant_dependencies), TestStrategy,
                 PipelineStage.STRATEGY_SELECTOR, strategy_invocation_id,
                 stage_configs[PipelineStage.STRATEGY_SELECTOR.value].model, throttle, attempts,
-                req.id, max_attempts, backoff_seconds)
+                req.id, max_attempts, backoff_seconds,
+                extra_check=_strategy_selector_extra_check(record.classification))
         except StageFailed as f:
             errors = list(record.errors) + [StageError(
                 stage=PipelineStage.STRATEGY_SELECTOR, invocation_id=strategy_invocation_id,
@@ -858,7 +1057,8 @@ def run_requirement(
             stage_fns.generate_tests, (current, strategy, relevant_dependencies), TestPlan,
             PipelineStage.TEST_GENERATOR, generator_invocation_id,
             stage_configs[PipelineStage.TEST_GENERATOR.value].model,
-            throttle, attempts, req.id, max_attempts, backoff_seconds)
+            throttle, attempts, req.id, max_attempts, backoff_seconds,
+            extra_check=_test_generator_extra_check(req.id, strategy, known_requirement_ids))
     except StageFailed as f:
         errors = list(record.errors) + [StageError(
             stage=PipelineStage.TEST_GENERATOR, invocation_id=generator_invocation_id,
@@ -972,6 +1172,9 @@ def retry_document_stage(
                 DocumentStage.DEPENDENCY_MAPPER: DependencyReport}[stage]
     field_name = {DocumentStage.CONSISTENCY_CHECKER: "consistency_report",
                  DocumentStage.DEPENDENCY_MAPPER: "dependency_report"}[stage]
+    known_ids = _known_requirement_ids(record.requirement_set)
+    extra_check = {DocumentStage.CONSISTENCY_CHECKER: _consistency_extra_check(known_ids),
+                  DocumentStage.DEPENDENCY_MAPPER: _dependency_extra_check(known_ids)}[stage]
 
     attempts: list[DocumentStageAttempt] = []
     invocation_id = uuid.uuid4().hex
@@ -979,7 +1182,8 @@ def retry_document_stage(
         report = call_document_stage(
             stage_fn, (record.requirement_set,), model_cls, stage, invocation_id,
             record.metadata.stages[stage.value].model, throttle, attempts,
-            record.requirement_set.doc_id, max_attempts, backoff_seconds)
+            record.requirement_set.doc_id, max_attempts, backoff_seconds,
+            extra_check=extra_check)
     except StageFailed as f:
         errors = list(record.errors) + [DocumentStageError(
             stage=stage, invocation_id=invocation_id, kind=f.kind, message=f.message,

@@ -26,7 +26,7 @@ from design.schemas import (
     prompt_fingerprint,
 )
 from orchestrator.pipeline import (
-    resume_at, StageCallResult, StageCallFailed, StageFns, HumanFns,
+    resume_at, test_case_id_prefix, StageCallResult, StageCallFailed, StageFns, HumanFns,
 )
 
 PASSED = 0
@@ -604,7 +604,7 @@ def test_run_document_degraded_when_only_dependency_report_is_none() -> None:
 
     def plan_for(req_id):
         return {"requirement_id": req_id, "test_cases": [{
-            "id": f"TC-{req_id}-1", "requirement_ids": [req_id],
+            "id": f"{test_case_id_prefix(req_id)}1", "requirement_ids": [req_id],
             "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
             "expected_result": "e"}]}
 
@@ -831,7 +831,7 @@ def test_happy_path() -> None:
     def generate_tests(req, *a):
         generate_calls.append(req.text)
         return StageCallResult(raw={"requirement_id": req.id, "test_cases": [{
-            "id": f"TC-{req.id}-1", "requirement_ids": [req.id],
+            "id": f"{test_case_id_prefix(req.id)}1", "requirement_ids": [req.id],
             "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
             "expected_result": "e"}]}, prompt_tokens=10, completion_tokens=5)
 
@@ -942,7 +942,8 @@ def test_refiner_questioner_and_rewriter_have_independent_configs() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(
         answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
@@ -994,7 +995,8 @@ def test_refine_questioner_failure_and_retry() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     answer_calls: list = []
     human_fns_retry = HumanFns(
@@ -1068,7 +1070,8 @@ def test_refine_rewriter_failure_and_retry() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns_retry = HumanFns(
         answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
@@ -1151,7 +1154,8 @@ def test_revision_cap() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
         human_fns = HumanFns(
             answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
@@ -1360,7 +1364,8 @@ def test_issue_identity_reuse() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(
         answer_questions=lambda turn: [RefinerAnswer(question_id=turn.questions[0].id, answer_text="a")],
@@ -1412,7 +1417,8 @@ def test_suppression_persists() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(
         answer_questions=lambda turn: [
@@ -1455,7 +1461,8 @@ def test_resume_skips_finished_refine_loop() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=lambda turn: [],
                          decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -1535,7 +1542,8 @@ def test_resume_mid_round_completes() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=answer_questions,
                          decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -1615,7 +1623,8 @@ def test_resume_mid_round_asks_human_when_answers_missing() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=answer_questions,
                          decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -1734,7 +1743,8 @@ def test_suppressed_issue_reflagged_is_dropped() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(
         answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="confirmed",
@@ -1775,7 +1785,8 @@ def test_resume_skips_finished_strategy_selector() -> None:
         classify=None, check_quality=None, refine_questioner=None, refine_rewriter=None,
         select_strategy=None,  # must never be called
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=lambda turn: [],
                          decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -1981,7 +1992,7 @@ def test_run_document_happy_path() -> None:
 
     def plan_for(req_id):
         return {"requirement_id": req_id, "test_cases": [{
-            "id": f"TC-{req_id}-1", "requirement_ids": [req_id],
+            "id": f"{test_case_id_prefix(req_id)}1", "requirement_ids": [req_id],
             "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
             "expected_result": "e"}]}
 
@@ -2045,7 +2056,7 @@ def test_document_context_no_leakage_three_requirements() -> None:
             check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
             select_strategy=strategy_fn,
             generate_tests=Scripted([{"requirement_id": req.id, "test_cases": [{
-                "id": f"TC-{req.id}-1", "requirement_ids": [req.id],
+                "id": f"{test_case_id_prefix(req.id)}1", "requirement_ids": [req.id],
                 "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
                 "expected_result": "e"}]}]))
         result = run_requirement(
@@ -2094,7 +2105,7 @@ def test_document_context_none_vs_empty() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
@@ -2124,7 +2135,7 @@ def test_document_context_independent_failure_mirror() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
     throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
@@ -2151,7 +2162,7 @@ def test_document_context_dependencies_reach_both_stages() -> None:
     strategy_fn = Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                              "techniques": ["boundary_value_analysis"], "rationale": "r"}])
     generate_fn = Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-        "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+        "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
         "title": "t", "steps": ["s"], "expected_result": "e"}]}])
     fns = StageFns(
         check_consistency=None, map_dependencies=None,
@@ -2225,11 +2236,11 @@ def test_document_context_survives_resume() -> None:
                  "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([
                 {"requirement_id": REQ_A.id, "test_cases": [{
-                    "id": "TC-A-1", "requirement_ids": [REQ_A.id],
+                    "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
                     "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
                     "expected_result": "e"}]},
                 {"requirement_id": REQ_B.id, "test_cases": [{
-                    "id": "TC-B-1", "requirement_ids": [REQ_B.id],
+                    "id": f"{test_case_id_prefix(REQ_B.id)}1", "requirement_ids": [REQ_B.id],
                     "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
                     "expected_result": "e"}]}]))
         human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
@@ -2276,7 +2287,7 @@ def test_document_context_persists_across_refinement_rounds() -> None:
         select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                    "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
         generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-            "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+            "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
             "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
     human_fns = HumanFns(answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
                          decide_at_cap=lambda r: (None, None))
@@ -2490,7 +2501,7 @@ def test_document_context_consistent_across_resume_and_retry() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-                "id": "TC-A-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
         req_a_record = run_requirement(
             rec(requirement=REQ_A, run_id=metadata.run_id), DOC, doc_record.consistency_report,
@@ -2519,7 +2530,7 @@ def test_document_context_consistent_across_resume_and_retry() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_B.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_B.id, "test_cases": [{
-                "id": "TC-B-1", "requirement_ids": [REQ_B.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_B.id)}1", "requirement_ids": [REQ_B.id], "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}])),
             human_fns, throttle, max_revisions=3)
         ok("B reaches COMPLETED", any(r.requirement.id == REQ_B.id and r.outcome is RunOutcome.COMPLETED
@@ -2567,7 +2578,8 @@ def test_error_resume_finish() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "other",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
         resumed = resume_document(tmp_path, recovering_fns, human_fns, throttle, max_revisions=3)
         ok("resume finds and finishes the errored requirement",
@@ -2630,11 +2642,11 @@ def test_interruption_mid_document_round_trip() -> None:
                  "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([
                 {"requirement_id": REQ_A.id, "test_cases": [{
-                    "id": "TC-A-1", "requirement_ids": [REQ_A.id],
+                    "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
                     "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
                     "expected_result": "e"}]},
                 {"requirement_id": REQ_B.id, "test_cases": [{
-                    "id": "TC-B-1", "requirement_ids": [REQ_B.id],
+                    "id": f"{test_case_id_prefix(REQ_B.id)}1", "requirement_ids": [REQ_B.id],
                     "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
                     "expected_result": "e"}]}]))
         human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
@@ -3215,7 +3227,8 @@ def test_interruption_during_human_input_checkpoints_and_resumes() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "web",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
         resume_human_fns = HumanFns(answer_questions=working_answer_questions,
                                     decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -3314,7 +3327,8 @@ def test_interruption_after_answers_checkpoints_and_resumes() -> None:
             select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "web",
                                        "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
             generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
-                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+            "technique_used": "boundary_value_analysis",
                 "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
         resume_human_fns = HumanFns(answer_questions=answer_questions_must_not_be_called_again,
                                     decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
@@ -3418,6 +3432,234 @@ def test_atomic_write_leaves_no_partial_file() -> None:
            list(Path(tmp).glob("*.tmp")) == [])
 
 
+def test_cross_stage_extra_checks() -> None:
+    """extra_check (stages.py real-prompt phase): every cross-stage agreement a stage's
+    output must satisfy that model_cls's own validators cannot check in isolation --
+    compared against an earlier stage's output, or against a full id-set no single
+    object holds. Each row below is individually schema-valid (passes model_cls's own
+    model_validate, passes the built-in requirement_id/doc_id check) but violates one
+    specific cross-stage invariant. For each: proves (a) an invalid attempt followed by
+    a corrected retry succeeds cleanly -- no StageError/DocumentStageError, both
+    attempts recorded with tokens; (b) all-invalid attempts exhaust into a StageFailed
+    with kind=VALIDATION, every attempt recorded with tokens; (c) neither path raises
+    anything other than the StageFailed call_stage/call_document_stage already define --
+    in particular, no pydantic.ValidationError escapes from a RefinementRound/
+    RequirementRunRecord/DocumentRunRecord construction the way it would if this
+    mismatch reached that far unchecked. See design/DESIGN_NOTES.md, "Real stage
+    functions -- cross-stage validation"."""
+    from design.schemas import (
+        AttemptResult, Classification, ConsistencyReport, DependencyReport, DocumentStage,
+        FailureKind, QualityReport as QR, SystemType, TestPlan, TestStrategy, TestTechnique,
+    )
+    from orchestrator.pipeline import (
+        call_document_stage, call_stage, test_case_id_prefix as tc_prefix, StageFailed,
+        Throttle,
+        _consistency_extra_check, _dependency_extra_check, _quality_checker_extra_check,
+        _refiner_questioner_extra_check, _refiner_rewriter_extra_check,
+        _strategy_selector_extra_check, _test_generator_extra_check,
+    )
+
+    section("Cross-stage extra_check: every row -- retry-then-succeed and exhaustion")
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def run_row(label, is_document, model_cls, stage, id_arg, extra_check, invalid, corrected):
+        call = call_document_stage if is_document else call_stage
+
+        attempts_ok: list = []
+        fn_ok = Scripted([invalid, corrected])
+        result = call(fn_ok, ("x",), model_cls, stage, f"inv-{label}-ok", "fake-model",
+                      throttle, attempts_ok, id_arg, 3, lambda a: 0.0, extra_check)
+        ok(f"{label}: retry after an invalid attempt succeeds", isinstance(result, model_cls))
+        ok(f"{label}: exactly 2 attempts recorded (1 invalid + 1 success)", len(attempts_ok) == 2)
+        ok(f"{label}: attempt 1 is VALIDATION_FAILURE, tokens preserved",
+           attempts_ok[0].result is AttemptResult.VALIDATION_FAILURE
+           and attempts_ok[0].prompt_tokens is not None
+           and attempts_ok[0].completion_tokens is not None)
+        ok(f"{label}: attempt 2 is SUCCESS, tokens recorded",
+           attempts_ok[1].result is AttemptResult.SUCCESS
+           and attempts_ok[1].prompt_tokens is not None
+           and attempts_ok[1].completion_tokens is not None)
+        # This is the actual regression guard: nothing above raised anything other than
+        # what call_stage/call_document_stage themselves define (a bare exception here
+        # would abort the whole test run, not just fail one `ok()`).
+
+        attempts_bad: list = []
+        fn_bad = Scripted([invalid, invalid, invalid])
+        try:
+            call(fn_bad, ("x",), model_cls, stage, f"inv-{label}-bad", "fake-model",
+                throttle, attempts_bad, id_arg, 3, lambda a: 0.0, extra_check)
+            ok(f"{label}: all-invalid attempts raise StageFailed", False)
+        except StageFailed as f:
+            ok(f"{label}: all-invalid attempts raise StageFailed with kind=VALIDATION",
+               f.kind is FailureKind.VALIDATION)
+            ok(f"{label}: retry_count is 2 (3 attempts, 2 retries before giving up)",
+               f.retry_count == 2)
+        ok(f"{label}: exhaustion recorded 3 attempts, all VALIDATION_FAILURE with tokens",
+           len(attempts_bad) == 3 and all(
+               a.result is AttemptResult.VALIDATION_FAILURE and a.prompt_tokens is not None
+               and a.completion_tokens is not None for a in attempts_bad))
+
+    known_a = frozenset({"REQ-A"})
+
+    run_row("consistency: unknown requirement id", True, ConsistencyReport,
+        DocumentStage.CONSISTENCY_CHECKER, None, _consistency_extra_check(known_a),
+        {"doc_id": None, "conflicts": [{"requirement_ids": ["REQ-A", "REQ-X"], "explanation": "e"}]},
+        {"doc_id": None, "conflicts": []})
+
+    run_row("dependency: unknown requirement id", True, DependencyReport,
+        DocumentStage.DEPENDENCY_MAPPER, None, _dependency_extra_check(known_a),
+        {"doc_id": None, "dependencies": [
+            {"from_requirement_id": "REQ-A", "to_requirement_id": "REQ-X", "explanation": "e"}]},
+        {"doc_id": None, "dependencies": []})
+
+    run_row("quality checker: issue names itself", False, QR, PipelineStage.QUALITY_CHECKER,
+        "REQ-A", _quality_checker_extra_check("REQ-A", frozenset({"REQ-B"})),
+        {"requirement_id": "REQ-A", "passed": False, "issues": [
+            {"id": "I1", "category": "inconsistent", "explanation": "e",
+             "related_requirement_ids": ["REQ-A"]}]},
+        {"requirement_id": "REQ-A", "passed": True, "issues": []})
+
+    quality_report_for_turn = QR(requirement_id="REQ-A", passed=False, issues=[
+        _dummy_issue(1)])  # category=VAGUE_PRONOUN, id="I1"
+
+    run_row("refiner questioner: wrong revision_number", False, RefinerTurn,
+        PipelineStage.REFINER_QUESTIONER, "REQ-A",
+        _refiner_questioner_extra_check(2, quality_report_for_turn),
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        {"requirement_id": "REQ-A", "revision_number": 2, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]})
+
+    run_row("refiner questioner: duplicate question id", False, RefinerTurn,
+        PipelineStage.REFINER_QUESTIONER, "REQ-A",
+        _refiner_questioner_extra_check(1, quality_report_for_turn),
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "a"},
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "b"}]},
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "a"}]})
+
+    run_row("refiner questioner: unknown issue_id", False, RefinerTurn,
+        PipelineStage.REFINER_QUESTIONER, "REQ-A",
+        _refiner_questioner_extra_check(1, quality_report_for_turn),
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I-GHOST", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]})
+
+    run_row("refiner questioner: issue_category disagrees", False, RefinerTurn,
+        PipelineStage.REFINER_QUESTIONER, "REQ-A",
+        _refiner_questioner_extra_check(1, quality_report_for_turn),
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "ambiguous_term", "question_text": "?"}]},
+        {"requirement_id": "REQ-A", "revision_number": 1, "questions": [
+            {"id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]})
+
+    answers_for_rewrite = [RefinerAnswer(question_id="Q1", answer_text="a")]
+
+    run_row("refiner rewriter: wrong revision_number", False, RefinedRequirement,
+        PipelineStage.REFINER_REWRITER, "REQ-A",
+        _refiner_rewriter_extra_check(2, "orig text", answers_for_rewrite),
+        {"requirement_id": "REQ-A", "original_text": "orig text", "refined_text": "b",
+         "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        {"requirement_id": "REQ-A", "original_text": "orig text", "refined_text": "b",
+         "revision_number": 2, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]})
+
+    run_row("refiner rewriter: original_text disagrees", False, RefinedRequirement,
+        PipelineStage.REFINER_REWRITER, "REQ-A",
+        _refiner_rewriter_extra_check(1, "orig text", answers_for_rewrite),
+        {"requirement_id": "REQ-A", "original_text": "WRONG TEXT", "refined_text": "b",
+         "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        {"requirement_id": "REQ-A", "original_text": "orig text", "refined_text": "b",
+         "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]})
+
+    run_row("refiner rewriter: answers_used not among given answers", False, RefinedRequirement,
+        PipelineStage.REFINER_REWRITER, "REQ-A",
+        _refiner_rewriter_extra_check(1, "orig text", answers_for_rewrite),
+        {"requirement_id": "REQ-A", "original_text": "orig text", "refined_text": "b",
+         "revision_number": 1, "answers_used": [{"question_id": "Q2", "answer_text": "z"}]},
+        {"requirement_id": "REQ-A", "original_text": "orig text", "refined_text": "b",
+         "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]})
+
+    classification_web = Classification(requirement_id="REQ-A", system_type=SystemType.WEB,
+                                        rationale="r")
+
+    run_row("strategy selector: system_type disagrees with Classifier", False, TestStrategy,
+        PipelineStage.STRATEGY_SELECTOR, "REQ-A", _strategy_selector_extra_check(classification_web),
+        {"requirement_id": "REQ-A", "system_type": "mobile", "techniques": ["exploratory"],
+         "rationale": "r"},
+        {"requirement_id": "REQ-A", "system_type": "web", "techniques": ["exploratory"],
+         "rationale": "r"})
+
+    strategy_bva = TestStrategy(requirement_id="REQ-A", system_type=SystemType.WEB,
+                                techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
+
+    run_row("test generator: technique not in strategy", False, TestPlan,
+        PipelineStage.TEST_GENERATOR, "REQ-A",
+        _test_generator_extra_check("REQ-A", strategy_bva, known_a),
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": f"{tc_prefix('REQ-A')}1", "requirement_ids": ["REQ-A"],
+            "technique_used": "exploratory", "title": "t", "steps": ["s"], "expected_result": "e"}]},
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": f"{tc_prefix('REQ-A')}1", "requirement_ids": ["REQ-A"],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]})
+
+    run_row("test generator: id violates the length-prefixed convention", False, TestPlan,
+        PipelineStage.TEST_GENERATOR, "REQ-A",
+        _test_generator_extra_check("REQ-A", strategy_bva, known_a),
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": "TC-1", "requirement_ids": ["REQ-A"], "technique_used": "boundary_value_analysis",
+            "title": "t", "steps": ["s"], "expected_result": "e"}]},
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": f"{tc_prefix('REQ-A')}1", "requirement_ids": ["REQ-A"],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]})
+
+    run_row("test generator: unknown requirement id in a case", False, TestPlan,
+        PipelineStage.TEST_GENERATOR, "REQ-A",
+        _test_generator_extra_check("REQ-A", strategy_bva, known_a),
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": f"{tc_prefix('REQ-A')}1", "requirement_ids": ["REQ-A", "REQ-X"],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]},
+        {"requirement_id": "REQ-A", "test_cases": [{
+            "id": f"{tc_prefix('REQ-A')}1", "requirement_ids": ["REQ-A"],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]})
+
+
+def test_test_case_id_prefix_avoids_requirement_id_ambiguity() -> None:
+    """Corrections round 3, point 1: plain 'TC-{requirement_id}-' collides when one
+    requirement's id is a prefix of another's -- e.g. 'REQ-1' and 'REQ-1-X': a case in
+    REQ-1's namespace suffixed 'X-5' is byte-identical to a case in REQ-1-X's namespace
+    suffixed '5'. The adopted length-prefixed convention ('TC-<len>-<id>-<suffix>')
+    removes the ambiguity by construction -- proven here, not just asserted."""
+    from orchestrator.pipeline import test_case_id_prefix
+
+    section("test_case_id_prefix: length-prefixing removes requirement-id ambiguity")
+
+    naive = lambda rid: f"TC-{rid}-"  # the rejected, ambiguous scheme
+    naive_case_under_req1 = naive("REQ-1") + "X-5"
+    naive_case_under_req1x = naive("REQ-1-X") + "5"
+    ok("naive scheme: REQ-1's namespace and REQ-1-X's namespace can collide",
+       naive_case_under_req1 == naive_case_under_req1x)
+
+    prefix_req1 = test_case_id_prefix("REQ-1")
+    prefix_req1x = test_case_id_prefix("REQ-1-X")
+    ok("length-prefixed scheme: the two prefixes are different",
+       prefix_req1 != prefix_req1x)
+    ok("length-prefixed scheme: neither prefix is a prefix of the other",
+       not prefix_req1.startswith(prefix_req1x) and not prefix_req1x.startswith(prefix_req1))
+    # Since the prefixes themselves are provably distinct and neither contains the
+    # other, no choice of suffix appended to either one can ever reproduce the other's
+    # full id -- the collision above is structurally impossible under this scheme.
+    ok("length-prefixed scheme: REQ-1's own case ids still start with its own prefix",
+       (prefix_req1 + "X-5").startswith(prefix_req1))
+    ok("length-prefixed scheme: REQ-1-X's own case ids still start with its own prefix",
+       (prefix_req1x + "5").startswith(prefix_req1x))
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
@@ -3476,7 +3718,9 @@ def main() -> int:
               test_interruption_during_human_input_checkpoints_and_resumes,
               test_interruption_after_answers_checkpoints_and_resumes,
               test_requirement_id_path_traversal_is_contained,
-              test_atomic_write_leaves_no_partial_file):
+              test_atomic_write_leaves_no_partial_file,
+              test_cross_stage_extra_checks,
+              test_test_case_id_prefix_avoids_requirement_id_ambiguity):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

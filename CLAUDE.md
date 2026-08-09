@@ -6,16 +6,19 @@ agent framework. Academic deliverable — correctness and defensibility matter m
 polish.
 
 The schema design phase is **finished**. The orchestrator control flow, the YAML run
-configuration, and the Gemini/Groq provider adapters are also **finished** —
-`orchestrator/pipeline.py`, `orchestrator/config.py`, `orchestrator/providers/`, and
-`orchestrator/human_cli.py` are built, reviewed, and covered by green test suites. The
-next phase is `orchestrator/stages.py`: the eight real, independently-configured stage
-functions and their prompts, wiring each to a provider adapter's `complete()`, plus the
-CLI run entrypoint that assembles a `RunConfig` into `StageFns`/`HumanFns` and actually
-starts a run. "The eight stages" means eight separately configured LLM calls
-(`design/schemas.py`'s `ALL_STAGES`) — the Refiner is one conceptual step in the
-pipeline's prose but two of those eight (`REFINER_QUESTIONER`/`REFINER_REWRITER`), each
-with its own model/prompt/config.
+configuration, the Gemini/Groq provider adapters, and the eight real stage functions
+with their version-1 prompts are also **finished** — `orchestrator/pipeline.py`,
+`orchestrator/config.py`, `orchestrator/providers/`, `orchestrator/human_cli.py`, and
+`orchestrator/stages.py` are built, reviewed, and covered by green test suites. "The
+eight stages" means eight separately configured LLM calls (`design/schemas.py`'s
+`ALL_STAGES`) — the Refiner is one conceptual step in the pipeline's prose but two of
+those eight (`REFINER_QUESTIONER`/`REFINER_REWRITER`), each with its own
+model/prompt/config. The next and last phase is the CLI run entrypoint: read a
+`RunConfig`, resolve it, build a `StageFns` from `orchestrator/stages.py`'s eight
+factories and a `HumanFns` from `orchestrator/human_cli.py`, and call
+`orchestrator.pipeline.run_document`. See `design/DESIGN_NOTES.md`, "Real stage
+functions -- cross-stage validation" and "-- prompt provenance", for what changed in
+`orchestrator/stage_fns.py`/`pipeline.py` while building `stages.py`.
 
 ---
 
