@@ -62,13 +62,13 @@ REQ_B = Requirement(
 )
 DOC = RequirementSet(doc_id="harness-doc", requirements=[REQ_A, REQ_B])
 
-STAGE_CONFIGS = {s: StageConfig(model="fake-model", prompt_hash=prompt_fingerprint(f"prompt for {s}"))
+STAGE_CONFIGS = {s: StageConfig(model="fake-model", prompt_hash=prompt_fingerprint(f"prompt for {s}"),
+                                prompt_version="test-v1")
                  for s in ALL_STAGES}
 
 
 def make_metadata(run_id: str = "run-harness-001") -> RunMetadata:
-    return RunMetadata(run_id=run_id, started_at=FAKE_NOW, stages=STAGE_CONFIGS,
-                       prompt_version="test-v1")
+    return RunMetadata(run_id=run_id, started_at=FAKE_NOW, stages=STAGE_CONFIGS)
 
 
 def rec(**kw) -> RequirementRunRecord:
@@ -701,8 +701,9 @@ def test_on_disk_round_trip() -> None:
 
         req_record = rec(requirement=REQ_A, outcome=RunOutcome.IN_PROGRESS)
         write_requirement_run(tmp_path, req_record)
+        from orchestrator.pipeline import _requirement_filename
         ok("the requirement file was written",
-           (tmp_path / "requirements" / f"{REQ_A.id}.json").exists())
+           (tmp_path / "requirements" / _requirement_filename(REQ_A.id)).exists())
 
         reloaded = read_document_run(tmp_path)
         ok("reloaded document keeps its metadata", reloaded.metadata.run_id == metadata.run_id)
@@ -826,9 +827,11 @@ def test_refiner_questioner_and_rewriter_have_independent_configs() -> None:
 
     configs = dict(STAGE_CONFIGS)
     configs[PipelineStage.REFINER_QUESTIONER.value] = StageConfig(
-        model="question-model", prompt_hash=prompt_fingerprint("ask a clarifying question"))
+        model="question-model", prompt_hash=prompt_fingerprint("ask a clarifying question"),
+        prompt_version="test-v1")
     configs[PipelineStage.REFINER_REWRITER.value] = StageConfig(
-        model="rewrite-model", prompt_hash=prompt_fingerprint("rewrite the requirement"))
+        model="rewrite-model", prompt_hash=prompt_fingerprint("rewrite the requirement"),
+        prompt_version="test-v1")
     ok("the two stages were given different models and different prompt hashes",
        configs[PipelineStage.REFINER_QUESTIONER.value].model
        != configs[PipelineStage.REFINER_REWRITER.value].model
@@ -2588,6 +2591,472 @@ def test_token_usage_transport_failures() -> None:
        rec(attempts=attempts).total_tokens == attempts[2].prompt_tokens + attempts[2].completion_tokens)
 
 
+def test_stage_call_fatal_short_circuits_call_stage() -> None:
+    """StageCallFatal (2026-08-09) is the one deliberate exception to "every failure
+    gets max_attempts tries": a stage_fn raising it signals retrying cannot help (bad
+    credentials, an unsupported output mode), so call_stage must record exactly ONE
+    attempt -- not max_attempts -- and fail immediately with kind=FATAL, retry_count=0.
+    Scripted already raises any Exception instance handed to it unchanged, so no
+    fixture change was needed to exercise this."""
+    section("StageCallFatal short-circuits call_stage (no wasted retries)")
+    from orchestrator.pipeline import call_stage, StageCallFatal, StageFailed, Throttle
+    from design.schemas import AttemptResult, Classification, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([StageCallFatal("bad api key")])
+    try:
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                  "fake-model", throttle, attempts, "R1", max_attempts=5,
+                  backoff_seconds=lambda a: 0.0)
+        ok("a fatal failure raises StageFailed", False)
+    except StageFailed as f:
+        ok("a fatal failure raises StageFailed", True)
+        ok("kind is FATAL", f.kind is FailureKind.FATAL)
+        ok("retry_count is 0 -- failed on the first try, no retry spent",
+           f.retry_count == 0)
+    ok("exactly one attempt recorded, not max_attempts=5", len(attempts) == 1)
+    ok("the recorded attempt is FATAL_FAILURE with no tokens",
+       attempts[0].result is AttemptResult.FATAL_FAILURE
+       and attempts[0].prompt_tokens is None)
+
+
+def test_stage_call_fatal_short_circuits_call_document_stage() -> None:
+    """Symmetric twin of the above for call_document_stage -- the same short-circuit
+    must apply at the document level, not just the per-requirement one (CLAUDE.md: a
+    fix at one level needs checking at the other, in the same change)."""
+    section("StageCallFatal short-circuits call_document_stage (document-level twin)")
+    from orchestrator.pipeline import call_document_stage, StageCallFatal, StageFailed, Throttle
+    from design.schemas import AttemptResult, ConsistencyReport, DocumentStage, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([StageCallFatal("unsupported output mode")])
+    try:
+        call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-1", "fake-model", throttle, attempts, DOC.doc_id,
+                            max_attempts=5, backoff_seconds=lambda a: 0.0)
+        ok("a fatal failure raises StageFailed", False)
+    except StageFailed as f:
+        ok("a fatal failure raises StageFailed", True)
+        ok("kind is FATAL", f.kind is FailureKind.FATAL)
+        ok("retry_count is 0", f.retry_count == 0)
+    ok("exactly one attempt recorded, not max_attempts=5", len(attempts) == 1)
+    ok("the recorded attempt is FATAL_FAILURE with no tokens",
+       attempts[0].result is AttemptResult.FATAL_FAILURE
+       and attempts[0].prompt_tokens is None)
+
+
+def test_call_stage_rejects_zero_max_attempts() -> None:
+    """max_attempts=0 used to reach `raise StageFailed(..., retry_count=attempt)` with
+    `attempt` never bound (range(0) never runs the loop body) -- a NameError, not a
+    catchable StageFailed. Fixed by validating max_attempts >= 1 up front, at the
+    boundary, with a message that says why."""
+    section("call_stage rejects max_attempts < 1 with a clear error, not a NameError")
+    from orchestrator.pipeline import call_stage, Throttle
+    from design.schemas import Classification
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fn = Scripted([])  # never called -- the boundary check must fire first
+    try:
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                  "fake-model", throttle, [], "R1", max_attempts=0,
+                  backoff_seconds=lambda a: 0.0)
+        ok("max_attempts=0 raises ValueError, not NameError", False)
+    except ValueError as e:
+        ok("max_attempts=0 raises ValueError, not NameError", True)
+        ok("the message names max_attempts", "max_attempts" in str(e))
+    except NameError:
+        ok("max_attempts=0 raises ValueError, not NameError (got NameError)", False)
+
+
+def test_call_document_stage_rejects_zero_max_attempts() -> None:
+    """Symmetric twin of the above for call_document_stage."""
+    section("call_document_stage rejects max_attempts < 1 with a clear error, not a NameError")
+    from orchestrator.pipeline import call_document_stage, Throttle
+    from design.schemas import ConsistencyReport, DocumentStage
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fn = Scripted([])
+    try:
+        call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-1", "fake-model", throttle, [], DOC.doc_id, max_attempts=0,
+                            backoff_seconds=lambda a: 0.0)
+        ok("max_attempts=0 raises ValueError, not NameError", False)
+    except ValueError as e:
+        ok("max_attempts=0 raises ValueError, not NameError", True)
+        ok("the message names max_attempts", "max_attempts" in str(e))
+    except NameError:
+        ok("max_attempts=0 raises ValueError, not NameError (got NameError)", False)
+
+
+def test_stage_call_partial_preserves_tokens_in_call_stage() -> None:
+    """StageCallPartial (2026-08-09) is for a stage_fn that reached inference and spent
+    tokens but couldn't produce usable output (e.g. a provider adapter's malformed-200
+    case). Retried normally (unlike StageCallFatal), but -- unlike StageCallFailed --
+    its token spend must survive onto the StageAttempt rather than being silently
+    dropped, since call_stage has no other way to learn a raised exception's tokens."""
+    section("StageCallPartial preserves token counts, retries normally")
+    from orchestrator.pipeline import call_stage, StageCallPartial, StageFailed, Throttle
+    from design.schemas import AttemptResult, Classification, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([
+        StageCallPartial("no usable candidate content", prompt_tokens=7, completion_tokens=0),
+        {"requirement_id": "R1", "system_type": "web", "rationale": "r"},
+    ])
+    result = call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                        "fake-model", throttle, attempts, "R1", max_attempts=2,
+                        backoff_seconds=lambda a: 0.0)
+    ok("retried normally and eventually succeeded", isinstance(result, Classification))
+    ok("two attempts recorded", len(attempts) == 2)
+    ok("the first attempt is OTHER_FAILURE carrying the tokens that were actually spent",
+       attempts[0].result is AttemptResult.OTHER_FAILURE
+       and attempts[0].prompt_tokens == 7 and attempts[0].completion_tokens == 0)
+    ok("the second attempt succeeded", attempts[1].result is AttemptResult.SUCCESS)
+
+    # And on exhaustion: kind=OTHER, no schema change, no new field needed.
+    attempts2 = []
+    fn2 = Scripted([
+        StageCallPartial("no usable candidate content", prompt_tokens=3, completion_tokens=0),
+    ])
+    try:
+        call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-2",
+                  "fake-model", throttle, attempts2, "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
+        ok("exhaustion after a partial failure raises StageFailed", False)
+    except StageFailed as f:
+        ok("exhaustion after a partial failure raises StageFailed", True)
+        ok("kind is OTHER", f.kind is FailureKind.OTHER)
+        ok("retry_count is 0 (failed on the only attempt)", f.retry_count == 0)
+
+
+def test_interruption_during_human_input_checkpoints_and_resumes() -> None:
+    """Fix (2026-08-09): EOFError/KeyboardInterrupt from a terminal HumanFns
+    implementation (orchestrator/human_cli.py) used to propagate out of run_document
+    with NOTHING about the interrupted requirement ever written to disk (run_document's
+    per-requirement write_requirement_run only fires AFTER run_requirement returns) --
+    a later resume would silently redo the classifier/quality-checker/questioner calls
+    that had already succeeded. checkpoint (threaded run_document -> run_requirement ->
+    _run_refine_loop) now persists the in-progress round -- turn included, answers still
+    empty -- right before the one call that can raise. This proves, end to end: (1) the
+    interruption itself still propagates, unmodified; (2) the checkpoint actually lands
+    on disk with the right shape; (3) a resume_document() pass does NOT repeat the
+    classifier or the round-1 questioner call, and correctly re-asks the human instead
+    of treating the empty answers as a real (silently-defaulted) one."""
+    section("Interruption during human input checkpoints progress; resume does not redo work")
+    from orchestrator.pipeline import (
+        RequirementRunRecord, StageFailed, Throttle, resume_document, run_document,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-interrupt-resume")
+        single_req_doc = RequirementSet(doc_id="harness-doc", requirements=[REQ_A])
+
+        classify_calls: list[str] = []
+        quality_raws = [
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": f"{REQ_A.id}-ISSUE-1", "category": "vague_pronoun", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": True, "issues": []},
+        ]
+        quality_calls: list[str] = []
+        questioner_calls: list[str] = []
+
+        def classify(req, *a):
+            classify_calls.append(req.id)
+            return StageCallResult(raw={"requirement_id": req.id, "system_type": "web", "rationale": "r"},
+                                   prompt_tokens=1, completion_tokens=1)
+
+        def check_quality(req, *a):
+            quality_calls.append(req.id)
+            raw = quality_raws[len(quality_calls) - 1]
+            return StageCallResult(raw=raw, prompt_tokens=1, completion_tokens=1)
+
+        def refine_questioner(req, *a):
+            questioner_calls.append(req.id)
+            return StageCallResult(raw={
+                "requirement_id": req.id, "revision_number": 1, "questions": [
+                    {"id": "Q1", "issue_id": f"{req.id}-ISSUE-1", "issue_category": "vague_pronoun",
+                     "question_text": "what does it refer to?"}]},
+                prompt_tokens=1, completion_tokens=1)
+
+        def interrupting_answer_questions(turn):
+            raise EOFError("terminal closed")
+
+        interrupt_fns = StageFns(
+            check_consistency=Scripted([{"doc_id": "harness-doc", "conflicts": []}]),
+            map_dependencies=Scripted([{"doc_id": "harness-doc", "dependencies": []}]),
+            classify=classify, check_quality=check_quality, refine_questioner=refine_questioner,
+            refine_rewriter=None, select_strategy=None, generate_tests=None)
+        interrupt_human_fns = HumanFns(answer_questions=interrupting_answer_questions,
+                                       decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+        try:
+            run_document(single_req_doc, metadata, interrupt_fns, interrupt_human_fns, throttle,
+                         max_revisions=2, run_dir=tmp_path, backoff_seconds=lambda a: 0.0)
+            ok("EOFError propagates out of run_document, not swallowed", False)
+        except EOFError:
+            ok("EOFError propagates out of run_document, not swallowed", True)
+
+        ok("classify was called exactly once before the interruption", classify_calls == [REQ_A.id])
+        ok("check_quality (round 1) was called exactly once before the interruption",
+           len(quality_calls) == 1)
+        ok("refine_questioner was called exactly once before the interruption",
+           len(questioner_calls) == 1)
+
+        from orchestrator.pipeline import _requirement_filename
+        checkpointed = RequirementRunRecord.model_validate_json(
+            (tmp_path / "requirements" / _requirement_filename(REQ_A.id)).read_text())
+        ok("the checkpoint reached disk with the classifier result already on it",
+           checkpointed.classification is not None)
+        ok("the checkpoint's last round has the turn recorded", checkpointed.rounds
+           and checkpointed.rounds[-1].turn is not None)
+        ok("the checkpoint's last round has NO rewrite yet (interrupted before it)",
+           checkpointed.rounds[-1].rewrite is None)
+        ok("the checkpoint's last round has EMPTY answers -- genuinely unanswered, not "
+           "a silently-recorded empty answer standing in for one",
+           checkpointed.rounds[-1].answers == [])
+        ok("the checkpoint's outcome is still IN_PROGRESS (a real interruption, not a "
+           "recorded ERROR/completion)", checkpointed.outcome is RunOutcome.IN_PROGRESS)
+
+        # Resume: classify/refine_questioner must NOT be called again. answer_questions
+        # now works; check_quality's round 2 call (a legitimately NEW call, not a
+        # repeat of round 1) passes, so the requirement completes normally.
+        def classify_must_not_be_called_again(req, *a):
+            raise AssertionError("classify was called again on resume -- should have "
+                                 "been skipped, the classification is already on record")
+
+        def questioner_must_not_be_called_again(req, *a):
+            raise AssertionError("refine_questioner was called again on resume for the "
+                                 "SAME round -- should have resumed at REFINER_REWRITER, "
+                                 "not restarted the questioner")
+
+        resumed_answers: list = []
+
+        def working_answer_questions(turn):
+            answers = [RefinerAnswer(question_id=turn.questions[0].id, answer_text="an answer",
+                                     user_confirms_resolved=False)]
+            resumed_answers.append(answers)
+            return answers
+
+        resume_fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=classify_must_not_be_called_again, check_quality=check_quality,
+            refine_questioner=questioner_must_not_be_called_again,
+            refine_rewriter=Scripted([{
+                "requirement_id": REQ_A.id, "original_text": REQ_A.text,
+                "refined_text": "The sensor shall do the thing.", "revision_number": 1,
+                "answers_used": [{"question_id": "Q1", "answer_text": "an answer",
+                                  "user_confirms_resolved": False}]}]),
+            select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "web",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+        resume_human_fns = HumanFns(answer_questions=working_answer_questions,
+                                    decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+        resumed = resume_document(tmp_path, resume_fns, resume_human_fns, throttle,
+                                  max_revisions=2, backoff_seconds=lambda a: 0.0)
+        ok("resume did not crash on the AssertionError guards (classify/questioner not re-called)",
+           True)  # reaching this line already proves it -- either guard raising would've propagated
+        ok("the human WAS asked (exactly once) on resume", len(resumed_answers) == 1)
+        ok("the requirement completed after resume", resumed.requirement_records
+           and resumed.requirement_records[0].outcome is RunOutcome.COMPLETED)
+        ok("check_quality ended up called exactly twice total (round 1 + round 2, no repeats)",
+           len(quality_calls) == 2)
+
+
+def test_interruption_after_answers_checkpoints_and_resumes() -> None:
+    """Fix (2026-08-09, second review pass): the first checkpoint only covered
+    answer_questions itself -- an interruption during the FOLLOWING refine_rewriter
+    call (KeyboardInterrupt is not scoped to terminal-input calls the way EOFError is;
+    it can land during any HTTP request, including that one) lost the human's
+    already-collected answers, the expensive-to-redo part of the round. A second
+    checkpoint now fires after answers are collected, before the rewriter call. This
+    proves: the interruption still propagates; the checkpoint has turn AND non-empty
+    answers, no rewrite; and a resume does NOT re-ask the human -- it reuses the
+    already-collected answers and proceeds straight to the rewriter."""
+    section("Interruption after answers (before rewriter) checkpoints; resume does not re-ask")
+    from orchestrator.pipeline import (
+        RequirementRunRecord, Throttle, resume_document, run_document,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-interrupt-after-answers")
+        single_req_doc = RequirementSet(doc_id="harness-doc", requirements=[REQ_A])
+
+        answer_questions_calls: list = []
+
+        def working_answer_questions(turn):
+            answers = [RefinerAnswer(question_id=turn.questions[0].id, answer_text="an answer",
+                                     user_confirms_resolved=False)]
+            answer_questions_calls.append(answers)
+            return answers
+
+        def interrupting_refine_rewriter(req, *a):
+            raise KeyboardInterrupt("ctrl-c during the rewriter's HTTP request")
+
+        interrupt_fns = StageFns(
+            check_consistency=Scripted([{"doc_id": "harness-doc", "conflicts": []}]),
+            map_dependencies=Scripted([{"doc_id": "harness-doc", "dependencies": []}]),
+            classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "web", "rationale": "r"}]),
+            check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": False, "issues": [
+                {"id": f"{REQ_A.id}-ISSUE-1", "category": "vague_pronoun", "explanation": "e"}]}]),
+            refine_questioner=Scripted([{"requirement_id": REQ_A.id, "revision_number": 1, "questions": [
+                {"id": "Q1", "issue_id": f"{REQ_A.id}-ISSUE-1", "issue_category": "vague_pronoun",
+                 "question_text": "what does it refer to?"}]}]),
+            refine_rewriter=interrupting_refine_rewriter,
+            select_strategy=None, generate_tests=None)
+        interrupt_human_fns = HumanFns(answer_questions=working_answer_questions,
+                                       decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+        try:
+            run_document(single_req_doc, metadata, interrupt_fns, interrupt_human_fns, throttle,
+                         max_revisions=2, run_dir=tmp_path, backoff_seconds=lambda a: 0.0)
+            ok("KeyboardInterrupt propagates out of run_document, not swallowed", False)
+        except KeyboardInterrupt:
+            ok("KeyboardInterrupt propagates out of run_document, not swallowed", True)
+
+        ok("the human WAS asked exactly once before the interruption", len(answer_questions_calls) == 1)
+
+        from orchestrator.pipeline import _requirement_filename
+        checkpointed = RequirementRunRecord.model_validate_json(
+            (tmp_path / "requirements" / _requirement_filename(REQ_A.id)).read_text())
+        last_round = checkpointed.rounds[-1]
+        ok("the checkpoint's last round has the turn recorded", last_round.turn is not None)
+        ok("the checkpoint's last round has the ALREADY-COLLECTED answers, not empty",
+           len(last_round.answers) == 1 and last_round.answers[0].answer_text == "an answer")
+        ok("the checkpoint's last round has NO rewrite yet (interrupted before it)",
+           last_round.rewrite is None)
+
+        # Resume: answer_questions must NOT be called again -- the collected answer is
+        # already on the checkpointed record and must be reused, not re-asked for.
+        def answer_questions_must_not_be_called_again(turn):
+            raise AssertionError("answer_questions was called again on resume -- the "
+                                 "already-collected answer should have been reused")
+
+        resume_fns = StageFns(
+            check_consistency=None, map_dependencies=None, classify=None,
+            check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+            refine_questioner=None,
+            refine_rewriter=Scripted([{
+                "requirement_id": REQ_A.id, "original_text": REQ_A.text,
+                "refined_text": "The sensor shall do the thing.", "revision_number": 1,
+                "answers_used": [{"question_id": "Q1", "answer_text": "an answer",
+                                  "user_confirms_resolved": False}]}]),
+            select_strategy=Scripted([{"requirement_id": REQ_A.id, "system_type": "web",
+                                       "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([{"requirement_id": REQ_A.id, "test_cases": [{
+                "id": "TC-1", "requirement_ids": [REQ_A.id], "technique_used": "boundary_value_analysis",
+                "title": "t", "steps": ["s"], "expected_result": "e"}]}]))
+        resume_human_fns = HumanFns(answer_questions=answer_questions_must_not_be_called_again,
+                                    decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+
+        resumed = resume_document(tmp_path, resume_fns, resume_human_fns, throttle,
+                                  max_revisions=2, backoff_seconds=lambda a: 0.0)
+        ok("resume did not crash on the AssertionError guard (human not re-asked)", True)
+        ok("the requirement completed after resume without re-asking the human",
+           resumed.requirement_records
+           and resumed.requirement_records[0].outcome is RunOutcome.COMPLETED)
+
+
+def test_requirement_id_path_traversal_is_contained() -> None:
+    """Fix (2026-08-09, third review pass, reproduced before fixing): Requirement.id
+    is a free-form NonEmptyStr with no charset restriction (design/schemas.py) and used
+    to be interpolated directly into a filename -- id="../escape" wrote outside
+    requirements/, and id="../document" could have overwritten document.json.
+    write_requirement_run now hashes the id into a filename (_requirement_filename);
+    the real id is recovered from the JSON content, never the filename."""
+    section("Requirement.id path traversal is contained, not just avoided by luck")
+    from orchestrator.pipeline import (
+        _requirement_filename, read_document_run, write_document_run, write_requirement_run,
+    )
+
+    def all_files_under(base: Path) -> set:
+        return {p for p in base.rglob("*") if p.is_file()}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # Nested so an escape has somewhere real to land if it works.
+        outer = Path(tmp) / "a" / "b" / "c"
+        run_dir = outer / "rundir"
+        metadata = make_metadata(run_id="run-traversal")
+        evil_ids = ("../escape", "../../../escape", "../document", "..\\escape")
+        # A RequirementSet actually containing these ids -- DocumentRunRecord validates
+        # every requirement_records id against requirement_set, so the fixture must
+        # name them, not the unrelated shared DOC/REQ_A/REQ_B fixtures.
+        evil_doc = RequirementSet(doc_id="evil-doc", requirements=[
+            Requirement(id=i, text="t", source_doc_id="evil-doc") for i in evil_ids])
+        write_document_run(run_dir, DocumentRunRecord(requirement_set=evil_doc, metadata=metadata))
+
+        for evil_id in evil_ids:
+            before = all_files_under(outer)
+            evil_req = Requirement(id=evil_id, text="t", source_doc_id="evil-doc")
+            write_requirement_run(run_dir, rec(requirement=evil_req, run_id="run-traversal"))
+            after = all_files_under(outer)
+            new_files = after - before
+            ok(f"id={evil_id!r}: exactly one new file, and it's under run_dir/requirements/",
+               len(new_files) == 1
+               and str(next(iter(new_files))).startswith(str(run_dir / "requirements")))
+            ok(f"id={evil_id!r}: document.json itself is untouched (still just the doc record)",
+               "requirement_records" in (run_dir / "document.json").read_text())
+
+        ok("every hashed filename is actually present inside requirements/",
+           all((run_dir / "requirements" / _requirement_filename(i)).exists() for i in evil_ids))
+
+        # The real id survives, recovered from content, not filename.
+        reloaded = read_document_run(run_dir)
+        ok("read_document_run recovers the real (unsafe-looking) ids from content",
+           {r.requirement.id for r in reloaded.requirement_records} == set(evil_ids))
+
+
+def test_atomic_write_leaves_no_partial_file() -> None:
+    """Fix (2026-08-09, third review pass): write_text() is not atomic -- an
+    interruption mid-write can leave a truncated JSON file resume cannot parse.
+    atomic_write_text writes to a temporary sibling then os.replace()s it. Proves: (1)
+    a normal write leaves no stray .tmp file; (2) a write that fails partway through
+    (simulated) leaves the ORIGINAL file untouched, not a truncated one, and cleans up
+    its own temporary file."""
+    section("atomic_write_text leaves no partial file, cleans up its own temp file")
+    from orchestrator.pipeline import atomic_write_text
+
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "record.json"
+        atomic_write_text(target, '{"first": true}')
+        ok("the file was written", target.read_text() == '{"first": true}')
+        ok("no stray temp files remain after a normal write",
+           list(Path(tmp).glob("*.tmp")) == [])
+
+        # Simulate an interruption: os.replace fails (target dir vanishes) after the
+        # temp file was written but before the swap. The pre-existing file must
+        # survive unchanged, and the temp file must not be left behind either.
+        import os as _os
+        original_replace = _os.replace
+
+        def failing_replace(*a, **kw):
+            raise OSError("simulated interruption during the atomic swap")
+
+        _os.replace = failing_replace
+        try:
+            try:
+                atomic_write_text(target, '{"second": "should not land"}')
+                ok("a failed replace raises, not silently succeeds", False)
+            except OSError:
+                ok("a failed replace raises, not silently succeeds", True)
+        finally:
+            _os.replace = original_replace
+
+        ok("the original file is untouched after the failed write",
+           target.read_text() == '{"first": true}')
+        ok("no stray temp file was left behind by the failed write",
+           list(Path(tmp).glob("*.tmp")) == [])
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator simulation harness")
@@ -2628,7 +3097,16 @@ def main() -> int:
               test_first_attempt_success, test_validation_then_success,
               test_wrong_id_then_success, test_mixed_failures_exhausting_retries,
               test_error_summary_agrees_with_final_attempt,
-              test_token_usage_validation_failures, test_token_usage_transport_failures):
+              test_token_usage_validation_failures, test_token_usage_transport_failures,
+              test_stage_call_fatal_short_circuits_call_stage,
+              test_stage_call_fatal_short_circuits_call_document_stage,
+              test_call_stage_rejects_zero_max_attempts,
+              test_call_document_stage_rejects_zero_max_attempts,
+              test_stage_call_partial_preserves_tokens_in_call_stage,
+              test_interruption_during_human_input_checkpoints_and_resumes,
+              test_interruption_after_answers_checkpoints_and_resumes,
+              test_requirement_id_path_traversal_is_contained,
+              test_atomic_write_leaves_no_partial_file):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

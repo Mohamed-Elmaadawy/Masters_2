@@ -5,8 +5,17 @@ generates test cases from them. Python, Pydantic, free-tier LLM APIs (Gemini/Gro
 agent framework. Academic deliverable — correctness and defensibility matter more than
 polish.
 
-The schema design phase is **finished**. The next phase is the orchestrator, the seven
-stages, and their prompts.
+The schema design phase is **finished**. The orchestrator control flow, the YAML run
+configuration, and the Gemini/Groq provider adapters are also **finished** —
+`orchestrator/pipeline.py`, `orchestrator/config.py`, `orchestrator/providers/`, and
+`orchestrator/human_cli.py` are built, reviewed, and covered by green test suites. The
+next phase is `orchestrator/stages.py`: the eight real, independently-configured stage
+functions and their prompts, wiring each to a provider adapter's `complete()`, plus the
+CLI run entrypoint that assembles a `RunConfig` into `StageFns`/`HumanFns` and actually
+starts a run. "The eight stages" means eight separately configured LLM calls
+(`design/schemas.py`'s `ALL_STAGES`) — the Refiner is one conceptual step in the
+pipeline's prose but two of those eight (`REFINER_QUESTIONER`/`REFINER_REWRITER`), each
+with its own model/prompt/config.
 
 ---
 
@@ -31,11 +40,14 @@ path. A generation failure is a real signal, not a nuisance.
 
 | File | What it is |
 |---|---|
-| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 15 things the orchestrator must do that the schema deliberately does not enforce. |
+| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 17 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
-| `design/DESIGN_NOTES.md` | 1,678 lines of decisions, including rejected ones. Search it before re-litigating anything. |
+| `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
-| `design/test_schemas.py` | 270 checks. Also the best worked example of how the models fit together. |
+| `design/test_schemas.py` | 321 checks. Also the best worked example of how the models fit together. |
+| `orchestrator/stage_fns.py` | Typed `StageFns`/`HumanFns` Protocols — the exact signature each of the 8 stage fns (and the 2 human ones) must match. |
+| `orchestrator/config.py` | The YAML `RunConfig`/`ResolvedRunConfig` a real run is driven by — provider/model/temperature/output_mode per stage, retries, rate limits, resolved prompt hashes. |
+| `orchestrator/providers/` | `GeminiAdapter`/`GroqAdapter` and the capability/error-classification tables they use — dated, cited, and marked best-effort; re-verify before trusting deep into the future. |
 | `datasets/EVALUATION_DATASETS.md` | Corpora reserved for the evaluation phase, plus one planned experiment. |
 | `docs/superpowers/plans/2026-08-08-first-real-run-checklist.md` | What to measure the first time the orchestrator runs against real requirements — id-mismatch rate, validation-failure rate, tokens/cost. Don't skip it and reconstruct these from memory afterward. |
 

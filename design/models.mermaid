@@ -52,6 +52,7 @@ classDiagram
         <<enumeration>>
         transport
         validation
+        fatal
         other
     }
     class AttemptResult {
@@ -59,6 +60,7 @@ classDiagram
         success
         transport_failure
         validation_failure
+        fatal_failure
         other_failure
     }
     class RunOutcome {
@@ -74,6 +76,12 @@ classDiagram
         in_progress
         completed
         degraded
+    }
+    class OutputMode {
+        <<enumeration>>
+        text
+        json_object
+        json_schema
     }
     class Requirement {
         +str id*
@@ -225,13 +233,14 @@ classDiagram
     class StageConfig {
         +str model*
         +str prompt_hash*
+        +str prompt_version*
+        +float temperature
+        +OutputMode output_mode
     }
     class RunMetadata {
         +str run_id*
         +datetime started_at*
         +dict~str,StageConfig~ stages*
-        +str prompt_version*
-        +float temperature
         +str schema_version
     }
     class DocumentRunRecord {
@@ -283,6 +292,7 @@ classDiagram
     RunMetadata "1" *-- StageConfig : stages
     StageAttempt "1" --> AttemptResult : result
     StageAttempt "1" --> PipelineStage : stage
+    StageConfig "1" --> OutputMode : output_mode
     StageError "1" --> FailureKind : kind
     StageError "1" --> PipelineStage : stage
     TestCase "1" --> TestTechnique : technique_used

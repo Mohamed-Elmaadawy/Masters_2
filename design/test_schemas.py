@@ -32,10 +32,10 @@ from design.schemas import (
     ALL_STAGES, AttemptResult, Classification, ELIGIBLE_TECHNIQUES, ClarifyingQuestion,
     ConsistencyConflict, ConsistencyReport, DependencyLink, DependencyReport,
     DocumentOutcome, DocumentRunRecord, DocumentStage, DocumentStageAttempt,
-    DocumentStageError, FailureKind, Issue, IssueCategory, PipelineStage, QualityReport,
-    RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn, Requirement,
-    RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome, StageAttempt,
-    StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
+    DocumentStageError, FailureKind, Issue, IssueCategory, OutputMode, PipelineStage,
+    QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn,
+    Requirement, RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome,
+    StageAttempt, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
     TestTechnique, fields_carrying_requirement_id, prompt_fingerprint,
 )
 from design.schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES
@@ -137,6 +137,7 @@ def mk_round(n, text, issues=(), questions=(), answers=(), rewrite_to=None,
 
 _KIND_TO_RESULT = {FailureKind.TRANSPORT: AttemptResult.TRANSPORT_FAILURE,
                   FailureKind.VALIDATION: AttemptResult.VALIDATION_FAILURE,
+                  FailureKind.FATAL: AttemptResult.FATAL_FAILURE,
                   FailureKind.OTHER: AttemptResult.OTHER_FAILURE}
 
 
@@ -201,10 +202,11 @@ VALID_RECORDS[RunOutcome.ERROR] = dict(errors=[CLASSIFIER_ERR], attempts=CLASSIF
 RECORD_EXTRAS = {"cap_reason": "x", "classification": CLS,
                  "test_strategy": STRATEGY, "test_plan": PLAN}
 
-STAGES = {s: StageConfig(model="gemini-2.0-flash", prompt_hash=prompt_fingerprint(f"prompt for {s}"))
+STAGES = {s: StageConfig(model="gemini-2.0-flash", prompt_hash=prompt_fingerprint(f"prompt for {s}"),
+                         prompt_version="v3")
           for s in ALL_STAGES}
 META = RunMetadata(run_id="run-test-001", started_at=datetime(2026, 8, 5, tzinfo=timezone.utc),
-                   stages=STAGES, prompt_version="v3")
+                   stages=STAGES)
 
 CONS = ConsistencyReport(doc_id=REQ_SET.doc_id, conflicts=[ConsistencyConflict(
     requirement_ids=["THEMAS-REQ-B", "THEMAS-REQ-D"], explanation="Both constrain the range.")])
@@ -376,6 +378,9 @@ def test_failure_kind() -> None:
     accepts("StageError with kind=VALIDATION",
             lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
                                kind=FailureKind.VALIDATION, message="schema rejected"))
+    accepts("StageError with kind=FATAL",
+            lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
+                               kind=FailureKind.FATAL, message="bad api key", retry_count=0))
     accepts("StageError with kind=OTHER",
             lambda: StageError(stage=PipelineStage.CLASSIFIER, invocation_id="i",
                                kind=FailureKind.OTHER, message="KeyError: 'foo'"))
@@ -418,6 +423,13 @@ def test_stage_attempt_shape() -> None:
             lambda: mk(result=AttemptResult.TRANSPORT_FAILURE))
     rejects("TRANSPORT_FAILURE carrying tokens",
             lambda: mk(result=AttemptResult.TRANSPORT_FAILURE, error_message="429",
+                       prompt_tokens=10, completion_tokens=5))
+    accepts("FATAL_FAILURE with an error_message, no tokens",
+            lambda: mk(result=AttemptResult.FATAL_FAILURE, error_message="bad api key"))
+    rejects("FATAL_FAILURE without an error_message",
+            lambda: mk(result=AttemptResult.FATAL_FAILURE))
+    rejects("FATAL_FAILURE carrying tokens",
+            lambda: mk(result=AttemptResult.FATAL_FAILURE, error_message="bad api key",
                        prompt_tokens=10, completion_tokens=5))
     accepts("OTHER_FAILURE with an error_message, no tokens",
             lambda: mk(result=AttemptResult.OTHER_FAILURE, error_message="KeyError: 'foo'"))
@@ -877,28 +889,31 @@ def test_gap4_provenance() -> None:
     ok("fingerprint stable", prompt_fingerprint(text) == prompt_fingerprint(text))
     ok("fingerprint changes on a one-character edit",
        prompt_fingerprint(text) != prompt_fingerprint(text + "."))
-    ok("temperature defaults to 1.0", META.temperature == 1.0)
+    ok("temperature defaults to 1.0", STAGES["classifier"].temperature == 1.0)
+    ok("output_mode defaults to TEXT", STAGES["classifier"].output_mode == OutputMode.TEXT)
+    ok("schema_version defaults to 1.2", META.schema_version == "1.2")
 
     mixed = {**STAGES, "test_generator": StageConfig(
-        model="llama-3.3-70b-versatile", prompt_hash=prompt_fingerprint("gen prompt"))}
+        model="llama-3.3-70b-versatile", prompt_hash=prompt_fingerprint("gen prompt"),
+        prompt_version="v3")}
     accepts("mixed models across stages",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                stages=mixed, prompt_version="v3"))
+                                stages=mixed))
     rejects("stages missing an entry",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                stages={k: v for k, v in STAGES.items() if k != "refiner_questioner"},
-                                prompt_version="v3"))
+                                stages={k: v for k, v in STAGES.items() if k != "refiner_questioner"}))
     rejects("stages with an unknown name",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                stages={**STAGES, "reviewer": STAGES["classifier"]},
-                                prompt_version="v3"))
+                                stages={**STAGES, "reviewer": STAGES["classifier"]}))
     rejects("metadata required on a document record",
             lambda: DocumentRunRecord(requirement_set=REQ_SET))
+    rejects("StageConfig missing prompt_version",
+            lambda: StageConfig(model="gemini-2.0-flash", prompt_hash=prompt_fingerprint("p")))
 
     edited = {**STAGES, "quality_checker": StageConfig(
-        model="gemini-2.0-flash", prompt_hash=prompt_fingerprint("EDITED prompt"))}
-    b = RunMetadata(run_id="b", started_at=datetime.now(timezone.utc), stages=edited,
-                    prompt_version="v3")
+        model="gemini-2.0-flash", prompt_hash=prompt_fingerprint("EDITED prompt"),
+        prompt_version="v3")}
+    b = RunMetadata(run_id="b", started_at=datetime.now(timezone.utc), stages=edited)
     drifted = [s for s in ALL_STAGES if META.stages[s].prompt_hash != b.stages[s].prompt_hash]
     ok("forgotten version bump is visible via hash", drifted == ["quality_checker"])
 
@@ -921,13 +936,15 @@ def test_cross_field_agreement() -> None:
             lambda: Issue(id="X", category=IssueCategory.VAGUE_PRONOUN, explanation="e"))
 
     for bad in (-5.0, 2.5, 999.0):
-        rejects(f"temperature={bad}",
-                lambda t=bad: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                          stages=STAGES, prompt_version="v1", temperature=t))
+        rejects(f"StageConfig temperature={bad}",
+                lambda t=bad: StageConfig(model="gemini-2.0-flash",
+                                          prompt_hash=prompt_fingerprint("p"),
+                                          prompt_version="v1", temperature=t))
     for good in (0.0, 1.0, 2.0):
-        accepts(f"temperature={good}",
-                lambda t=good: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                           stages=STAGES, prompt_version="v1", temperature=t))
+        accepts(f"StageConfig temperature={good}",
+                lambda t=good: StageConfig(model="gemini-2.0-flash",
+                                           prompt_hash=prompt_fingerprint("p"),
+                                           prompt_version="v1", temperature=t))
 
     rejects("run_id missing from a requirement record",
             lambda: RequirementRunRecord(requirement=REQ_D))
@@ -1329,10 +1346,10 @@ def test_self_review_sweep() -> None:
 
     rejects("naive (timezone-less) started_at",
             lambda: RunMetadata(run_id="r", started_at=datetime(2026, 8, 5),
-                                stages=STAGES, prompt_version="v1"))
+                                stages=STAGES))
     accepts("timezone-aware started_at",
             lambda: RunMetadata(run_id="r", started_at=datetime.now(timezone.utc),
-                                stages=STAGES, prompt_version="v1"))
+                                stages=STAGES))
 
     chain = [DependencyLink(from_requirement_id=f"R{i}", to_requirement_id=f"R{i+1}",
                             explanation="e") for i in range(3000)]

@@ -1,0 +1,66 @@
+# Example RunConfig (orchestrator/config.py). Loadable and resolvable today:
+#
+#   from pathlib import Path
+#   from orchestrator.config import load_run_config, resolve_run_config
+#   config = load_run_config(Path("orchestrator/example_run_config.yaml"))
+#   resolved = resolve_run_config(config, Path("orchestrator/example_run_config.yaml"))
+#
+# Prompt files under example_prompts/ are placeholders (the real 8 prompts are
+# orchestrator/stages.py's job, still out of scope) -- but they're real files with real
+# content, so prompt_hash is computed from them for real, the same way it would be for
+# the eventual production prompts.
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env()/
+# GroqAdapter.from_env() read GEMINI_API_KEY/GROQ_API_KEY from the environment only.
+
+run_id: null          # omitted -> minted (uuid4 hex) at resolve time
+output_dir: runs      # resolved relative to THIS file's directory, not the cwd
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+# One entry per distinct provider/model actually in use below -- resolve_run_config
+# rejects a config where any resolved model is missing an entry here. Gemini's own
+# free-tier dashboard is the source of truth for a real number; 15 rpm is illustrative.
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15}
+  groq/llama-3.3-70b-versatile: {requests_per_minute: 30}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v1
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+# Per-stage overrides -- omitted fields fall back to `defaults` above. Only the
+# Classifier is shown diverging (a cheaper/different provider for a simpler stage,
+# per DESIGN_NOTES.md's "mixed setups" example); every other stage uses `defaults`
+# untouched.
+stages:
+  classifier:
+    provider: groq
+    model: llama-3.3-70b-versatile
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+
+# Required, exactly one entry per stage -- a file path, never a hand-typed hash. Paths
+# are resolved relative to this YAML file's own directory.
+prompts:
+  consistency_checker: example_prompts/consistency_checker.txt
+  dependency_mapper: example_prompts/dependency_mapper.txt
+  classifier: example_prompts/classifier.txt
+  quality_checker: example_prompts/quality_checker.txt
+  refiner_questioner: example_prompts/refiner_questioner.txt
+  refiner_rewriter: example_prompts/refiner_rewriter.txt
+  strategy_selector: example_prompts/strategy_selector.txt
+  test_generator: example_prompts/test_generator.txt

@@ -8,13 +8,15 @@ wires in real ones. No control-flow logic is built twice.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, NamedTuple, Optional
+from typing import Callable, Optional
 
 from pydantic import BaseModel, ValidationError
 
@@ -27,64 +29,15 @@ from design.schemas import (
     StageAttempt, StageConfig, StageError, TestPlan, TestStrategy,
 )
 
-
-class StageCallResult(NamedTuple):
-    """One stage call's raw output, not yet validated against a schema model."""
-    raw: dict
-    prompt_tokens: int
-    completion_tokens: int
-
-
-class StageCallFailed(Exception):
-    """Transport-level failure: network error, rate limit, timeout. Raised by a stage
-    fn; never carries token counts, because the request was rejected before inference."""
-
-
-@dataclass(frozen=True)
-class StageFns:
-    """Every LLM call in the pipeline, as a parameter. A frozen dataclass, not a dict --
-    a typo'd dict key silently returns nothing and the stage gets skipped; a typo'd
-    field name here is an immediate TypeError. Each callable returns a StageCallResult
-    (or raises StageCallFailed). orchestrator/test_harness.py wires in scripted
-    fixtures; orchestrator/stages.py (next phase) wires in real LLM calls.
-
-    refine_questioner/refine_rewriter were one field (refine) until 2026-08-08: two
-    calls with different inputs/outputs (Requirement, QualityReport -> RefinerTurn;
-    requirement + RefinerAnswer[] -> RefinedRequirement) shared one callable, one
-    PipelineStage identity, and one model config -- neither could be configured,
-    measured, or retried independently. See design/DESIGN_NOTES.md, "Refiner split
-    into REFINER_QUESTIONER / REFINER_REWRITER".
-
-    check_quality/select_strategy/generate_tests gained filtered document context
-    (2026-08-08, see
-    docs/superpowers/specs/2026-08-08-document-context-wiring-design.md):
-    check_quality's args are (Requirement, Classification,
-    Optional[list[ConsistencyConflict]], Optional[list[DependencyLink]],
-    suppressed_issue_ids); select_strategy's and generate_tests' each gain one trailing
-    Optional[list[DependencyLink]] argument. None means the document-level stage that
-    would have produced it failed (no context available); [] means it ran and found
-    nothing naming this requirement -- collapsing the two would make a DEGRADED run's
-    output indistinguishable from a clean one."""
-    check_consistency: Callable[..., StageCallResult]
-    map_dependencies: Callable[..., StageCallResult]
-    classify: Callable[..., StageCallResult]
-    check_quality: Callable[..., StageCallResult]
-    refine_questioner: Callable[..., StageCallResult]
-    refine_rewriter: Callable[..., StageCallResult]
-    select_strategy: Callable[..., StageCallResult]
-    generate_tests: Callable[..., StageCallResult]
-
-
-@dataclass(frozen=True)
-class HumanFns:
-    """The pipeline's two human-interaction points, as parameters. Separate from
-    StageFns because the source is categorically different (a person or a web request,
-    not an LLM call) -- RefinerTurn/RefinerAnswer were split in the schema specifically
-    so this contract works whether the caller is a CLI loop, a notebook cell, or a
-    FastAPI backend (see DESIGN_NOTES.md); a blocking input() inside the orchestrator
-    would discard that."""
-    answer_questions: Callable[[RefinerTurn], list[RefinerAnswer]]
-    decide_at_cap: Callable[[RequirementRunRecord], tuple[RunOutcome, str]]
+# StageCallResult/StageCallFailed/StageCallFatal/StageFns/HumanFns moved to
+# orchestrator/stage_fns.py (2026-08-09) so orchestrator/providers/ and the future
+# orchestrator/stages.py can import them without pulling in this module's control-flow
+# code. Re-exported here so existing `from orchestrator.pipeline import StageFns,
+# HumanFns, StageCallResult, StageCallFailed` call sites (e.g.
+# orchestrator/test_harness.py) keep working unchanged.
+from orchestrator.stage_fns import (
+    HumanFns, StageCallFailed, StageCallFatal, StageCallPartial, StageCallResult, StageFns,
+)
 
 
 @dataclass
@@ -164,6 +117,14 @@ def call_stage(
     write a check that can't fire"). See design/ORCHESTRATOR_CONTRACT.md item 7 and
     the FailureKind docstring in design/schemas.py.
 
+    A stage_fn raising StageCallFatal (2026-08-09) short-circuits the retry loop
+    immediately -- one StageAttempt recorded, no backoff sleep, kind=FailureKind.FATAL,
+    retry_count=0 -- rather than spending the remaining attempt budget on a request that
+    cannot succeed (bad credentials, an unsupported output mode). This is the one
+    deliberate exception to "every failure gets max_attempts tries"; see
+    orchestrator/stage_fns.py's StageCallFatal docstring and
+    design/ORCHESTRATOR_CONTRACT.md for the narrow scope this is reserved for.
+
     req_id is required, not optional: every model_cls this is called with (all six
     per-requirement stage outputs) carries a requirement_id field, and a defaulted
     (e.g. None) parameter here would silently skip the check at exactly the call sites
@@ -182,14 +143,39 @@ def call_stage(
     just about the wrong requirement) -- countable, the same way any other
     schema-invalid output is countable (contract item 14).
     """
+    if max_attempts < 1:
+        # range(max_attempts) below would be empty, the for loop body would never run,
+        # and `attempt` -- read after the loop in every exit path -- would be unbound,
+        # an immediate NameError rather than a StageFailed a caller could catch. Fail
+        # loud, at the boundary, with a message that says why, instead.
+        raise ValueError(f"call_stage requires max_attempts >= 1 (got {max_attempts})")
+
     last_kind: FailureKind = FailureKind.OTHER
-    last_message = "call_stage was invoked with max_attempts < 1"
+    last_message = ""
 
     for attempt in range(max_attempts):
         attempt_number = attempt + 1
         throttle.wait_for_slot(model_name)
         try:
             result = stage_fn(*args)
+        except StageCallFatal as e:
+            last_kind, last_message = FailureKind.FATAL, str(e)
+            attempt_sink.append(StageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.FATAL_FAILURE, error_message=last_message))
+            break
+        except StageCallPartial as e:
+            # Inference genuinely happened and tokens were genuinely spent -- unlike
+            # every other exception branch here, this one has token counts to record.
+            # Recorded as OTHER_FAILURE (not a new kind/result -- see StageCallPartial's
+            # own docstring for why none was needed), which already permits, without
+            # requiring, token counts. Retried normally: a malformed response on this
+            # attempt doesn't mean the next one will be.
+            last_kind, last_message = FailureKind.OTHER, str(e)
+            attempt_sink.append(StageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.OTHER_FAILURE, error_message=last_message,
+                prompt_tokens=e.prompt_tokens, completion_tokens=e.completion_tokens))
         except StageCallFailed as e:
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
             attempt_sink.append(StageAttempt(
@@ -230,7 +216,12 @@ def call_stage(
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
 
-    raise StageFailed(last_kind, last_message, retry_count=max_attempts - 1)
+    # attempt (the loop variable, still in scope after the for loop exits, whether by
+    # normal exhaustion or an early `break` on StageCallFatal) equals max_attempts - 1 on
+    # a normal exhaustion -- identical to the old hardcoded value -- and equals however
+    # many attempts actually ran before a fatal break (0 if fatal on the very first try),
+    # matching StageFailed's own "0 means failed on the first try with no retry".
+    raise StageFailed(last_kind, last_message, retry_count=attempt)
 
 
 def call_document_stage(
@@ -263,14 +254,30 @@ def call_document_stage(
 
     invocation_id is required, no default -- same reasoning as call_stage's.
     """
+    if max_attempts < 1:
+        raise ValueError(
+            f"call_document_stage requires max_attempts >= 1 (got {max_attempts})")
+
     last_kind: FailureKind = FailureKind.OTHER
-    last_message = "call_document_stage was invoked with max_attempts < 1"
+    last_message = ""
 
     for attempt in range(max_attempts):
         attempt_number = attempt + 1
         throttle.wait_for_slot(model_name)
         try:
             result = stage_fn(*args)
+        except StageCallFatal as e:
+            last_kind, last_message = FailureKind.FATAL, str(e)
+            attempt_sink.append(DocumentStageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.FATAL_FAILURE, error_message=last_message))
+            break
+        except StageCallPartial as e:
+            last_kind, last_message = FailureKind.OTHER, str(e)
+            attempt_sink.append(DocumentStageAttempt(
+                stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
+                result=AttemptResult.OTHER_FAILURE, error_message=last_message,
+                prompt_tokens=e.prompt_tokens, completion_tokens=e.completion_tokens))
         except StageCallFailed as e:
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
             attempt_sink.append(DocumentStageAttempt(
@@ -312,7 +319,12 @@ def call_document_stage(
         if attempt < max_attempts - 1:
             throttle.sleep_fn(backoff_seconds(attempt))
 
-    raise StageFailed(last_kind, last_message, retry_count=max_attempts - 1)
+    # attempt (the loop variable, still in scope after the for loop exits, whether by
+    # normal exhaustion or an early `break` on StageCallFatal) equals max_attempts - 1 on
+    # a normal exhaustion -- identical to the old hardcoded value -- and equals however
+    # many attempts actually ran before a fatal break (0 if fatal on the very first try),
+    # matching StageFailed's own "0 means failed on the first try with no retry".
+    raise StageFailed(last_kind, last_message, retry_count=attempt)
 
 
 def run_document_stages(
@@ -479,6 +491,7 @@ def _run_refine_loop(
     stage_configs: dict,
     max_attempts: int,
     backoff_seconds: Callable[[int], float],
+    checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
 ) -> tuple[RequirementRunRecord, Optional[StageError]]:
     """Runs quality-check/refine rounds until one passes, the cap is hit, or a stage
     call fails outright. Returns the updated record and, on failure, the StageError to
@@ -489,6 +502,22 @@ def _run_refine_loop(
     computed once by the caller and passed unchanged into every round's check_quality
     call -- the document-level analysis doesn't change between rounds, so recomputing it
     per round would be redundant, not more correct.
+
+    checkpoint (2026-08-09), if given, is called with a snapshot of the record --
+    including the just-produced RefinerTurn, before any answer exists -- immediately
+    before EITHER call to human_fns.answer_questions below. human_fns.answer_questions
+    is the one point in this whole function that can block on a terminal and raise
+    EOFError/KeyboardInterrupt (see orchestrator/human_cli.py); nothing here catches
+    that exception -- it still propagates exactly as before -- but if the caller (see
+    run_document's checkpoint=lambda rec: write_requirement_run(run_dir, rec)) has
+    already persisted this snapshot, a later resume_document() picks up at
+    REFINER_REWRITER with the turn already on record and answers still empty, which
+    is the already-existing, already-tested resume path
+    (test_resume_mid_round_asks_human_when_answers_missing) -- re-asking the human
+    instead of silently repeating the classifier/quality-checker/questioner calls that
+    already succeeded. Without this, nothing about an in-progress requirement is ever
+    written to disk until run_requirement returns, so an interruption here loses that
+    requirement's progress entirely, not just the pending answer.
     """
     req = record.requirement
     rounds = list(record.rounds)
@@ -601,6 +630,10 @@ def _run_refine_loop(
                     stage=PipelineStage.REFINER_QUESTIONER, invocation_id=questioner_invocation_id,
                     kind=f.kind, message=f.message, retry_count=f.retry_count)
             record = record.model_copy(update={"attempts": attempts})
+            if checkpoint is not None:
+                checkpoint(record.model_copy(update={"rounds": rounds + [RefinementRound(
+                    revision_number=n, text_checked=text_checked, quality_report=quality_report,
+                    turn=turn, suppressed_issue_ids=suppressed_ids)]}))
             answers = human_fns.answer_questions(turn)
         elif not answers:
             # turn already exists (questioner finished, possibly on a prior attempt)
@@ -608,7 +641,27 @@ def _run_refine_loop(
             # call and the human's answer. Schema-valid (RefinementRound only rejects
             # answers non-empty with turn=None, never the reverse), and distinct from
             # "turn and answers both already exist" just below, which must NOT re-ask.
+            if checkpoint is not None:
+                checkpoint(record.model_copy(update={"rounds": rounds + [RefinementRound(
+                    revision_number=n, text_checked=text_checked, quality_report=quality_report,
+                    turn=turn, suppressed_issue_ids=suppressed_ids)]}))
             answers = human_fns.answer_questions(turn)
+
+        # Second checkpoint (2026-08-09, post-review): the human's answer is the
+        # expensive-to-redo part of this round -- re-asking costs a person's time, not
+        # just an API call -- so it must reach disk before the rewriter call, not only
+        # before answer_questions. KeyboardInterrupt is not scoped to terminal-input
+        # calls the way EOFError effectively is: it can land during the HTTP request
+        # inside call_stage(refine_rewriter, ...) below just as easily as during
+        # answer_questions above. This round now has turn AND non-empty answers, still
+        # no rewrite -- resume_at still resolves this to REFINER_REWRITER, and
+        # _run_refine_loop's resume branch (`elif not answers`) is False this time
+        # (answers is non-empty), so a resume skips straight to the rewriter call with
+        # the already-collected answers -- it does NOT re-ask the human.
+        if checkpoint is not None:
+            checkpoint(record.model_copy(update={"rounds": rounds + [RefinementRound(
+                revision_number=n, text_checked=text_checked, quality_report=quality_report,
+                turn=turn, answers=answers, suppressed_issue_ids=suppressed_ids)]}))
 
         attempts = list(record.attempts)
         rewriter_invocation_id = uuid.uuid4().hex
@@ -647,6 +700,7 @@ def run_requirement(
     stage_configs: dict,
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
 ) -> RequirementRunRecord:
     """The full per-requirement pipeline: classifier, quality-check/refine loop
     (delegated to _run_refine_loop), the revision cap, strategy selector, test
@@ -660,6 +714,13 @@ def run_requirement(
     docs/superpowers/specs/2026-08-08-document-context-wiring-design.md). A report of
     None (the document-level stage failed) stays None after filtering -- it is not the
     same thing as a report that ran and found nothing for this requirement ([]).
+
+    checkpoint (2026-08-09), if given, is threaded into _run_refine_loop (see its own
+    docstring) and called again here, directly, right before human_fns.decide_at_cap --
+    the second and last point in this whole call graph that can block on a terminal and
+    raise EOFError/KeyboardInterrupt. At that point `record` is already the complete,
+    just-returned-from-_run_refine_loop record (the capped round already appended), so
+    no snapshot construction is needed here the way it was inside the loop.
     """
     if max_revisions < 2:
         # A cap can only be reached by exhausting revisions -- which means at least one
@@ -717,7 +778,8 @@ def run_requirement(
                 PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER):
         record, refine_error = _run_refine_loop(
             record, relevant_conflicts, relevant_dependencies, stage_fns, human_fns,
-            throttle, max_revisions, stage_configs, max_attempts, backoff_seconds)
+            throttle, max_revisions, stage_configs, max_attempts, backoff_seconds,
+            checkpoint)
         if refine_error is not None:
             errors = list(record.errors) + [refine_error]
             return RequirementRunRecord.model_validate(
@@ -727,6 +789,8 @@ def run_requirement(
     last_round = record.rounds[-1]
     if not last_round.quality_report.passed:
         # The cap fired: ask the human whether to generate anyway or stop.
+        if checkpoint is not None:
+            checkpoint(record)
         outcome, cap_reason = human_fns.decide_at_cap(record)
         if outcome not in (RunOutcome.CAP_GENERATED, RunOutcome.CAP_STOPPED):
             raise ValueError(
@@ -823,7 +887,17 @@ def run_document(
     """Runs the whole pipeline for one document: consistency/dependency checks (D1=b:
     continue DEGRADED if either fails independently), then every requirement in order.
     Writes to run_dir incrementally if given (D2b) -- document.json first, then one
-    requirement file at a time, so an interruption leaves a resumable partial run."""
+    requirement file at a time, so an interruption leaves a resumable partial run.
+
+    checkpoint_fn (2026-08-09), when run_dir is given, is write_requirement_run itself,
+    partially bound to run_dir -- passed into run_requirement so an in-progress
+    requirement's state reaches disk right before either human-interaction point, not
+    only after the requirement fully finishes. Without this, an EOFError/
+    KeyboardInterrupt from a terminal HumanFns implementation (orchestrator/
+    human_cli.py) mid-requirement loses that requirement's progress entirely -- nothing
+    about it was ever written -- rather than leaving a resumable partial round. See
+    _run_refine_loop's docstring for the resume path this makes possible.
+    """
     consistency_report, dependency_report, doc_errors, doc_attempts = run_document_stages(
         requirement_set, metadata.stages, stage_fns, throttle, max_attempts, backoff_seconds)
 
@@ -837,12 +911,14 @@ def run_document(
     if run_dir is not None:
         write_document_run(run_dir, record)
 
+    checkpoint_fn = (lambda rec: write_requirement_run(run_dir, rec)) if run_dir is not None else None
+
     requirement_records = []
     for req in requirement_set.requirements:
         req_record = run_requirement(
             RequirementRunRecord(requirement=req, run_id=metadata.run_id), requirement_set,
             consistency_report, dependency_report, stage_fns, human_fns, throttle,
-            max_revisions, metadata.stages, max_attempts, backoff_seconds)
+            max_revisions, metadata.stages, max_attempts, backoff_seconds, checkpoint_fn)
         requirement_records.append(req_record)
         if run_dir is not None:
             write_requirement_run(run_dir, req_record)
@@ -932,10 +1008,16 @@ def resume_document(
     """A resume pass: read the document from disk, process everything in
     pending_requirement_ids (no record at all, or IN_PROGRESS/ERROR), starting each at
     its derived resume_at position. A requirement that never had a file gets a fresh
-    IN_PROGRESS record; one that errored gets its existing record continued in place."""
+    IN_PROGRESS record; one that errored gets its existing record continued in place.
+
+    Threads the same write_requirement_run-backed checkpoint into run_requirement that
+    run_document does (see run_document's docstring) -- a resume that itself gets
+    interrupted again mid-requirement must be just as resumable as the first attempt.
+    """
     record = read_document_run(run_dir)
     pending = set(record.pending_requirement_ids)
     by_id = {r.requirement.id: r for r in record.requirement_records}
+    checkpoint_fn = lambda rec: write_requirement_run(run_dir, rec)
 
     updated_records = []
     for req in record.requirement_set.requirements:
@@ -946,11 +1028,41 @@ def resume_document(
         updated = run_requirement(
             base, record.requirement_set, record.consistency_report, record.dependency_report,
             stage_fns, human_fns, throttle, max_revisions, record.metadata.stages,
-            max_attempts, backoff_seconds)
+            max_attempts, backoff_seconds, checkpoint_fn)
         updated_records.append(updated)
         write_requirement_run(run_dir, updated)
 
     return record.model_copy(update={"requirement_records": updated_records})
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    """Writes `text` to `path` atomically: write to a temporary sibling file (same
+    directory, so os.replace stays on one filesystem -- required for its atomicity
+    guarantee), then os.replace() it onto the destination. An interruption mid-write
+    leaves only the temporary file incomplete; the destination, if it already existed,
+    is untouched until the replace, and the replace itself is all-or-nothing on both
+    POSIX and Windows. Without this, a plain write_text() interrupted partway leaves a
+    truncated JSON file that resume_document/read_document_run cannot parse -- turning
+    one interruption into a run that can neither resume nor be told why."""
+    tmp_path = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        tmp_path.write_text(text)
+        os.replace(tmp_path, path)
+    except BaseException:
+        tmp_path.unlink(missing_ok=True)
+        raise
+
+
+def _requirement_filename(req_id: str) -> str:
+    """Requirement.id is a free-form NonEmptyStr (design/schemas.py) -- no charset
+    restriction -- and must never be interpolated into a filesystem path directly: an
+    id like "../escape" writes outside requirements/, and "../document" can overwrite
+    document.json. SHA-256 hash instead: deterministic (the same id always maps to the
+    same filename, needed since write_requirement_run overwrites the same file across
+    rounds/resumes), filesystem-safe by construction for any input, and the real id is
+    never lost -- read_document_run reads it back from the JSON content
+    (RequirementRunRecord.requirement.id), never from the filename."""
+    return hashlib.sha256(req_id.encode("utf-8")).hexdigest() + ".json"
 
 
 def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
@@ -962,23 +1074,31 @@ def write_document_run(run_dir: Path, record: DocumentRunRecord) -> None:
     (run_dir / "requirements").mkdir(parents=True, exist_ok=True)
     on_disk = DocumentRunRecord.model_validate(
         {**record.model_dump(mode="json"), "requirement_records": []})
-    (run_dir / "document.json").write_text(on_disk.model_dump_json(indent=2))
+    atomic_write_text(run_dir / "document.json", on_disk.model_dump_json(indent=2))
 
 
 def write_requirement_run(run_dir: Path, record: RequirementRunRecord) -> None:
     (run_dir / "requirements").mkdir(parents=True, exist_ok=True)
     validated = RequirementRunRecord.model_validate(record.model_dump(mode="json"))
-    (run_dir / "requirements" / f"{record.requirement.id}.json").write_text(
-        validated.model_dump_json(indent=2))
+    atomic_write_text(run_dir / "requirements" / _requirement_filename(record.requirement.id),
+                      validated.model_dump_json(indent=2))
 
 
 def read_document_run(run_dir: Path) -> DocumentRunRecord:
     """Reassembles the document from document.json (empty requirement_records) plus
     every requirements/*.json file -- the inverse of write_document_run/
-    write_requirement_run under D2b."""
+    write_requirement_run under D2b.
+
+    Filenames are content-addressed (see _requirement_filename) and carry no ordering
+    information, unlike the old id-as-filename scheme where `sorted(glob(...))` happened
+    to sort by id. Records are explicitly sorted by requirement.id after loading, not by
+    glob/filename order, so read_document_run's observable behavior -- id-ordered
+    requirement_records -- is unchanged by that scheme change.
+    """
     doc_data = json.loads((run_dir / "document.json").read_text())
     req_dir = run_dir / "requirements"
-    records = [RequirementRunRecord.model_validate_json(path.read_text())
-               for path in sorted(req_dir.glob("*.json"))]
+    records = sorted(
+        (RequirementRunRecord.model_validate_json(path.read_text()) for path in req_dir.glob("*.json")),
+        key=lambda r: r.requirement.id)
     return DocumentRunRecord.model_validate(
         {**doc_data, "requirement_records": [r.model_dump(mode="json") for r in records]})

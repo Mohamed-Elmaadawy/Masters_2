@@ -719,11 +719,13 @@ class DocumentStage(str, Enum):
 
 
 class FailureKind(str, Enum):
-    """Why a stage call ultimately failed. Distinguishes three cases that mean
+    """Why a stage call ultimately failed. Distinguishes four cases that mean
     different things for retry policy and for the thesis's LLM-reliability numbers:
-    a rejected request (retry usually helps), a schema-rejected model output (retrying
-    may help, but "how often does this model produce invalid output" is itself a
-    finding), and anything else caught but not anticipated. See
+    a rejected request that's worth retrying (TRANSPORT), a schema-rejected model
+    output (VALIDATION -- retrying may help, but "how often does this model produce
+    invalid output" is itself a finding), a rejected request retrying can never fix
+    (FATAL, added 2026-08-09 -- see its own paragraph below), and anything else caught
+    but not anticipated (OTHER). See
     docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md.
 
     Not exhaustive of every possible mistake by construction, which is exactly why
@@ -732,9 +734,19 @@ class FailureKind(str, Enum):
     failure of unanticipated type; it is NOT for bugs in the orchestrator's own control
     flow, which must still crash rather than be filed here (see
     orchestrator/pipeline.py's call_stage).
+
+    FATAL (2026-08-09): added for orchestrator/stage_fns.py's StageCallFatal -- a
+    provider configuration/capability/authentication error where retrying with the same
+    inputs cannot possibly succeed (bad credentials, an output mode the model doesn't
+    support). Distinct from TRANSPORT, whose own meaning above is "retry usually helps" --
+    reusing TRANSPORT for a fatal error would make the kind lie about what happened.
+    call_stage/call_document_stage record exactly one attempt for a FATAL failure and
+    stop, rather than spending the remaining retry budget on a request that cannot
+    succeed. See design/ORCHESTRATOR_CONTRACT.md and design/DESIGN_NOTES.md.
     """
     TRANSPORT = "transport"
     VALIDATION = "validation"
+    FATAL = "fatal"
     OTHER = "other"
 
 
@@ -749,15 +761,17 @@ class AttemptResult(str, Enum):
     SUCCESS = "success"
     TRANSPORT_FAILURE = "transport_failure"
     VALIDATION_FAILURE = "validation_failure"
+    FATAL_FAILURE = "fatal_failure"
     OTHER_FAILURE = "other_failure"
 
 
-# The three failure variants of AttemptResult map 1:1 onto FailureKind -- used by the
+# The four failure variants of AttemptResult map 1:1 onto FailureKind -- used by the
 # StageError/DocumentStageError agreement checks below to compare a StageAttempt's
 # result against the kind an error claims.
 _ATTEMPT_RESULT_TO_FAILURE_KIND: dict[AttemptResult, FailureKind] = {
     AttemptResult.TRANSPORT_FAILURE: FailureKind.TRANSPORT,
     AttemptResult.VALIDATION_FAILURE: FailureKind.VALIDATION,
+    AttemptResult.FATAL_FAILURE: FailureKind.FATAL,
     AttemptResult.OTHER_FAILURE: FailureKind.OTHER,
 }
 
@@ -790,6 +804,12 @@ def _attempt_shape_error(
         if has_tokens:
             return ("a transport failure means the request was rejected before "
                     "inference -- it cannot carry token counts")
+    elif result is AttemptResult.FATAL_FAILURE:
+        if error_message is None:
+            return "a fatal failure must carry an error_message"
+        if has_tokens:
+            return ("a fatal failure means the request was rejected before inference "
+                    "-- it cannot carry token counts")
     else:  # OTHER_FAILURE
         if error_message is None:
             return "an other-failure attempt must carry an error_message"
@@ -1565,15 +1585,37 @@ def prompt_fingerprint(prompt_text: str) -> str:
     return hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()[:12]
 
 
+class OutputMode(str, Enum):
+    """How a stage call asks its provider to shape a response, before that response is
+    validated against the stage's own Pydantic model. Lives here, not in
+    orchestrator/providers/, so orchestrator/config.py can import it without ever
+    importing anything that depends on `requests` just to validate a YAML config's shape
+    (see design/DESIGN_NOTES.md, "Run config, provider adapters, CLI HumanFns")."""
+    TEXT = "text"
+    JSON_OBJECT = "json_object"
+    JSON_SCHEMA = "json_schema"
+
+
 class StageConfig(BaseModel):
     """What one stage was configured with.
 
     Model and prompt are grouped in one object rather than kept as two parallel
     dicts (`models` and `prompt_hashes`) because parallel dicts can end up with
     different key sets and silently disagree about which stages exist.
+
+    prompt_version/temperature/output_mode (2026-08-09): moved here from being single
+    run-level fields on RunMetadata, because orchestrator/config.py's RunConfig allows
+    per-stage overrides of all three. Two independently-settable copies (one here, one on
+    RunMetadata) could disagree -- the "two fields that must agree" failure pattern
+    CLAUDE.md names as the cause of most bugs in this project. Removing the redundant
+    RunMetadata-level copies, rather than adding a validator to police them, closes that
+    gap by construction instead of by discipline. See DESIGN_NOTES.md.
     """
-    model: NonEmptyStr = Field(..., description="e.g. 'gemini-2.0-flash'")
+    model: NonEmptyStr = Field(..., description="e.g. 'gemini/gemini-2.0-flash'")
     prompt_hash: NonEmptyStr = Field(..., description="from prompt_fingerprint()")
+    prompt_version: NonEmptyStr
+    temperature: float = Field(1.0, ge=0.0, le=2.0)
+    output_mode: OutputMode = OutputMode.TEXT
 
 
 class RunMetadata(BaseModel):
@@ -1581,22 +1623,22 @@ class RunMetadata(BaseModel):
     started_at: datetime
     # Per stage, because different stages can legitimately use different models --
     # e.g. a cheap one for classification and a stronger one for test generation.
+    # temperature/prompt_version/output_mode live on each StageConfig, not here -- see
+    # StageConfig's own docstring for why the run-level copies that used to live on this
+    # model were removed rather than kept in sync with a validator.
     stages: dict[str, StageConfig]
-    # Human-readable label for the prompt set as a whole. The per-stage hashes above
-    # are what actually detect a change; this is what you read.
-    prompt_version: NonEmptyStr
-    # One value for the whole run. Default 1.0 matches the Gemini/Groq API defaults;
-    # 0-2 is the range both accept, so anything outside it is a config bug worth
-    # catching before it reaches the API.
-    # If per-stage temperature is ever needed, add it to StageConfig rather than here.
-    temperature: float = Field(1.0, ge=0.0, le=2.0)
     # 1.0 -> 1.1 (2026-08-08): RequirementRunRecord/DocumentRunRecord's usage field was
     # replaced by the per-attempt log (attempts: list[StageAttempt/DocumentStageAttempt]),
-    # and StageError/DocumentStageError gained invocation_id. No real run predates this
-    # -- nothing to migrate -- the bump exists so a future reader can tell the two
-    # record shapes apart. See
-    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md.
-    schema_version: NonEmptyStr = "1.1"
+    # and StageError/DocumentStageError gained invocation_id.
+    # 1.1 -> 1.2 (2026-08-09): StageConfig gained prompt_version/temperature/output_mode;
+    # RunMetadata's own run-level temperature/prompt_version fields were removed (see
+    # StageConfig's docstring); FailureKind gained FATAL and AttemptResult gained
+    # FATAL_FAILURE (orchestrator/stage_fns.py's StageCallFatal). No real run predates
+    # either bump -- nothing to migrate -- the version exists so a future reader can tell
+    # the record shapes apart. See
+    # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md and
+    # DESIGN_NOTES.md.
+    schema_version: NonEmptyStr = "1.2"
 
     @model_validator(mode="after")
     def _started_at_is_timezone_aware(self) -> "RunMetadata":

@@ -250,12 +250,18 @@ even though it was never derivable from `errors`/`retry_count` alone. See
 "Requirement-level errors made symmetric".)*
 
 **`FailureKind`** (added 2026-08-08, see
-`docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md`): every `StageError`
-and `DocumentStageError` now carries `kind: TRANSPORT | VALIDATION | OTHER`. `TRANSPORT`
-is a rejected request (retry usually helps); `VALIDATION` is a model output that failed
-schema validation (the call succeeded, tokens were spent, retrying may help since LLM
-output is nondeterministic); `OTHER` is a caught-but-unanticipated failure and must never
-be used for a bug in the orchestrator's own control flow, which should crash instead.
+`docs/superpowers/specs/2026-08-08-orchestrator-harness-design.md`; gained a fourth
+member 2026-08-09, see item 17): every `StageError` and `DocumentStageError` now carries
+`kind: TRANSPORT | VALIDATION | FATAL | OTHER`. `TRANSPORT` is a rejected request (retry
+usually helps); `VALIDATION` is a model output that failed schema validation (the call
+succeeded, tokens were spent, retrying may help since LLM output is nondeterministic);
+`FATAL` is a rejected request retrying can never fix (item 17 — `StageCallFatal`);
+`OTHER` is a caught-but-unanticipated failure and must never be used for a bug in the
+orchestrator's own control flow, which should crash instead. `OTHER` is also, as of
+2026-08-09, what a `StageCallPartial` (see `design/DESIGN_NOTES.md`, "Post-implementation
+review fixes") is recorded as — inference happened and tokens were spent but no usable
+output could be extracted, a case `AttemptResult.OTHER_FAILURE`'s existing "tokens
+optional" shape rule already covered without needing a fifth kind.
 
 ## 8. Document-level failure policy (D1=b)
 
@@ -515,20 +521,80 @@ human reading this contract, or a test, can catch a future regression on:
 Collapsing the two (e.g. defaulting a failed stage to `[]`) would make a `DEGRADED`
 document's Quality Checker output indistinguishable from a clean one that genuinely has
 no conflicts — the model would report "no consistency issues" for a reason invisible in
-its own output: nobody actually checked. `StageFns.check_quality`/`select_strategy`/
-`generate_tests` are `Callable[..., StageCallResult]` — untyped, like every other
-`StageFns` field — so the type system cannot force a future stage-fn implementation to
-tell the two apart; a `Callable` accepts `None` or `[]` equally happily. The distinction
-is enforced by the invocation contract stated here (`run_requirement` always passes one
-or the other, never a stand-in) and by the tests in `orchestrator/test_harness.py`
+its own output: nobody actually checked.
+
+**Update (2026-08-09): `StageFns.check_quality`/`select_strategy`/`generate_tests` are no
+longer bare `Callable[..., StageCallResult]`.** `orchestrator/stage_fns.py` now gives each
+a real `Protocol` (`CheckQualityFn`, `SelectStrategyFn`, `GenerateTestsFn`) with a
+declared signature — `relevant_conflicts`/`relevant_dependencies` are spelled out as
+`Optional[list[ConsistencyConflict]]`/`Optional[list[DependencyLink]]`, not swallowed into
+`...`. This closes a *different* gap (signature drift between the Protocol and
+`pipeline.py`'s real call sites, verified by `orchestrator/test_stage_fns.py`) — it does
+**not** close this one. A `Protocol`'s type hints are exactly as structural as a bare
+`Callable`'s: `Optional[list[X]]` still accepts `None` or `[]` equally happily, with no
+more runtime enforcement than before, because `typing.Protocol` (without
+`@runtime_checkable`, which wouldn't help here anyway — that combination only checks
+method *presence*, not argument values) performs no isinstance-style checking on the
+values a function is actually called with. The distinction is still enforced by the
+invocation contract stated here (`run_requirement` always passes one or the other, never
+a stand-in) and by the tests in `orchestrator/test_harness.py`
 (`test_document_context_none_vs_empty` and its mirror) that fail if a future change to
-`run_requirement` ever collapses them — not by anything Python's type checker verifies.
+`run_requirement` ever collapses them — not by anything Python's type checker verifies,
+typed `Protocol` or not. See `design/DESIGN_NOTES.md`, "Run config, provider adapters,
+CLI HumanFns," for the Protocol work itself.
 
 *(See `docs/superpowers/specs/2026-08-08-document-context-wiring-design.md`. Item 6's
 "Retrying a failed document-level stage" subsection states the consequence for
 `retry_document_stage`: once wired, a document-level retry that succeeds after any
 requirement has consumed the pre-retry context can no longer be allowed to change what
 that run's requirements see.)*
+
+---
+
+## 17. A fatal, non-retryable stage failure gets exactly one attempt, not `max_attempts`
+
+**The gap.** `call_stage`/`call_document_stage` (`orchestrator/pipeline.py`) retried
+*every* exception a stage fn raised identically — a transport hiccup and a provider
+rejecting a request for a reason no retry could ever fix (bad credentials, an output
+mode the model doesn't support) both consumed the full `max_attempts` budget before
+giving up. This is the one deliberate change to retry behavior in this project's
+orchestrator phase — added on explicit request during review of
+`orchestrator/config.py`/`orchestrator/providers/`, not decided unilaterally; see
+`design/DESIGN_NOTES.md`, "Run config, provider adapters, CLI HumanFns."
+
+**The mechanism.** `orchestrator/stage_fns.py` defines `StageCallFatal`, alongside the
+existing `StageCallFailed`. A stage fn (in practice, a provider adapter) raises
+`StageCallFailed` for a retryable transport failure (retry usually helps) and
+`StageCallFatal` for one it cannot — `call_stage`/`call_document_stage` each catch
+`StageCallFatal` in a branch checked *before* `StageCallFailed`: they record exactly one
+`StageAttempt`/`DocumentStageAttempt` (`result=AttemptResult.FATAL_FAILURE`,
+`kind=FailureKind.FATAL`) and stop, with no backoff sleep and no further attempts. The
+resulting `StageError`/`DocumentStageError` gets `retry_count=0` — the loop's own
+attempt counter at the point of the fatal break, which is `0` on a first-try failure,
+identical to what a normal exhaustion would have produced had it also failed on
+attempt 1. No new field was needed on `StageError`/`DocumentStageError` for this;
+`retry_count=0` already meant exactly this.
+
+**Deliberately narrow — read this before raising `StageCallFatal` from new code.**
+This is NOT a general early-exit mechanism for a stage fn to skip retries whenever it
+judges retrying pointless. It is reserved for provider configuration, capability, and
+authentication errors specifically — the class of failure where retrying with the
+identical input cannot possibly produce a different outcome. A stage fn that raises it
+for any other reason (a transient-but-annoying failure, an unwillingness to retry for
+performance reasons, an ordinary schema-validation problem — which is already handled,
+uniformly, inside `call_stage` itself per item 15) is misusing the mechanism, not using
+it correctly. `AttemptResult.FATAL_FAILURE`'s shape rule (`design/schemas.py`) mirrors
+`TRANSPORT_FAILURE`'s: an `error_message` is required, and no token counts may be
+recorded, because a fatal failure — like a transport failure — is rejected before
+inference ever runs.
+
+**What this does NOT fix.** Nothing currently distinguishes "retry the same failed
+call" from "the human should be told before any more attempts happen elsewhere in the
+run" — a `StageCallFatal` still only surfaces via the normal `StageError`/
+`DocumentStageError` path, read after the fact, same as any other stage failure. That
+gap is recorded, not silently left open: the orchestrator has no synchronous
+human-notification channel for any failure kind today, and building one was out of
+scope for the task that introduced `StageCallFatal`.
 
 ---
 

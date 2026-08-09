@@ -1,0 +1,3 @@
+TODO: real Classifier prompt, next phase (orchestrator/stages.py).
+Placeholder text only -- exists so orchestrator/example_run_config.yaml resolves and
+hashes cleanly today, per design/ORCHESTRATOR_CONTRACT.md item 12.

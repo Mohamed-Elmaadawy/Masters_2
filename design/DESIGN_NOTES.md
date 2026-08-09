@@ -1788,3 +1788,303 @@ rather than the reasoning:
   runs -- the second and third time this exact failure mode has shown up in this
   project (see `_run_refine_loop`'s already-capped-round short-circuit, deleted the
   same way, in "Refiner split into REFINER_QUESTIONER / REFINER_REWRITER" above).
+
+## Run config, provider adapters, CLI HumanFns (2026-08-09)
+
+Orchestrator phase continues: typed `StageFns`/`HumanFns` Protocols, a validated YAML
+run configuration, real Gemini/Groq adapters, and a terminal `HumanFns` implementation.
+`orchestrator/stages.py` (the 8 real prompts/parsers) stays out of scope, unchanged --
+its own docstring already said "not built this phase," and nothing here needed to touch
+it. This went through three plan revisions before implementation; what's recorded below
+is the shipped design, not the rejected drafts -- the rejections themselves aren't
+restated, only what they changed.
+
+**Typed Protocols (`orchestrator/stage_fns.py`, new module).** `StageCallResult`,
+`StageCallFailed`, `StageFns`, `HumanFns` moved out of `orchestrator/pipeline.py` into
+this new module (re-exported from `pipeline.py`, so existing imports there keep
+working) so `orchestrator/providers/` and the future `orchestrator/stages.py` can
+import them without pulling in `pipeline.py`'s control-flow code. Ten `Protocol`
+classes now give each `StageFns`/`HumanFns` field a real signature (verified against
+every call site in `pipeline.py`), replacing `Callable[..., StageCallResult]`.
+`StageFns`/`HumanFns` stay frozen dataclasses, not Protocol-typed containers -- a
+typo'd field name is still an immediate `TypeError`, a property a bare `Protocol`
+container wouldn't give for free. Per `ORCHESTRATOR_CONTRACT.md` item 16, this typing
+pass does not and cannot enforce the `None`-vs-`[]` document-context distinction on
+`check_quality`/`select_strategy`/`generate_tests` -- a `Callable`- or `Protocol`-typed
+parameter accepts either equally happily; that stays a runtime-tested invariant, not a
+static one. Verified by `orchestrator/test_stage_fns.py` using
+`typing.get_type_hints()`, not raw `inspect.signature()` annotations -- both
+`stage_fns.py` and that test file use `from __future__ import annotations`, so a raw
+annotation is an unresolved forward-reference string; comparing two such strings can
+match by formatting coincidence or fail on trivial reformatting without the comparison
+meaning anything. `get_type_hints()` resolves them into real class objects first.
+
+**`StageConfig` gains `prompt_version`/`temperature`/`output_mode`; `RunMetadata` loses
+its own copies of the first two (schema `1.1` -> `1.2`).** `orchestrator/config.py`'s
+`RunConfig` allows per-stage overrides of all three, but `RunMetadata` (the persisted
+provenance record) had only one run-level copy of `temperature`/`prompt_version`. Two
+independently-settable copies -- one on `RunMetadata`, one implied by a per-stage
+override -- could disagree, which is the "two fields that must agree" failure pattern
+CLAUDE.md names as the cause of most bugs in this project. Fix: remove the redundant
+`RunMetadata`-level fields entirely rather than add a validator to police them. No
+"mixed"/computed-summary replacement either -- that would be exactly the accidental
+complexity CLAUDE.md says to avoid; a per-stage value is one dict lookup away
+(`stages[stage].temperature`). `OutputMode` (new enum: `TEXT`/`JSON_OBJECT`/
+`JSON_SCHEMA`) lives in `design/schemas.py`, not in `orchestrator/providers/`, so
+`StageConfig.output_mode` is typed with it directly rather than persisted as a bare
+string, and `orchestrator/config.py`/`orchestrator/providers/` import the same enum
+rather than risk a second one drifting from it.
+
+**`FailureKind.FATAL` / `AttemptResult.FATAL_FAILURE` (same schema bump).** Needed by
+the fail-fast mechanism below. Checked the coupling before adding anything: the three
+failure variants of `AttemptResult` map 1:1 onto `FailureKind` via
+`_ATTEMPT_RESULT_TO_FAILURE_KIND`, and `_attempt_shape_error` applies a different shape
+rule per `AttemptResult` value. Reusing `TRANSPORT` for a fatal error would contradict
+that kind's own documented meaning ("retry usually helps" -- false by construction for
+a fatal error); falling through to `OTHER_FAILURE`'s catch-all would wrongly let a
+fatal attempt carry token counts. Added both the `FailureKind` and `AttemptResult`
+member, the map entry, and an explicit shape-rule branch (mirroring
+`TRANSPORT_FAILURE`'s: error_message required, no tokens -- rejected before inference)
+placed before the catch-all. Both `StageAttempt`/`StageError` and their document-level
+twins share these enums, so this one change covers both levels at once -- the
+"`StageError`/`DocumentStageError` mirror each other" pattern CLAUDE.md already flags,
+gotten right in one pass rather than found missing on one side by a later review.
+
+**`StageCallFatal` -- the one deliberate change to retry behavior.** The original task
+instructions for this phase said not to change sequencing/retry/resume/persistence/
+issue-identity/`None`-vs-`[]` behavior, and to report any incompatibility rather than
+silently changing it. That incompatibility was found and reported: `call_stage`/
+`call_document_stage` retried *every* exception type identically, so a provider
+adapter's bad-credentials/unsupported-capability error would still burn the full
+`max_attempts` retry budget against a request that could never succeed, no matter how
+clearly its `StageCallFailed`-vs-something-else exception type was labelled. On review,
+this was called out as needing a genuine fix, not just a clearer log message --
+`orchestrator/stage_fns.py` gained `StageCallFatal`, and `call_stage`/
+`call_document_stage` gained one new `except` branch each (before the existing
+`except StageCallFailed`): a fatal failure records exactly one `StageAttempt`/
+`DocumentStageAttempt` (`FATAL_FAILURE`, `FailureKind.FATAL`) and `break`s out of the
+retry loop immediately, no backoff sleep. `retry_count` on the resulting `StageFailed`
+changed from a hardcoded `max_attempts - 1` to `attempt` (the loop variable, in scope
+after the loop exits either way) -- identical value on a normal exhaustion, `0` on a
+fatal first-try failure, matching `StageFailed`'s existing "`0` means failed on the
+first try with no retry" docstring exactly, no new field needed anywhere. Deliberately
+narrow: `StageCallFatal`'s own docstring states it is reserved for provider
+configuration/capability/authentication errors specifically, not a general early-exit
+a stage fn can reach for to skip retries it doesn't feel like doing. See
+`design/ORCHESTRATOR_CONTRACT.md`'s new item for this.
+
+**Retry is global, not per-stage (`orchestrator/config.py`'s `RetryConfig`).**
+`call_stage`/`call_document_stage` take `max_attempts`/`backoff_seconds` as single
+values threaded through one `run_document()` call -- there is no per-stage retry
+mechanism in the orchestrator, and building one was out of scope. A per-stage
+`RunConfig` retry override would have been accepted by a schema and silently ignored
+by the orchestrator -- exactly the shape of gap this task exists to close, not add.
+`RetryConfig` is `initial_delay_seconds * multiplier ** attempt`, not
+`backoff_base_seconds ** attempt` -- the latter conflates "how long the first wait is"
+with "how fast it grows" into one number.
+
+**Rate limits are keyed by `"provider/model"`, and coverage is required, not
+optional.** `Throttle.min_interval_seconds` (`orchestrator/pipeline.py`) is keyed by
+model string, because a free-tier quota is a fact about the (provider, model) pair,
+shared across every stage that hits it. `RunConfig.rate_limits` is one top-level
+mapping keyed the same way -- a YAML mapping cannot hold two different values under one
+key, so two stages sharing a model authoring different limits is structurally
+impossible, not just checked for. `resolve_run_config` additionally requires every
+distinct resolved model to be a key in that mapping; the value can be `null`, meaning
+deliberately unthrottled, but the key must exist -- a model silently absent from the
+mapping used to mean silently-unthrottled-by-omission, indistinguishable from a
+deliberate choice. Both are the same instinct: make an ambiguous state impossible to
+reach by accident, not merely caught if it happens.
+
+**Prompt hashes are always computed, never authored or inherited.**
+`RunConfig.prompts` is a required mapping covering exactly `ALL_STAGES`, one file path
+per stage -- no field anywhere accepts a hand-typed `prompt_hash` (the exact staleness
+`prompt_fingerprint()` exists to prevent -- "cannot be forgotten"), and no stage falls
+back to a shared "default" prompt file, since each of the 8 stages has a structurally
+different prompt by nature. This is also `ORCHESTRATOR_CONTRACT.md` item 12's "not
+built this phase" gap, now closed: `resolve_run_config` reads each file and computes
+`prompt_fingerprint(text)` itself. Paths resolve relative to the YAML file's own
+directory (`config_path.resolve().parent`), not the working directory the command
+happens to run from, and the resolved, normalized, absolute path is stored on
+`ResolvedStageConfig.prompt_path` alongside its hash -- "which file produced this hash"
+is recoverable from the persisted resolved config alone.
+
+**`RunConfig` (authored) vs `ResolvedRunConfig` (persisted) are two different models on
+purpose.** "Save the fully resolved, non-secret configuration with each run for
+reproducibility" means the resolved one, not the authored YAML -- the authored form has
+`Optional` overrides and file paths, not hashes; a later reader would have to
+re-resolve it (and re-read prompt files that might have since changed) to know what a
+run actually used. `write_run_config`/`read_resolved_run_config` operate on
+`ResolvedRunConfig` only, mirroring `orchestrator/pipeline.py`'s
+`write_document_run`/`read_document_run` pattern (`run_dir / "run_config.json"`, a
+sibling of `document.json`). `run_dir_for(resolved) = resolved.output_dir /
+resolved.run_id` is the one place a run's directory is computed, so nothing recomputes
+it slightly differently elsewhere.
+
+**No `provider` field on `RunMetadata`/`StageConfig`.** This was flagged, not silently
+decided either way: the "Run provenance" section above deliberately rejected a
+`provider` field, floating a `"provider/model"` string prefix instead *if* ambiguity
+ever became real. `RunConfig.defaults.provider`/`StageOverride.provider` make provider
+selection a first-class authored value (needed to dispatch to the right adapter and to
+reject typos before any API call), but `resolve_run_config`/`to_run_metadata` write the
+resolved model into `StageConfig.model` as `"{provider}/{model}"` -- implementing that
+section's own stated fallback, not overriding it. `design/schemas.py`'s `RunMetadata`
+gained no new field for this.
+
+**Provider adapters (`orchestrator/providers/`) -- capability tables and error
+classification are dated and cited, not memorized.** `capabilities.py` (no `requests`
+import, so `orchestrator/config.py` can call `supports_output_mode()` during
+`resolve_run_config` -- before any API key is read -- without a transitive dependency
+on the HTTP layer) is deny-by-default: an (provider, model, output_mode) combination
+not found in its tables is rejected even if it might well work. Both tables cite the
+exact doc URL and fetch date (2026-08-09) they came from, in-code, next to the table --
+not asserted from training-data memory, per CLAUDE.md's "never invent results... mark
+anything unverified as unverified." Two fetched Gemini docs pages disagreed with each
+other on the error-response body's own shape (one showed uppercase `error.status`
+values, the other a different lowercase `error.code` taxonomy with no `status` field at
+all) -- rather than trust either over the other, `gemini.py`'s `_classify_gemini_error`
+checks both shapes and falls back to a pure HTTP-status heuristic if neither matches.
+Groq's structured-output support is asymmetric by what its own docs actually say:
+`JSON_OBJECT` mode is documented as broadly available across models (encoded as
+allow-by-default, for Groq specifically, not as an exception to the module's general
+deny-by-default policy), while `JSON_SCHEMA` (schema-guaranteed) is restricted to a
+named, finite model list -- encoded as an allowlist. Every table and mapping is marked
+in-code as best-effort and due for re-verification before depending on it much later,
+given how fast these APIs move.
+
+**Fail-fast is genuine, but has one honestly-reported remaining gap.**
+`StageCallFatal` now actually short-circuits the retry loop (above) -- draft 2 of this
+plan had instead raised a differently-named exception that `call_stage` didn't
+recognize specially, which was rejected on review for not being fail-fast at all, just
+better-labelled retrying. What's *not* fixed, and is recorded here rather than
+silently left inconsistent: nothing currently distinguishes "retry the same failed
+call" from "the human should be told before any more attempts happen" -- a
+`StageCallFatal` still only surfaces via the normal `StageError`/`DocumentStageError`
+path, read after the fact. That's an acceptable gap for this phase (the orchestrator
+already has no synchronous human-notification channel for any other failure kind
+either), not something this task silently introduced.
+
+**CLI `HumanFns` (`orchestrator/human_cli.py`).** `answer_questions_cli`/
+`decide_at_cap_cli` take injected `input_fn`/`output_fn` (defaulting to real
+`input`/`print`), the same pattern `orchestrator/pipeline.py`'s `Throttle` already uses
+for `sleep_fn`/`now_fn` -- not a new idiom. Neither function catches
+`EOFError`/`KeyboardInterrupt`; an interruption propagates to the caller as a real
+interruption rather than being coerced into a silently-recorded "the human answered
+nothing." Under normal operation `answer_questions_cli` always returns exactly one
+`RefinerAnswer` per question in the turn (never `[]`) -- `RefinementRound`'s
+schema-valid `answers=[]` with `turn` set (contract item 6) describes a *persisted,
+resumed* state, not something this function returns on a whim. Both functions loop on
+invalid input rather than defaulting to either choice, matching contract item 3: the
+cap decision belongs to the human, and a silent default would quietly make it for
+them. Neither function is assembled into a `HumanFns(...)` here -- that's the future
+run entrypoint's job, keeping terminal I/O swappable for a FastAPI backend later
+without touching `pipeline.py`.
+
+## Post-implementation review fixes, two passes (2026-08-09)
+
+Two rounds of code-level review, after the section above was built and merged, found
+real defects that plan review couldn't have caught (they only exist once real code
+exists to read). Recorded here because none of them made it into this file the first
+time -- a gap in itself, closed by this section.
+
+**`StageCallPartial` -- a third stage-fn exception, for a case that isn't fatal or
+plain-retryable.** A 200 HTTP response can still fail to produce usable output (Gemini
+safety-filtering removes every candidate; a response body is truncated after usage
+accounting) -- and unlike a rejected request, tokens were genuinely spent. Neither
+existing exception fit: `StageCallFailed`/`StageCallFatal` both mean "rejected before
+inference," and their `AttemptResult`/`FailureKind` shape rules forbid token counts
+accordingly -- forcing this case through either would silently drop real spend from the
+record. `orchestrator/stage_fns.py` gained `StageCallPartial(message, prompt_tokens,
+completion_tokens)`; `call_stage`/`call_document_stage` catch it, record
+`AttemptResult.OTHER_FAILURE` (which already permitted, without requiring, token
+counts -- no schema change needed) with the preserved counts, and retry normally, same
+as `StageCallFailed` -- a malformed response on one attempt doesn't mean the next one
+will be. `orchestrator/providers/gemini.py`/`groq.py` raise it specifically when a 200
+response's usage accounting parses but its content doesn't; when usage ALSO doesn't
+parse, there is nothing to preserve and it's an ordinary `StageCallFailed`.
+
+**Checkpointing before a human-interaction call, then again after -- two passes, not
+one.** `run_document`/`resume_document` now pass an optional `checkpoint` callback
+(`write_requirement_run`, partially bound to `run_dir`) through `run_requirement` into
+`_run_refine_loop`. First pass: fired right before `human_fns.answer_questions`,
+persisting the round with its `turn` recorded, no answers yet -- so an `EOFError`
+(terminal closed) or `KeyboardInterrupt` there doesn't lose the classifier/quality-
+checker/questioner calls that already succeeded; a resume re-asks the human instead of
+redoing them. **Second pass, added on review** (the first pass alone was an incomplete
+fix): the SAME round, checkpointed AGAIN right after `answers` comes back, before the
+`refine_rewriter` call. `KeyboardInterrupt` is not scoped to terminal-input calls the
+way `EOFError` effectively is -- it can land during any line of code, including the
+HTTP request inside `call_stage(refine_rewriter, ...)` -- and without this second
+checkpoint, an interruption there lost the human's already-collected answer, the
+expensive-to-redo part of the round (a person's time, not just an API call). Both
+checkpoints reuse the exact same, already-tested resume machinery
+(`resume_at`/`_run_refine_loop`'s `pending_round` logic): a round with `turn` set and
+empty `answers` resumes by re-asking; a round with `turn` AND non-empty `answers`
+resumes straight at the rewriter, answers already in hand. Neither checkpoint changes
+what gets *returned* by `_run_refine_loop`/`run_requirement` -- purely an
+observational side-channel for persistence, default `None`, fully backward compatible.
+Regression tests: `orchestrator/test_harness.py::test_interruption_during_human_input_
+checkpoints_and_resumes` and `::test_interruption_after_answers_checkpoints_and_resumes`.
+
+**Provider REST payload corrections, verified against docs, not against the existing
+tests.** `orchestrator/providers/gemini.py`'s `generationConfig` fields were corrected
+from snake_case to the real camelCase (`responseMimeType`), and -- caught on a SECOND
+review pass, after the first correction still got the schema field wrong -- from
+`responseSchema` to `responseJsonSchema`. The first pass had explicitly claimed
+`responseJsonSchema` "does not appear" anywhere, based on several WebFetch summaries of
+the same long prose reference page, none of which surfaced it. The correction came from
+checking a generated SDK reference instead
+(`googleapis.github.io/js-genai/release_docs/interfaces/types.GenerateContentConfig.html`),
+which states plainly: `responseSchema` accepts only an OpenAPI 3.0 *subset* and
+suggests `responseJsonSchema` "if `response_schema` doesn't process your schema
+correctly"; `responseJsonSchema` accepts full JSON Schema and requires `response_schema`
+be omitted when set. A Pydantic model's `model_json_schema()` routinely emits
+`$defs`/`$ref` for nested or recursive models -- exactly the shape an OpenAPI-3.0-subset
+field isn't guaranteed to accept -- so `responseJsonSchema` is the correct field for
+this project's use, not merely the newer-sounding one. `orchestrator/providers/groq.py`'s
+`response_format.json_schema` was corrected from a flat `{type, strict, schema}` to the
+documented nested shape (`strict`/`name`/`schema` all inside `json_schema`), and a
+`name` field (required, previously missing) is now derived from the schema's own
+`title` or a fixed fallback. Groq's best-effort (`strict: false`) JSON Schema mode's
+documented HTTP 400 "Generated JSON does not match the expected schema" is now
+classified `StageCallFailed` (retryable, per Groq's own guidance), not fatal --
+scoped narrowly to that exact message, that exact mode, and non-strict models only, so
+an unrelated 400 or the same message on a strict (schema-guaranteed) model still fails
+fast. Every corrected shape is asserted directly in
+`orchestrator/test_providers.py`, independent of whatever the implementation happens to
+do -- the whole point, after a first version of that file asserted the wrong shapes and
+would have passed against a same-shaped-but-wrong implementation forever.
+
+**`call_stage`/`call_document_stage` reject `max_attempts < 1` up front.** Previously,
+`max_attempts=0` made `range(max_attempts)` empty, so the loop body -- including the
+`attempt` variable the final `raise StageFailed(..., retry_count=attempt)` reads --
+never ran, a `NameError` instead of a catchable failure. Both functions now raise
+`ValueError` immediately if `max_attempts < 1`, before touching the loop at all.
+
+**`ResolvedStageConfig`/`ResolvedRunConfig` validate as strongly as the authored
+config, not less.** `read_resolved_run_config` loads a persisted `run_config.json`
+straight through `ResolvedRunConfig.model_validate_json` -- it never passes through any
+of `RunConfig`'s own validators. A first version left `ResolvedStageConfig.temperature`/
+`timeout_seconds` unbounded and `ResolvedRunConfig.max_revisions` unbounded, on the
+(wrong) theory that `RunConfig`'s own bounds already covered it -- true only for a
+freshly-resolved config, not a hand-edited or corrupted file loaded later. Bounds
+restored, plus two new validators: `stages` must cover exactly `ALL_STAGES`, and
+`rate_limits` must match the resolved models EXACTLY (not just be a superset) -- an
+entry for a model nothing uses is either a typo silently not applying to the model it
+was meant for, or a stale leftover, and both are worth rejecting rather than carrying
+forward quietly.
+
+**`orchestrator/test_stage_fns.py` now verifies Protocols against REAL pipeline call
+sites, not a hand-written stand-in.** The first version compared each Protocol's
+`__call__` signature against a stub typed BY HAND to match it -- which verifies "does
+this Protocol match a stub I wrote to look like it," not "does this Protocol match what
+`pipeline.py` actually calls." A transcription error made once, writing both from the
+same (possibly wrong) understanding of a call site, would pass on both sides
+undetected. The fix drives one real `run_document()` call through every one of the ten
+`StageFns`/`HumanFns` fields via recording fixtures, capturing pipeline.py's actual
+positional args at each real call site, and checks each capture's arity and each
+argument's runtime type against the Protocol via `typing.get_type_hints()` (not raw
+`inspect.signature()` annotations, which are unresolved forward-reference strings under
+`from __future__ import annotations`). The hand-stub comparison is kept as a secondary,
+honestly-scoped layer (it still catches a Protocol's own internal inconsistency) -- it
+just no longer stands in for the real-call-site check on its own.
