@@ -17,6 +17,9 @@ would have passed against a same-shaped-but-wrong implementation forever.
 
 from __future__ import annotations
 
+import os
+from contextlib import contextmanager
+
 import requests
 
 from design.schemas import OutputMode
@@ -68,6 +71,28 @@ class FakeSession:
         if isinstance(resp, Exception):
             raise resp
         return resp
+
+
+@contextmanager
+def env_var(name: str, value):
+    """Sets os.environ[name] = value for the duration of the block (or deletes it
+    entirely if value is None), restoring whatever was there before on exit --
+    from_env() reads the real environment directly, so this is the only way to drive
+    its three paths (set, missing, empty-string) without a live GEMINI_API_KEY/
+    GROQ_API_KEY actually being present in the test environment."""
+    had_value = name in os.environ
+    old_value = os.environ.get(name)
+    try:
+        if value is None:
+            os.environ.pop(name, None)
+        else:
+            os.environ[name] = value
+        yield
+    finally:
+        if had_value:
+            os.environ[name] = old_value
+        else:
+            os.environ.pop(name, None)
 
 
 GEMINI_SUCCESS = FakeResponse(200, {
@@ -216,6 +241,24 @@ def test_gemini_transport_exceptions() -> None:
             ok(f"{type(exc).__name__} -> StageCallFailed", True)
 
 
+def test_gemini_generic_request_exception() -> None:
+    """Any other requests exception (not just Timeout/ConnectionError) must still map
+    to StageCallFailed -- base.py's ProviderAdapter.complete contract says "never
+    raises anything else for a failed call". Uses requests.exceptions.SSLError, a real
+    RequestException subclass distinct from Timeout/ConnectionError, so this cannot
+    pass by accident via either of those two excepts."""
+    section("Gemini: a generic requests.RequestException also maps to StageCallFailed")
+    session = FakeSession([requests.exceptions.SSLError("cert verify failed")])
+    adapter = GeminiAdapter(api_key="k", session=session)
+    try:
+        adapter.complete("hi", model="gemini-3.6-flash", temperature=1.0, timeout_seconds=30)
+        ok("SSLError -> StageCallFailed", False)
+    except StageCallFailed:
+        ok("SSLError -> StageCallFailed", True)
+    except Exception as e:
+        ok(f"SSLError -> StageCallFailed (got {type(e).__name__})", False)
+
+
 def test_gemini_capability_check_before_any_request() -> None:
     section("Gemini: unsupported output_mode is rejected before any request is sent")
     session = FakeSession([])  # would raise IndexError if .post() were ever called
@@ -260,6 +303,27 @@ def test_gemini_json_schema_request_body_uses_camel_case() -> None:
     ok("output_mode on the result matches what was requested", result.output_mode is OutputMode.JSON_SCHEMA)
 
 
+def test_gemini_from_env() -> None:
+    section("Gemini: from_env() reads GEMINI_API_KEY -- set, missing, empty")
+    with env_var("GEMINI_API_KEY", "env-secret-key"):
+        adapter = GeminiAdapter.from_env()
+        ok("a set env var produces an adapter with that key", adapter._api_key == "env-secret-key")
+
+    with env_var("GEMINI_API_KEY", None):
+        try:
+            GeminiAdapter.from_env()
+            ok("a missing GEMINI_API_KEY raises RuntimeError", False)
+        except RuntimeError:
+            ok("a missing GEMINI_API_KEY raises RuntimeError", True)
+
+    with env_var("GEMINI_API_KEY", ""):
+        try:
+            GeminiAdapter.from_env()
+            ok("an empty-string GEMINI_API_KEY raises RuntimeError (falsy but set)", False)
+        except RuntimeError:
+            ok("an empty-string GEMINI_API_KEY raises RuntimeError (falsy but set)", True)
+
+
 def test_gemini_json_object_request_body() -> None:
     section("Gemini: JSON_OBJECT sets responseMimeType only, no schema field")
     session = FakeSession([GEMINI_SUCCESS])
@@ -274,6 +338,27 @@ def test_gemini_json_object_request_body() -> None:
 # ---------------------------------------------------------------------------------
 # Groq
 # ---------------------------------------------------------------------------------
+
+def test_groq_from_env() -> None:
+    section("Groq: from_env() reads GROQ_API_KEY -- set, missing, empty")
+    with env_var("GROQ_API_KEY", "env-secret-key"):
+        adapter = GroqAdapter.from_env()
+        ok("a set env var produces an adapter with that key", adapter._api_key == "env-secret-key")
+
+    with env_var("GROQ_API_KEY", None):
+        try:
+            GroqAdapter.from_env()
+            ok("a missing GROQ_API_KEY raises RuntimeError", False)
+        except RuntimeError:
+            ok("a missing GROQ_API_KEY raises RuntimeError", True)
+
+    with env_var("GROQ_API_KEY", ""):
+        try:
+            GroqAdapter.from_env()
+            ok("an empty-string GROQ_API_KEY raises RuntimeError (falsy but set)", False)
+        except RuntimeError:
+            ok("an empty-string GROQ_API_KEY raises RuntimeError (falsy but set)", True)
+
 
 def test_groq_key_in_header() -> None:
     section("Groq: key sent via Authorization header")
@@ -324,6 +409,35 @@ def test_groq_malformed_without_usage_is_failed() -> None:
             ok(f"{label} raises StageCallFailed", False)
         except StageCallFailed:
             ok(f"{label} raises StageCallFailed", True)
+
+
+def test_groq_transport_exceptions() -> None:
+    section("Groq: requests.Timeout/ConnectionError map to StageCallFailed")
+    for exc in (requests.Timeout("timed out"), requests.ConnectionError("refused")):
+        session = FakeSession([exc])
+        adapter = GroqAdapter(api_key="k", session=session)
+        try:
+            adapter.complete("hi", model="llama-3.3-70b-versatile", temperature=1.0, timeout_seconds=30)
+            ok(f"{type(exc).__name__} -> StageCallFailed", False)
+        except StageCallFailed:
+            ok(f"{type(exc).__name__} -> StageCallFailed", True)
+
+
+def test_groq_generic_request_exception() -> None:
+    """Groq's twin of test_gemini_generic_request_exception -- same source-level fix
+    (a bare requests.RequestException catch-all after the specific Timeout/
+    ConnectionError excepts), same reasoning, checked independently per CLAUDE.md's
+    "a fix at one level needs checking at the other" rule."""
+    section("Groq: a generic requests.RequestException also maps to StageCallFailed")
+    session = FakeSession([requests.exceptions.SSLError("cert verify failed")])
+    adapter = GroqAdapter(api_key="k", session=session)
+    try:
+        adapter.complete("hi", model="llama-3.3-70b-versatile", temperature=1.0, timeout_seconds=30)
+        ok("SSLError -> StageCallFailed", False)
+    except StageCallFailed:
+        ok("SSLError -> StageCallFailed", True)
+    except Exception as e:
+        ok(f"SSLError -> StageCallFailed (got {type(e).__name__})", False)
 
 
 def test_groq_error_classification() -> None:
@@ -502,11 +616,14 @@ def main() -> int:
         test_gemini_malformed_with_usage_is_partial, test_gemini_malformed_without_usage_is_failed,
         test_gemini_error_classification_status_shape,
         test_gemini_error_classification_code_shape, test_gemini_error_classification_fallback,
-        test_gemini_transport_exceptions, test_gemini_capability_check_before_any_request,
+        test_gemini_transport_exceptions, test_gemini_generic_request_exception,
+        test_gemini_capability_check_before_any_request,
         test_gemini_missing_schema_rejected_before_any_request,
         test_gemini_json_schema_request_body_uses_camel_case, test_gemini_json_object_request_body,
-        test_groq_key_in_header, test_groq_successful_extraction,
+        test_gemini_from_env,
+        test_groq_from_env, test_groq_key_in_header, test_groq_successful_extraction,
         test_groq_malformed_with_usage_is_partial, test_groq_malformed_without_usage_is_failed,
+        test_groq_transport_exceptions, test_groq_generic_request_exception,
         test_groq_error_classification, test_groq_best_effort_schema_mismatch_is_retryable,
         test_groq_missing_schema_rejected_before_any_request,
         test_groq_json_object_allowed_broadly, test_groq_json_schema_capability_is_allowlisted,

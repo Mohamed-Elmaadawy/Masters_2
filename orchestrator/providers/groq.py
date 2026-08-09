@@ -131,6 +131,14 @@ class GroqAdapter:
             raise StageCallFailed(f"groq request timed out: {e}") from e
         except requests.ConnectionError as e:
             raise StageCallFailed(f"groq connection error: {e}") from e
+        except requests.RequestException as e:
+            # Catch-all for any other requests exception (SSLError,
+            # ChunkedEncodingError, TooManyRedirects, ...) -- ProviderAdapter.complete's
+            # own contract (orchestrator/providers/base.py) says it never raises
+            # anything else for a failed call; Timeout/ConnectionError are the two
+            # common, specifically-worth-naming cases, not the only ones requests can
+            # raise before a response is ever received.
+            raise StageCallFailed(f"groq request failed: {e}") from e
 
         if response.status_code != 200:
             try:

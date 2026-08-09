@@ -547,6 +547,88 @@ def test_document_stages_degraded() -> None:
     # through the actual run_document code path.
 
 
+def test_document_stages_degraded_dependency_mapper_fails() -> None:
+    """Mirror of test_document_stages_degraded, transposed: the Dependency Mapper is
+    the one that exhausts retries this time, the Consistency Checker succeeds
+    independently (contract D1=b cuts both ways -- every existing fixture in this file
+    that drives run_document_stages/test_document_stages_degraded only ever fails the
+    Consistency Checker, so the Dependency Mapper's OWN failure path through this
+    function had no direct coverage; CLAUDE.md: check the twin)."""
+    section("Scenario 7 (twin) -- DEGRADED document, Dependency Mapper fails")
+    from orchestrator.pipeline import run_document_stages, Throttle
+    from design.schemas import FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    stage_fns = StageFns(
+        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
+        map_dependencies=Scripted([StageCallFailed("429"), StageCallFailed("429"),
+                                   StageCallFailed("429")]),
+        classify=None, check_quality=None, refine_questioner=None, refine_rewriter=None,
+        select_strategy=None,
+        generate_tests=None,
+    )
+    cons, deps, errors, attempts = run_document_stages(
+        DOC, STAGE_CONFIGS, stage_fns, throttle, max_attempts=3, backoff_seconds=lambda a: 0.0)
+    ok("dependency mapper failure leaves dependency_report None", deps is None)
+    ok("consistency checker still succeeds independently", cons is not None)
+    ok("exactly one DocumentStageError recorded", len(errors) == 1)
+    ok("the error names the failed stage", errors[0].stage.value == "dependency_mapper")
+    ok("the error's kind is TRANSPORT", errors[0].kind is FailureKind.TRANSPORT)
+    ok("the error is linked to its invocation's attempts",
+       errors[0].invocation_id in {a.invocation_id for a in attempts})
+    ok("consistency checker's success recorded one attempt", len(attempts) == 4)  # 3 failed + 1 success
+
+
+def test_run_document_degraded_when_only_dependency_report_is_none() -> None:
+    """DocumentOutcome.DEGRADED derivation (run_document, orchestrator/pipeline.py:904-906)
+    is `consistency_report is not None and dependency_report is not None`. Every
+    existing DEGRADED fixture in this file constructs the DocumentRunRecord by hand
+    with consistency_report=None -- none drives DEGRADED through the real run_document
+    code path with dependency_report specifically the None side. Twin of
+    test_run_document_happy_path, with only the Dependency Mapper made to fail."""
+    section("run_document -- DEGRADED via a failing Dependency Mapper, consistency_report present")
+    from orchestrator.pipeline import run_document, Throttle
+    from design.schemas import DocumentOutcome, RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def classification_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other", "rationale": "r"}
+
+    def passing_quality(req_id):
+        return {"requirement_id": req_id, "passed": True, "issues": []}
+
+    def strategy_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other",
+                "techniques": ["boundary_value_analysis"], "rationale": "r"}
+
+    def plan_for(req_id):
+        return {"requirement_id": req_id, "test_cases": [{
+            "id": f"TC-{req_id}-1", "requirement_ids": [req_id],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]}
+
+    fns = StageFns(
+        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
+        map_dependencies=Scripted([StageCallFailed("429")] * 3),
+        classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
+        check_quality=Scripted([passing_quality(REQ_A.id), passing_quality(REQ_B.id)]),
+        refine_questioner=None, refine_rewriter=None,
+        select_strategy=Scripted([strategy_for(REQ_A.id), strategy_for(REQ_B.id)]),
+        generate_tests=Scripted([plan_for(REQ_A.id), plan_for(REQ_B.id)]))
+    human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
+    metadata = make_metadata(run_id="run-degraded-deps")
+
+    result = run_document(DOC, metadata, fns, human_fns, throttle, max_revisions=3,
+                          max_attempts=3, backoff_seconds=lambda a: 0.0)
+    ok("document outcome is DEGRADED (dependency_report is None, consistency_report is not)",
+       result.outcome is DocumentOutcome.DEGRADED)
+    ok("consistency_report is present", result.consistency_report is not None)
+    ok("dependency_report is None", result.dependency_report is None)
+    ok("both requirements still completed -- a DEGRADED document doesn't block requirements",
+       all(r.outcome is RunOutcome.COMPLETED for r in result.requirement_records))
+
+
 def test_document_id_mismatch_is_validation() -> None:
     """ORCHESTRATOR_CONTRACT.md item 15's sibling at the document level: the
     per-requirement req_id fix was scoped to "all six per-requirement stages" and
@@ -1125,6 +1207,111 @@ def _cap_returns_nonsense_raises() -> bool:
         return "decide_at_cap" in str(e)
 
 
+def test_decide_at_cap_empty_cap_reason_raises() -> None:
+    """Sibling guard to _cap_returns_nonsense_raises (orchestrator/pipeline.py:798-799):
+    a syntactically valid outcome (CAP_GENERATED/CAP_STOPPED) with an empty cap_reason
+    is rejected just as loudly -- an empty string is falsy in Python but not caught by
+    the "outcome not in (...)" check above it, so this needs its own guard and its own
+    test; nothing else in the suite drives an empty cap_reason through this call site."""
+    section("decide_at_cap returning an empty cap_reason raises ValueError")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "still there"}]},
+        ]),
+        refine_questioner=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
+        select_strategy=None, generate_tests=None)
+    human_fns = HumanFns(answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+                         decide_at_cap=lambda rec: (RunOutcome.CAP_STOPPED, ""))
+    try:
+        run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                        max_revisions=2, stage_configs=STAGE_CONFIGS)
+        ok("an empty cap_reason raises ValueError", False)
+    except ValueError as e:
+        ok("an empty cap_reason raises ValueError", True)
+        ok("the message names cap_reason, distinguishing it from the outcome guard above it",
+           "cap_reason" in str(e))
+
+
+def test_decide_at_cap_interruption_checkpoints_first() -> None:
+    """EOFError/KeyboardInterrupt from decide_at_cap itself -- the "second and last
+    point in this whole call graph that can block on a terminal" per run_requirement's
+    own docstring. Both existing interruption tests
+    (test_interruption_during_human_input_checkpoints_and_resumes and its
+    after-answers sibling) raise from answer_questions; neither exercises this second
+    point, which has its own checkpoint call immediately before it
+    (orchestrator/pipeline.py:792-793) and had never been driven at all."""
+    section("Interruption at decide_at_cap: propagates, checkpoint already fired")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import RunOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None,
+        classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+        check_quality=Scripted([
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "e"}]},
+            {"requirement_id": REQ_A.id, "passed": False, "issues": [{
+                "id": "I1", "category": "vague_pronoun", "span": "x", "explanation": "still there"}]},
+        ]),
+        refine_questioner=Scripted([
+            {"requirement_id": REQ_A.id, "revision_number": 1, "questions": [{
+                "id": "Q1", "issue_id": "I1", "issue_category": "vague_pronoun", "question_text": "?"}]},
+        ]),
+        refine_rewriter=Scripted([
+            {"requirement_id": REQ_A.id, "original_text": REQ_A.text, "refined_text": T1,
+             "revision_number": 1, "answers_used": [{"question_id": "Q1", "answer_text": "a"}]},
+        ]),
+        select_strategy=None, generate_tests=None)
+
+    def interrupting_decide_at_cap(record):
+        raise EOFError("terminal closed")
+
+    human_fns = HumanFns(answer_questions=lambda turn: [RefinerAnswer(question_id="Q1", answer_text="a")],
+                         decide_at_cap=interrupting_decide_at_cap)
+
+    checkpoints: list = []
+    try:
+        run_requirement(rec(requirement=REQ_A), DOC, None, None, fns, human_fns, throttle,
+                        max_revisions=2, stage_configs=STAGE_CONFIGS,
+                        checkpoint=checkpoints.append)
+        ok("EOFError propagates out of run_requirement, not swallowed", False)
+    except EOFError:
+        ok("EOFError propagates out of run_requirement, not swallowed", True)
+
+    # checkpoint also fires inside _run_refine_loop itself (before answer_questions and
+    # before the rewriter call, both in round 1 here) -- this asserts on the LAST one,
+    # the one run_requirement fires itself immediately before decide_at_cap, not that
+    # it's the only checkpoint call in the whole run.
+    ok("the checkpoint fired at least once, and the last one precedes decide_at_cap",
+       len(checkpoints) >= 1)
+    checkpointed = checkpoints[-1]
+    ok("the checkpoint's outcome is still IN_PROGRESS (a real interruption, not a "
+       "recorded ERROR/completion)", checkpointed.outcome is RunOutcome.IN_PROGRESS)
+    ok("the checkpoint already has the capped round on it (2 rounds, cap reached at "
+       "max_revisions=2)", len(checkpointed.rounds) == 2)
+    ok("the checkpoint's last round is the one that failed to reach the cap",
+       checkpointed.rounds[-1].quality_report.passed is False)
+    ok("cap_reason is not yet set -- decide_at_cap never got to answer",
+       checkpointed.cap_reason is None)
+
+
 def test_issue_identity_reuse() -> None:
     """Scenario 3: two rounds produce an issue at the same (category, span); the
     orchestrator reuses the same Issue.id, per contract item 4.
@@ -1597,6 +1784,83 @@ def test_resume_skips_finished_strategy_selector() -> None:
     ok("resuming at the test generator does not crash and completes",
        result.outcome is RunOutcome.COMPLETED)
     ok("the pre-existing strategy was kept, not replaced", result.test_strategy == strategy)
+
+
+def test_strategy_selector_failure_end_to_end() -> None:
+    """Strategy Selector exhaustion driven through the actual run_requirement call
+    site (orchestrator/pipeline.py:832-852), not just resume_at in isolation
+    (test_resume_positions hand-constructs the StageError via failed_stage() and never
+    calls run_requirement at all). Mirrors the CLASSIFIER half of
+    test_requirement_id_mismatch_end_to_end: outcome=ERROR, exactly one StageError
+    naming the right stage, and no later stage (generate_tests) ever reached."""
+    section("Strategy Selector failure, end to end through run_requirement")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import Classification, FailureKind, RunOutcome, SystemType
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    passed_round = mk_round(1, REQ_A.text, passed=True)
+    record = rec(requirement=REQ_A, classification=cls, rounds=[passed_round])
+    ok("fixture resumes at the strategy selector (sanity check)",
+       resume_at(record) is PipelineStage.STRATEGY_SELECTOR)
+
+    def never_called(*a, **k):
+        raise AssertionError("must never be called -- strategy selector already failed terminally")
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None, classify=None, check_quality=None,
+        refine_questioner=None, refine_rewriter=None,
+        select_strategy=Scripted([StageCallFailed("429")] * 3),
+        generate_tests=never_called)
+    human_fns = HumanFns(answer_questions=lambda t: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(record, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS, max_attempts=3,
+                             backoff_seconds=lambda a: 0.0)
+    ok("strategy selector exhaustion -> outcome=ERROR", result.outcome is RunOutcome.ERROR)
+    ok("exactly one StageError, naming STRATEGY_SELECTOR, kind=TRANSPORT",
+       len(result.errors) == 1 and result.errors[0].stage is PipelineStage.STRATEGY_SELECTOR
+       and result.errors[0].kind is FailureKind.TRANSPORT)
+    ok("test_strategy was never set", result.test_strategy is None)
+
+
+def test_test_generator_failure_end_to_end() -> None:
+    """Test Generator's twin of the above -- same call site pattern
+    (orchestrator/pipeline.py:854-870), test_strategy already on the record so only the
+    generator itself is exercised (select_strategy is never called, mirroring contract
+    item 6's "nothing else is redone")."""
+    section("Test Generator failure, end to end through run_requirement")
+    from orchestrator.pipeline import run_requirement, Throttle
+    from design.schemas import (
+        Classification, FailureKind, RunOutcome, SystemType, TestStrategy, TestTechnique,
+    )
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    cls = Classification(requirement_id=REQ_A.id, system_type=SystemType.OTHER, rationale="r")
+    strategy = TestStrategy(requirement_id=REQ_A.id, system_type=SystemType.OTHER,
+                            techniques=[TestTechnique.BOUNDARY_VALUE_ANALYSIS], rationale="r")
+    passed_round = mk_round(1, REQ_A.text, passed=True)
+    record = rec(requirement=REQ_A, classification=cls, rounds=[passed_round], test_strategy=strategy)
+    ok("fixture resumes at the test generator (sanity check)",
+       resume_at(record) is PipelineStage.TEST_GENERATOR)
+
+    fns = StageFns(
+        check_consistency=None, map_dependencies=None, classify=None, check_quality=None,
+        refine_questioner=None, refine_rewriter=None,
+        select_strategy=None,  # must never be called -- test_strategy already on record
+        generate_tests=Scripted([StageCallFailed("429")] * 3))
+    human_fns = HumanFns(answer_questions=lambda t: [],
+                         decide_at_cap=lambda r: (RunOutcome.CAP_STOPPED, "n/a"))
+    result = run_requirement(record, DOC, None, None, fns, human_fns, throttle,
+                             max_revisions=3, stage_configs=STAGE_CONFIGS, max_attempts=3,
+                             backoff_seconds=lambda a: 0.0)
+    ok("test generator exhaustion -> outcome=ERROR", result.outcome is RunOutcome.ERROR)
+    ok("exactly one StageError, naming TEST_GENERATOR, kind=TRANSPORT",
+       len(result.errors) == 1 and result.errors[0].stage is PipelineStage.TEST_GENERATOR
+       and result.errors[0].kind is FailureKind.TRANSPORT)
+    ok("the pre-existing strategy is preserved even though the record errored",
+       result.test_strategy == strategy)
+    ok("test_plan was never set", result.test_plan is None)
 
 
 def test_max_revisions_must_be_at_least_two() -> None:
@@ -2732,6 +2996,103 @@ def test_stage_call_partial_preserves_tokens_in_call_stage() -> None:
         ok("retry_count is 0 (failed on the only attempt)", f.retry_count == 0)
 
 
+def test_stage_call_partial_preserves_tokens_in_call_document_stage() -> None:
+    """Document-level twin of test_stage_call_partial_preserves_tokens_in_call_stage --
+    StageCallPartial's token-preserving retry behavior was only ever driven through
+    call_stage; call_document_stage shares the identical except-branch (see
+    call_document_stage's docstring, "structurally identical to call_stage") but had no
+    direct test of its own (CLAUDE.md: check the twin)."""
+    section("StageCallPartial preserves token counts, retries normally (document-level twin)")
+    from orchestrator.pipeline import call_document_stage, StageCallPartial, StageFailed, Throttle
+    from design.schemas import AttemptResult, ConsistencyReport, DocumentStage, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([
+        StageCallPartial("no usable candidate content", prompt_tokens=7, completion_tokens=0),
+        {"doc_id": DOC.doc_id, "conflicts": []},
+    ])
+    result = call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                                 "inv-1", "fake-model", throttle, attempts, DOC.doc_id,
+                                 max_attempts=2, backoff_seconds=lambda a: 0.0)
+    ok("retried normally and eventually succeeded", isinstance(result, ConsistencyReport))
+    ok("two attempts recorded", len(attempts) == 2)
+    ok("the first attempt is OTHER_FAILURE carrying the tokens that were actually spent",
+       attempts[0].result is AttemptResult.OTHER_FAILURE
+       and attempts[0].prompt_tokens == 7 and attempts[0].completion_tokens == 0)
+    ok("the second attempt succeeded", attempts[1].result is AttemptResult.SUCCESS)
+
+    attempts2 = []
+    fn2 = Scripted([
+        StageCallPartial("no usable candidate content", prompt_tokens=3, completion_tokens=0),
+    ])
+    try:
+        call_document_stage(fn2, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-2", "fake-model", throttle, attempts2, DOC.doc_id,
+                            max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("exhaustion after a partial failure raises StageFailed", False)
+    except StageFailed as f:
+        ok("exhaustion after a partial failure raises StageFailed", True)
+        ok("kind is OTHER", f.kind is FailureKind.OTHER)
+        ok("retry_count is 0 (failed on the only attempt)", f.retry_count == 0)
+
+
+def test_call_document_stage_generic_exception_is_other() -> None:
+    """Document-level twin of test_call_stage's "Scenario 14" block: an unexpected
+    exception type (not StageCallFailed/StageCallFatal/StageCallPartial) raised by a
+    document-level stage_fn must be caught by call_document_stage's own bare `except
+    Exception` branch and filed as FailureKind.OTHER -- not left uncaught, and not
+    misclassified as TRANSPORT. This branch existed in call_document_stage from the
+    start (orchestrator/pipeline.py:286-290) but, unlike call_stage's identical branch,
+    had never actually been driven -- an unreachable-until-tested branch is exactly
+    what CLAUDE.md's "don't write a check that can't fire" warns against; this proves
+    it fires."""
+    section("call_document_stage: an unexpected exception type is FailureKind.OTHER")
+    from orchestrator.pipeline import call_document_stage, StageFailed, Throttle
+    from design.schemas import AttemptResult, ConsistencyReport, DocumentStage, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([KeyError("unexpected")])
+    try:
+        call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-1", "fake-model", throttle, attempts, DOC.doc_id,
+                            max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("an unexpected exception type raises StageFailed(OTHER)", False)
+    except StageFailed as f:
+        ok("an unexpected exception type raises StageFailed(OTHER)", True)
+        ok("StageFailed.kind is OTHER", f.kind is FailureKind.OTHER)
+        ok("message names the exception class", "KeyError" in f.message)
+    ok("OTHER is logged with no tokens (never reached the model)",
+       len(attempts) == 1 and attempts[0].result is AttemptResult.OTHER_FAILURE
+       and attempts[0].prompt_tokens is None)
+
+
+def test_call_document_stage_generic_validation_failure() -> None:
+    """Document-level twin of call_stage's VALIDATION case (test_call_stage): a
+    malformed payload -- missing a required field, unrelated to the doc_id-mismatch
+    flavor already covered by test_document_id_mismatch_is_validation -- must be
+    FailureKind.VALIDATION with the spent tokens preserved on the attempt record."""
+    section("call_document_stage: a malformed (schema-invalid) payload is FailureKind.VALIDATION")
+    from orchestrator.pipeline import call_document_stage, StageFailed, Throttle
+    from design.schemas import AttemptResult, ConsistencyReport, DocumentStage, FailureKind
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    attempts = []
+    fn = Scripted([{"doc_id": DOC.doc_id, "conflicts": [{"bad": "shape"}]}])  # not a ConsistencyConflict
+    try:
+        call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-1", "fake-model", throttle, attempts, DOC.doc_id,
+                            max_attempts=1, backoff_seconds=lambda a: 0.0)
+        ok("a malformed payload raises StageFailed", False)
+    except StageFailed as f:
+        ok("a malformed payload raises StageFailed", True)
+        ok("StageFailed.kind is VALIDATION", f.kind is FailureKind.VALIDATION)
+    ok("a validation failure still logs an attempt with tokens (tokens were spent)",
+       len(attempts) == 1 and attempts[0].result is AttemptResult.VALIDATION_FAILURE
+       and attempts[0].prompt_tokens is not None)
+
+
 def test_interruption_during_human_input_checkpoints_and_resumes() -> None:
     """Fix (2026-08-09): EOFError/KeyboardInterrupt from a terminal HumanFns
     implementation (orchestrator/human_cli.py) used to propagate out of run_document
@@ -3066,19 +3427,25 @@ def main() -> int:
               test_requirement_id_mismatch_is_validation_at_every_stage,
               test_requirement_id_mismatch_end_to_end,
               test_backoff_timing, test_document_stages_degraded,
+              test_document_stages_degraded_dependency_mapper_fails,
+              test_run_document_degraded_when_only_dependency_report_is_none,
               test_document_id_mismatch_is_validation,
               test_document_wrong_doc_id_then_success,
               test_on_disk_round_trip,
               test_happy_path,
               test_refiner_questioner_and_rewriter_have_independent_configs,
               test_refine_questioner_failure_and_retry, test_refine_rewriter_failure_and_retry,
-              test_revision_cap, test_issue_identity_reuse,
+              test_revision_cap, test_decide_at_cap_empty_cap_reason_raises,
+              test_decide_at_cap_interruption_checkpoints_first,
+              test_issue_identity_reuse,
               test_suppression_persists, test_resume_skips_finished_refine_loop,
               test_resume_mid_round_completes,
               test_resume_mid_round_asks_human_when_answers_missing,
               test_id_reconciliation_mints_fresh_ids_on_collision,
               test_suppressed_issue_reflagged_is_dropped,
               test_resume_skips_finished_strategy_selector,
+              test_strategy_selector_failure_end_to_end,
+              test_test_generator_failure_end_to_end,
               test_max_revisions_must_be_at_least_two,
               test_resumed_cap_generated_then_stopped_strips_stage34,
               test_run_document_happy_path,
@@ -3103,6 +3470,9 @@ def main() -> int:
               test_call_stage_rejects_zero_max_attempts,
               test_call_document_stage_rejects_zero_max_attempts,
               test_stage_call_partial_preserves_tokens_in_call_stage,
+              test_stage_call_partial_preserves_tokens_in_call_document_stage,
+              test_call_document_stage_generic_exception_is_other,
+              test_call_document_stage_generic_validation_failure,
               test_interruption_during_human_input_checkpoints_and_resumes,
               test_interruption_after_answers_checkpoints_and_resumes,
               test_requirement_id_path_traversal_is_contained,

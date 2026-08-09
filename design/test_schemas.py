@@ -453,6 +453,27 @@ def test_stage_attempt_shape() -> None:
                                          invocation_id="i", attempt_number=1,
                                          result=AttemptResult.SUCCESS, prompt_tokens=10,
                                          completion_tokens=5))
+    # DocumentStageAttempt's own negative cases, not just its one accepts() above --
+    # StageAttempt's battery above exercises the SHARED _attempt_shape_error helper,
+    # but nothing here constructed an invalid DocumentStageAttempt directly, so a
+    # regression that broke _shape_matches_result only on the DocumentStageAttempt side
+    # (e.g. a copy-paste that wired the wrong model's validator) would have gone
+    # unnoticed. See CLAUDE.md's "a fix at one level needs checking at the other."
+    mk_doc = lambda **kw: DocumentStageAttempt(stage=DocumentStage.DEPENDENCY_MAPPER,
+                                               invocation_id="i", attempt_number=1, **kw)
+    rejects("DocumentStageAttempt: SUCCESS with an error_message",
+            lambda: mk_doc(result=AttemptResult.SUCCESS, prompt_tokens=10,
+                           completion_tokens=5, error_message="x"))
+    rejects("DocumentStageAttempt: SUCCESS without tokens",
+            lambda: mk_doc(result=AttemptResult.SUCCESS))
+    rejects("DocumentStageAttempt: VALIDATION_FAILURE without an error_message",
+            lambda: mk_doc(result=AttemptResult.VALIDATION_FAILURE, prompt_tokens=10,
+                           completion_tokens=5))
+    rejects("DocumentStageAttempt: TRANSPORT_FAILURE carrying tokens",
+            lambda: mk_doc(result=AttemptResult.TRANSPORT_FAILURE, error_message="429",
+                           prompt_tokens=10, completion_tokens=5))
+    rejects("DocumentStageAttempt: FATAL_FAILURE without an error_message",
+            lambda: mk_doc(result=AttemptResult.FATAL_FAILURE))
 
 
 def _success(stage, invocation_id, attempt_number=1, tokens=(10, 5)):
