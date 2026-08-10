@@ -1,0 +1,264 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-A",
+    "text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "THEMAS-REQ-A",
+    "system_type": "other",
+    "rationale": "The TARGET requirement describes logic within a thermal control management system (THEMAS) for activating heating or cooling modes based on temperature change requests. Neither the target requirement nor the surrounding document context references web interfaces, mobile applications, or machine-learning models."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-A",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "non_atomic",
+            "span": "the determine heating/cooling mode process is activated and makes a heating/cooling request",
+            "explanation": "The requirement combines two distinct testable actions: activating the 'determine heating/cooling mode' process and making a heating/cooling request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "If the temperature change is requested",
+            "explanation": "The requirement lacks the specific actor, trigger, or conditions that define how or by whom a temperature change is requested.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-A",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "The phrase \"the determine heating/cooling mode process is activated and makes a heating/cooling request\" combines two distinct actions. Should these actions be split into two separate requirements, or how should they be structured independently?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In the condition \"If the temperature change is requested\", which actor or system component requests the temperature change, and what specific event or condition triggers this request?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-A",
+        "original_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "refined_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-A",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "THEMAS-REQ-A",
+    "system_type": "other",
+    "techniques": [
+      "equivalence_partitioning",
+      "state_based",
+      "use_case"
+    ],
+    "rationale": "Equivalence partitioning applies because the input condition divides into discrete partitions (temperature change requested vs. not requested). State-based testing applies because the system moves through distinct process states (transitioning to activated process state upon trigger). Use case testing applies because the requirement defines a multi-step scenario where a trigger (temperature change request) initiates a workflow that activates a process and yields a downstream request."
+  },
+  "test_plan": {
+    "requirement_id": "THEMAS-REQ-A",
+    "test_cases": [
+      {
+        "id": "TC-12-THEMAS-REQ-A-1",
+        "requirement_ids": [
+          "THEMAS-REQ-A"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Verify activation of determine heating/cooling mode process on valid temperature change request",
+        "preconditions": "The climate control system is operational and waiting for user or automated inputs.",
+        "steps": [
+          "Issue a request to change the target temperature from 20°C to 22°C.",
+          "Monitor the system process activation logs and output request queue."
+        ],
+        "expected_result": "The 'determine heating/cooling mode' process is activated and successfully generates a heating/cooling request."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-A-2",
+        "requirement_ids": [
+          "THEMAS-REQ-A"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition from Idle/Inactive to Active process state upon receiving a temperature change request",
+        "preconditions": "The 'determine heating/cooling mode' process is in the Inactive/Idle state.",
+        "steps": [
+          "Trigger a temperature change request in the system.",
+          "Verify the state of the 'determine heating/cooling mode' process.",
+          "Verify the resulting output of the process state transition."
+        ],
+        "expected_result": "The process transitions from Inactive/Idle to Active state and outputs a heating/cooling request."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-A-3",
+        "requirement_ids": [
+          "THEMAS-REQ-A"
+        ],
+        "technique_used": "use_case",
+        "title": "User-initiated temperature change workflow generating downstream mode request",
+        "preconditions": "User is authenticated and viewing the thermostat control interface.",
+        "steps": [
+          "User inputs a new temperature setpoint via the interface.",
+          "System receives and registers the temperature change request.",
+          "System activates the 'determine heating/cooling mode' process.",
+          "Process evaluates setpoint versus current ambient temperature and emits a heating/cooling request."
+        ],
+        "expected_result": "The workflow completes end-to-end: temperature change request activates the process, which successfully dispatches a heating/cooling request."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "72355d7bfcbf46ddaa0577bf4a5a36dc",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1075,
+      "completion_tokens": 76
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f15125e9420643d9bd6258f1d8463a80",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1631,
+      "completion_tokens": 204
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "fb22ee884e0e4ca68f6fac93bd4d2e29",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1230,
+      "completion_tokens": 166
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "7290eb58524242b882d5249ce2cbaf02",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1287,
+      "completion_tokens": 266
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7b471f5754aa49cd8b245b1da46da6a9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1636,
+      "completion_tokens": 31
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "78a22af8a556485fa102273508232e99",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1115,
+      "completion_tokens": 144
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "c6bd2f30eace4a07af402b5219f6f8be",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1486,
+      "completion_tokens": 590
+    }
+  ],
+  "final_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-A",
+    "original_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "refined_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "revision_number": 1,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+        "user_confirms_resolved": true
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    2,
+    0
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ]
+  },
+  "total_tokens": 10937
+}

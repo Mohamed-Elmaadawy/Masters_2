@@ -1,0 +1,310 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-F",
+    "text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-F",
+    "system_type": "other",
+    "rationale": "The target requirement and surrounding context describe a thermal control and monitoring system (THEMAS) communicating with physical heating/cooling hardware units and thermostats. This represents an embedded control or backend IoT system rather than a web, mobile, or AI-driven application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-F",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "these statuses",
+            "explanation": "The phrase 'these statuses' is a demonstrative reference whose target is not defined within the text of the requirement itself.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "no real time delay",
+            "explanation": "The phrase 'no real time delay' is vague and lacks a measurable latency threshold (such as a maximum time limit in milliseconds).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-F",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "Which specific statuses are being referred to by the phrase 'these statuses' in the requirement?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What is the specific maximum acceptable latency limit (e.g., in milliseconds or seconds) intended by the phrase 'no real time delay'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-F",
+        "original_text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+        "refined_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-F",
+        "passed": false,
+        "issues": [
+          {
+            "id": "THEMAS-REQ-F-ISSUE-1",
+            "category": "incomplete",
+            "span": "[specified status types]",
+            "explanation": "The required status types are represented by a placeholder '[specified status types]' rather than concrete status definitions, making the trigger conditions incomplete.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "THEMAS-REQ-F-ISSUE-2",
+            "category": "incomplete",
+            "span": "[specified time threshold]",
+            "explanation": "The allowable delay limit is represented by a placeholder '[specified time threshold]' rather than a specific time limit, making the test condition incomplete.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-F",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "THEMAS-REQ-F-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Which specific status types should the heating/cooling unit send to the THEMAS system, replacing the placeholder '[specified status types]'?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "THEMAS-REQ-F-ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What specific time threshold should be specified as the maximum allowable delay, replacing the placeholder '[specified time threshold]'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-F",
+        "original_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+        "refined_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-F",
+        "passed": false,
+        "issues": [
+          {
+            "id": "THEMAS-REQ-F-ISSUE-1",
+            "category": "incomplete",
+            "span": "[specified status types]",
+            "explanation": "The requirement uses a placeholder '[specified status types]' instead of explicitly defining which status types must be sent to the system.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "THEMAS-REQ-F-ISSUE-2",
+            "category": "incomplete",
+            "span": "[specified time threshold]",
+            "explanation": "The requirement uses a placeholder '[specified time threshold]' instead of specifying a concrete maximum delay time required for verification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "d85d56b60ab2437987871193e4482305",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1072,
+      "completion_tokens": 72
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "c2226c883a0a4104a3d33523ff1d2cfb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1706,
+      "completion_tokens": 172
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "6fc7a4c01f804ed19ea8b652b911bd2f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1217,
+      "completion_tokens": 183
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "e65cd5561c8b43d8b7e0f2da6ce0308a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1298,
+      "completion_tokens": 280
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ea0806ce47fa4d6984bb8c7c4ebbd09d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1711,
+      "completion_tokens": 115
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "0aa4815a08c449abac7a86307afaf8b4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1231,
+      "completion_tokens": 191
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "e739b2748613498b8e6c7bd88e78edb9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1296,
+      "completion_tokens": 240
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "b18ca357eba04f07885f7f3e99930db0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1711,
+      "completion_tokens": 162
+    }
+  ],
+  "final_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-F",
+    "original_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+    "refined_text": "The heating/cooling unit shall send [specified status types] to the THEMAS system with a delay not exceeding [specified time threshold].",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "THEMAS-REQ-F-ISSUE-1": [
+      2,
+      3
+    ],
+    "THEMAS-REQ-F-ISSUE-2": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12657
+}

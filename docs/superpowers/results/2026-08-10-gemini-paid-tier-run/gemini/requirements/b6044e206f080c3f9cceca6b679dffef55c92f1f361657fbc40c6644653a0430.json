@@ -1,0 +1,154 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-C",
+    "text": "The THEMAS system shall maintain the ON/OFF status of each heating and cooling unit.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "THEMAS-REQ-C",
+    "system_type": "other",
+    "rationale": "The requirement describes maintaining the ON/OFF status of physical heating and cooling units within a thermal management control system (THEMAS). Neither the target requirement nor the surrounding document references web applications, mobile apps, or machine learning, making 'other' (embedded/control system) the appropriate classification."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The THEMAS system shall maintain the ON/OFF status of each heating and cooling unit.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-C",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "THEMAS-REQ-C",
+    "system_type": "other",
+    "techniques": [
+      "state_based",
+      "equivalence_partitioning"
+    ],
+    "rationale": "The requirement specifies maintaining discrete ON/OFF statuses for heating and cooling units, which represents system states and transitions between them (state_based). Additionally, testing against valid status values (ON, OFF) and invalid status inputs applies equivalence partitioning."
+  },
+  "test_plan": {
+    "requirement_id": "THEMAS-REQ-C",
+    "test_cases": [
+      {
+        "id": "TC-12-THEMAS-REQ-C-1",
+        "requirement_ids": [
+          "THEMAS-REQ-C"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Verify valid status partitions (ON and OFF) for heating and cooling units",
+        "preconditions": "THEMAS system is operational with registered heating unit H1 and cooling unit C1.",
+        "steps": [
+          "Set heating unit H1 status to ON in THEMAS.",
+          "Query THEMAS system for H1 status.",
+          "Set cooling unit C1 status to OFF in THEMAS.",
+          "Query THEMAS system for C1 status."
+        ],
+        "expected_result": "THEMAS successfully records and maintains status 'ON' for H1 and 'OFF' for C1."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-C-2",
+        "requirement_ids": [
+          "THEMAS-REQ-C"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Verify rejection of invalid status inputs outside valid equivalence partition",
+        "preconditions": "THEMAS system is operational with registered heating unit H1 currently set to OFF.",
+        "steps": [
+          "Attempt to update H1 status with an invalid string value 'STANDBY'.",
+          "Query THEMAS system for H1 status.",
+          "Attempt to update H1 status with a null/empty value.",
+          "Query THEMAS system for H1 status."
+        ],
+        "expected_result": "THEMAS rejects both invalid status updates with appropriate error responses and maintains the prior valid status ('OFF') for H1."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-C-3",
+        "requirement_ids": [
+          "THEMAS-REQ-C"
+        ],
+        "technique_used": "state_based",
+        "title": "Verify state transitions between OFF and ON for heating unit",
+        "preconditions": "Heating unit H1 is in the OFF state within THEMAS.",
+        "steps": [
+          "Trigger transition event to switch H1 state from OFF to ON.",
+          "Verify maintained status of H1 in THEMAS.",
+          "Trigger transition event to switch H1 state from ON to OFF.",
+          "Verify maintained status of H1 in THEMAS."
+        ],
+        "expected_result": "THEMAS accurately updates and maintains state to ON after step 1, and back to OFF after step 3."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-C-4",
+        "requirement_ids": [
+          "THEMAS-REQ-C"
+        ],
+        "technique_used": "state_based",
+        "title": "Verify independent state maintenance across multiple heating and cooling units",
+        "preconditions": "THEMAS has heating units H1, H2 and cooling units C1, C2 registered.",
+        "steps": [
+          "Initialize statuses: H1=ON, H2=OFF, C1=OFF, C2=ON.",
+          "Transition H1 from ON to OFF while keeping H2, C1, C2 static.",
+          "Query the maintained state of all four units from THEMAS."
+        ],
+        "expected_result": "THEMAS maintains independent states for each unit: H1 is OFF, H2 is OFF, C1 is OFF, and C2 is ON."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "2f6055d6b0794db8a8d36456f385a967",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1068,
+      "completion_tokens": 80
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "a404cbc4898947d0ae9e90050ad86d0c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1702,
+      "completion_tokens": 19
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "16661bae435548f6badb501d5b4c96ff",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1186,
+      "completion_tokens": 81
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "a8e9cd2a8d5044a0ba1239c9b846f04b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1522,
+      "completion_tokens": 629
+    }
+  ],
+  "final_text": "The THEMAS system shall maintain the ON/OFF status of each heating and cooling unit.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 6287
+}

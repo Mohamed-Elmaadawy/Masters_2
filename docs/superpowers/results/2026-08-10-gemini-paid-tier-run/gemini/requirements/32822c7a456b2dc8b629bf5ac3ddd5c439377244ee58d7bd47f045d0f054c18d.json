@@ -1,0 +1,312 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-D",
+    "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-D",
+    "system_type": "other",
+    "rationale": "The target requirement and surrounding document describe logic for a thermal management system (THEMAS) handling thermostat inputs and heating/cooling controls. It shows no indicators of being a web application, mobile app, or AI/machine-learning system, fitting the 'other' category for control/embedded systems."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-D",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "these limits",
+            "explanation": "The demonstrative phrase 'these limits' lacks an explicit referent within the requirement text itself.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "inconsistent",
+            "span": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+            "explanation": "Stating that temperatures that do not exceed the limits shall be output for processing includes temperatures strictly below the lower valid bound, directly contradicting THEMAS-REQ-B which mandates that temperatures below the lower bound are invalid.",
+            "related_requirement_ids": [
+              "THEMAS-REQ-B"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-D",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "In the phrase 'these limits', which specific temperature limits or threshold values are being referenced?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "inconsistent",
+            "question_text": "The statement 'Temperatures that do not exceed these limits shall be output for subsequent processing' allows temperatures below the lower valid bound to be output, contradicting THEMAS-REQ-B. Should this requirement specify that only temperatures within both the lower and upper valid bounds (or within valid range) are output for subsequent processing?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-D",
+        "original_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "refined_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-D",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "these limits",
+            "explanation": "The demonstrative phrase 'these limits' refers to limits that are not defined or specified within the text of this requirement.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "inconsistent",
+            "span": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+            "explanation": "THEMAS-REQ-D states that temperatures that do not exceed the limits shall be output for processing, which includes temperatures below the lower limit. This directly contradicts THEMAS-REQ-B, which specifies that a temperature strictly less than the lower limit is invalid and shall result in an invalid temperature status output.",
+            "related_requirement_ids": [
+              "THEMAS-REQ-B"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-D",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "In requirement THEMAS-REQ-D, which specific temperature limits are referenced by the phrase \"these limits\"?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement THEMAS-REQ-D states that temperatures that do not exceed the limits shall be output for processing, which conflicts with requirement THEMAS-REQ-B (where temperatures strictly below the lower limit are treated as invalid). How should THEMAS-REQ-D be updated to align with THEMAS-REQ-B regarding temperatures below the lower limit?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-D",
+        "original_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "refined_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-D",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "these limits",
+            "explanation": "The phrase 'these limits' uses a demonstrative referent whose target is not defined within the text of this requirement.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "inconsistent",
+            "span": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+            "explanation": "Stating that temperatures that do not exceed the limits shall be output for processing implies that temperatures below the lower valid limit would be processed, directly contradicting THEMAS-REQ-B, which mandates that temperatures below the lower limit are invalid and must result in an invalid temperature status output.",
+            "related_requirement_ids": [
+              "THEMAS-REQ-B"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c96c9dc03b184c19a1ed405f39f6c13b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1065,
+      "completion_tokens": 81
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "78370f08e48a44edac4861d2f06571a5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1824,
+      "completion_tokens": 216
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "c7f4e1f2d63d45f8b65d90ae8ef345a2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1236,
+      "completion_tokens": 177
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "29933bccd17e4ab5b54d1bab03493ce0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1271,
+      "completion_tokens": 201
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7032b327858048498091ef1b0705afc0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1824,
+      "completion_tokens": 192
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "e400d58d81724388b109b054d8ba0895",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1260,
+      "completion_tokens": 189
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "5758c7f8b3ca4ed8b166fa02de50c1a5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1271,
+      "completion_tokens": 240
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e62330763841468b88fc71be80da5eb2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1824,
+      "completion_tokens": 233
+    }
+  ],
+  "final_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-D",
+    "original_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "refined_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13104
+}

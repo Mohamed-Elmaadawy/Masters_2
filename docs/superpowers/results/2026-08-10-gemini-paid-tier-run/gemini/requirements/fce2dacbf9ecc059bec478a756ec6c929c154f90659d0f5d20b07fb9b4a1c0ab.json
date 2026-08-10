@@ -1,0 +1,283 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-H",
+    "text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-H",
+    "system_type": "other",
+    "rationale": "The target requirement describes event processing in THEMAS, a thermal management system involving thermostats and heating/cooling units. There is no indication of web, mobile, or AI/ML components in the requirement or surrounding document, making 'other' (embedded/control system) the correct classification."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-H",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "appropriate",
+            "explanation": "The word 'appropriate' is a vague adjective without a measurable threshold or defined specification for what constitutes a valid message format.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "non_atomic",
+            "span": "identify the event type and format an appropriate event message",
+            "explanation": "The requirement bundles two distinct testable behaviors into a single statement: identifying the event type and formatting the event message.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-H",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement THEMAS-REQ-H, what specific standard, schema, or rule defines what constitutes an 'appropriate' event message format?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "non_atomic",
+            "question_text": "Requirement THEMAS-REQ-H states that the system shall 'identify the event type and format an appropriate event message'; should these two distinct actions be split into separate, individual requirements?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-H",
+        "original_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "refined_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-H",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "appropriate",
+            "explanation": "The word 'appropriate' is vague and subjective, lacking a measurable definition or specification for what constitutes an appropriate event message.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-H",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "Requirement THEMAS-REQ-H uses the term 'appropriate' in 'format an appropriate event message'. What specific schema, standard, or message structure defines what constitutes an appropriate event message for each identified event type?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-H",
+        "original_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "refined_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": [
+        "ISSUE-2"
+      ]
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-H",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "appropriate",
+            "explanation": "The word 'appropriate' is a vague adjective with no defined standard or measurable criteria for what constitutes an acceptable event message format.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "THEMAS-REQ-H-ISSUE-1",
+            "category": "non_atomic",
+            "span": "identify the event type and format an appropriate event message",
+            "explanation": "The requirement bundles two distinct testable behaviors into a single statement: identifying the event type and formatting the event message.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "ISSUE-2"
+      ]
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "962fa3eed4e74f998657f561d5f54b6b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1071,
+      "completion_tokens": 79
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "358b1f1d73164212a4d95382fa0593e6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1627,
+      "completion_tokens": 131
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "54c5751e5d8744059539d384c5fd8fe0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1215,
+      "completion_tokens": 140
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "2ac3bbf79922464e8419f8a8b23a571b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1292,
+      "completion_tokens": 228
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "78d8cc0f6d0a411bbce0ce0ef2e17014",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1632,
+      "completion_tokens": 116
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "bd5a836821e74d14877bc1179c2b3b3b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1147,
+      "completion_tokens": 103
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "342d281512464d4bb2bf85a8d7dd512f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1226,
+      "completion_tokens": 190
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "88a14c5d604f40b081bcfe8c9c5e43fb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1632,
+      "completion_tokens": 116
+    }
+  ],
+  "final_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-H",
+    "original_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+    "refined_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    2,
+    1,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "THEMAS-REQ-H-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 11945
+}
