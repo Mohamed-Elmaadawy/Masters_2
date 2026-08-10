@@ -2355,3 +2355,54 @@ and error-classification code paths beneath the capability check) were removed, 
 adapted -- that code path is now genuinely unreachable through the public API, and
 CLAUDE.md's "don't write a check that can't fire" applies equally to a test exercising
 a scenario that can't occur.
+
+## CLI resume wiring (2026-08-10)
+
+`orchestrator/cli.py` gained a `resume` subcommand alongside the existing `run` one --
+`orchestrator.pipeline.resume_document` existed and was harness-tested
+(`test_resume_positions` etc.) since the control-flow phase, but had no CLI path calling
+it. See `design/ORCHESTRATOR_CONTRACT.md` item 18 for the two decisions this required
+(why `resume` takes only a run directory, and why a drifted prompt file makes it refuse
+rather than warn) -- this note only adds what the contract item doesn't cover: the CLI
+shape itself, and what was rejected.
+
+**Why a subcommand, not a flag on the existing invocation.** An earlier sketch kept one
+command (`python -m orchestrator.cli CONFIG.yaml INPUT.json [--resume]`) and had the
+existing `run_dir.exists()` guard branch on the flag: refuse unless `--resume` was
+passed, then resume if it was. Rejected: this still takes a config/input pair for the
+resume case, and doing anything with them -- even just to compute `run_dir_for` and find
+the existing directory -- reopens exactly the "did the config change since the run
+started" question item 18 has to answer for the *prompt* file specifically. It would also
+have to re-derive `run_dir` from a possibly-different config and then discover it happens
+to collide with an old one, rather than the operator naming the directory to resume
+directly. Two subcommands, `resume` taking a bare `RUN_DIR` and nothing else, sidesteps
+the question instead of answering it -- there is no config path fresh enough to disagree
+with anything.
+
+**Why `resume` re-checks `read_document_run` even though `resume_document` (pipeline.py)
+does that anyway.** `resume_document` only reads the run directory *after*
+`orchestrator/cli.py` has already constructed every provider adapter for it (`main`'s
+existing `EXIT_CONFIG_ERROR`-before-any-adapter rule, unchanged from the `run` path).
+Reading it once, deliberately, in `cli._do_resume`, before adapter construction, is what
+keeps that rule true for `resume` too -- a foreign requirement file (item 18) is
+discovered before any adapter exists, not after, even though `resume_document` would
+have discovered it a few lines later anyway on its own read.
+
+**Exit codes: no new one.** `resume` reuses all four existing codes unchanged -- a
+prompt-provenance refusal and a missing/foreign run directory are both
+`EXIT_CONFIG_ERROR`, matching every other "discovered before any adapter is built"
+failure on the `run` path. `_do_run`/`_do_resume` share a `_finish` helper for
+everything after adapter construction (build `StageFns`, `Throttle`, retry args, call
+the pipeline function, translate the outcome to an exit code) specifically so the two
+subcommands cannot drift apart on that translation -- see `_finish`'s own docstring in
+`orchestrator/cli.py`.
+
+Test coverage: `orchestrator/test_cli.py` -- a resume that completes an EOFError-
+interrupted run (re-asks the human, does not repeat already-succeeded calls), a missing
+run directory, a prompt-drift refusal (edits a local copy of one stage's prompt file
+between `run` and `resume`, confirmed not to touch the shared `example_prompts/`
+fixtures other tests depend on), a hand-constructed foreign-`run_id` requirement file
+(proves the existing schema check, not new code, catches it), and a resume of an
+already-`COMPLETED` run (zero stage calls, exit 0). The prompt-drift guard
+(`_prompt_provenance_mismatches`) was mutation-tested by hand: inverting its `!=` to `==`
+turns `test_resume_prompt_drift_rejected` red.

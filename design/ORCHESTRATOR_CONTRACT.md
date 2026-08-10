@@ -596,6 +596,53 @@ gap is recorded, not silently left open: the orchestrator has no synchronous
 human-notification channel for any failure kind today, and building one was out of
 scope for the task that introduced `StageCallFatal`.
 
+## 18. CLI resume and prompt-provenance drift
+
+`orchestrator/cli.py`'s `resume` subcommand takes only a run directory — never a fresh
+config or input path. Everything it needs is read back from `RUN_DIR` itself:
+`orchestrator/config.py`'s `read_resolved_run_config` for the exact `ResolvedRunConfig`
+the run started with, and `orchestrator/pipeline.py`'s `read_document_run` for the
+document and every requirement record. This is deliberate, not a missing feature: it is
+what makes "a resume must not be able to silently start a different run against an
+existing run directory" true by construction rather than by an added check — there is no
+second, independently-supplied config or input for the on-disk state to disagree with.
+
+**Reused, not invented.** `read_document_run` re-runs `DocumentRunRecord`'s full
+validator suite on load, including the `run_id` agreement check between
+`metadata.run_id` and every `RequirementRunRecord.run_id` (`_outcome_matches_contents`,
+item 9's "every RequirementRunRecord must carry run_id matching the document's
+metadata.run_id"). A run directory holding requirement files from more than one run —
+whether from manual tampering or from two different runs colliding on the same
+`run_id`/`output_dir` — fails to load at all, in `resume`, before any provider adapter is
+constructed. No new marker file or `--force` flag was added for this; the existing
+schema-level check already does the job.
+
+**What the schema's run_id check does NOT catch: a prompt file edited after the run
+started.** `ResolvedStageConfig` (`orchestrator/config.py`) freezes every stage's
+provider/model/temperature/output_mode as inlined values inside `run_config.json` — none
+of those can drift once written, since `resume` never re-resolves from a YAML file it
+does not even accept a path for. The one field that is a *reference* rather than an
+inlined value is `prompt_path`: the prompt text itself is not persisted, only its
+`prompt_hash` (item 12). If the file at `prompt_path` is edited between the original run
+and a resume, `resume`'s calls would silently use different prompt text than the
+`prompt_hash` already recorded in `run_config.json`/`RunMetadata.stages` claims — the
+run's own record would misdescribe how the resumed portion of its results were produced.
+
+**Decision: refuse, don't warn.** Before constructing any adapter, `resume` recomputes
+`prompt_fingerprint` for every stage's `prompt_path` and compares it against the
+`prompt_hash` `run_config.json` recorded at run start (`cli._prompt_provenance_mismatches`).
+Any mismatch — including the file no longer existing — refuses the entire resume with
+`EXIT_CONFIG_ERROR`, naming every affected stage, before any adapter is built. Rejected:
+*warn and continue* — resume exists specifically for interruptions nobody may be watching
+when they happen (a free-tier rate limit at 3am, a closed terminal, someone stepping
+away mid-question per D1=c), so a warning printed to a terminal nobody is reading has no
+more effect than silence, in exactly the scenario resume is for. *Silently reusing the
+new prompt* was never considered: it is the same "silently overwrite" shape item 15
+already rejected for a different field, for the same reason — it destroys, rather than
+counts, the exact drift this check exists to catch.
+
+*(DESIGN_NOTES: "CLI resume wiring".)*
+
 ---
 
 ## Things the schema does NOT check, by design

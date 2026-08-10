@@ -16,12 +16,13 @@ one conceptual step in the pipeline's prose but two of those eight
 (`REFINER_QUESTIONER`/`REFINER_REWRITER`), each with its own model/prompt/config.
 `orchestrator/cli.py` reads a `RunConfig` + a requirement-document JSON file, builds a
 `StageFns` from `orchestrator/stages.py`'s eight factories and a `HumanFns` from
-`orchestrator/human_cli.py`, and calls `orchestrator.pipeline.run_document`. What's
-still open: CLI resume (`orchestrator.pipeline.resume_document` exists but has no CLI
-wiring — see `orchestrator/cli.py`'s own docstring, "No resume in v1"). See
-`design/DESIGN_NOTES.md`, "Real stage functions -- cross-stage validation" and "--
-prompt provenance", for what changed in `orchestrator/stage_fns.py`/`pipeline.py` while
-building `stages.py`.
+`orchestrator/human_cli.py`, and calls `orchestrator.pipeline.run_document` (`run`
+subcommand) or `orchestrator.pipeline.resume_document` (`resume` subcommand, reading
+everything it needs back from the run directory itself — see
+`design/ORCHESTRATOR_CONTRACT.md` item 18 and `design/DESIGN_NOTES.md`, "CLI resume
+wiring"). See `design/DESIGN_NOTES.md`, "Real stage functions -- cross-stage
+validation" and "-- prompt provenance", for what changed in
+`orchestrator/stage_fns.py`/`pipeline.py` while building `stages.py`.
 
 ---
 
@@ -46,7 +47,7 @@ path. A generation failure is a real signal, not a nuisance.
 
 | File | What it is |
 |---|---|
-| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 17 things the orchestrator must do that the schema deliberately does not enforce. |
+| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 18 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
 | `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
