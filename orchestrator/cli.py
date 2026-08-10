@@ -214,10 +214,16 @@ def _do_run(
         output_fn(f"Configuration/input error: {e}")
         return EXIT_CONFIG_ERROR
 
-    metadata = to_run_metadata(resolved, datetime.now(timezone.utc))
-    write_run_config(run_dir, resolved)
-
     def execute(stage_fns, human_fns, throttle, max_attempts, backoff_seconds):
+        # metadata/write_run_config deliberately run here, inside execute, rather than
+        # directly in _do_run: _finish builds stage_fns/human_fns/throttle/retry args
+        # (including _build_stage_fns's independent prompt_path.read_text() re-reads)
+        # BEFORE calling execute, so a crash there -- e.g. a prompt file deleted in a
+        # narrow window -- still happens before run_dir/run_config.json exist on disk,
+        # matching the pre-refactor order and leaving a clean retry instead of a
+        # half-written run_dir that neither 'run' nor 'resume' can recover.
+        metadata = to_run_metadata(resolved, datetime.now(timezone.utc))
+        write_run_config(run_dir, resolved)
         return run_document(
             requirement_set, metadata, stage_fns, human_fns, throttle,
             resolved.max_revisions, run_dir, max_attempts, backoff_seconds)
