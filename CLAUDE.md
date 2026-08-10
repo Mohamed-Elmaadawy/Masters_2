@@ -41,6 +41,22 @@ The diagram generator also **validates**: it fails if the pipeline declaration n
 schema type that no longer exists, or if a `RunOutcome`/`DocumentOutcome` has no drawn
 path. A generation failure is a real signal, not a nuisance.
 
+## After any structural change to `design/` or `orchestrator/`
+
+Adding, renaming, moving or deleting a module, a stage, a `StageFns` field, an
+`AttemptResult`/`FailureKind` member, or a config/pipeline function:
+
+```bash
+python -m design.generate_arch_diagrams        # rewrites the six architecture .mermaid files
+python -m design.test_generate_arch_diagrams   # must end "N checks passed, 0 failed"
+```
+
+Same deal — it validates as it generates, and it is *meant* to fail when the code moves:
+a new `.py` module with no declared role, a ninth stage not in `STAGE_WIRING`, a
+`make_*_fn` no row references, a diagram node naming a function that has been renamed, a
+new `AttemptResult` with no branch drawn. `design/DIAGRAMS.md` is the index of all thirteen
+diagrams and states, per diagram, exactly what is checked and what isn't.
+
 ---
 
 ## Read these before writing orchestrator code
@@ -48,6 +64,7 @@ path. A generation failure is a real signal, not a nuisance.
 | File | What it is |
 |---|---|
 | `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 18 things the orchestrator must do that the schema deliberately does not enforce. |
+| `design/DIAGRAMS.md` | The thirteen generated diagrams and what each one is for — including which parts are introspected from the code and which are declared-and-validated. Start with `overview.mermaid` (six boxes); it's the fastest way to see the shape of the whole project. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
 | `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |

@@ -3,12 +3,16 @@ Generates two Mermaid diagrams from `schemas.py`. Run after every schema change:
 
     python -m design.generate_diagrams
 
-Outputs (both overwritten in place, both plain text so git diffs show what changed):
+Outputs (all overwritten in place, all plain text so git diffs show what changed, all
+under design/diagrams/):
 
-    design/pipeline.mermaid   -- how the pipeline runs: stages 0-4 as boxes, with the
-                                 schema type carried along each arrow.
-    design/models.mermaid     -- how the data nests: every model and enum with its
-                                 fields, plus containment/reference arrows.
+    design/diagrams/pipeline.mermaid   -- how the pipeline runs: stages 0-4 as boxes,
+                                         with the schema type carried along each arrow.
+    design/diagrams/models.mermaid     -- how the data nests: every model and enum with
+                                         its fields, plus containment/reference arrows.
+    design/diagrams/paths_document.mermaid, paths_requirement.mermaid, paths_failure.mermaid
+                                        -- every route a document/requirement/failure
+                                         can take, end to end.
 
 --------------------------------------------------------------------------------
 WHY THIS IS PART-INTROSPECTED AND PART-DECLARED (a deliberate trade-off)
@@ -41,7 +45,7 @@ from pydantic import BaseModel
 
 import design.schemas as schemas
 
-OUT_DIR = Path(__file__).parent
+OUT_DIR = Path(__file__).parent / "diagrams"
 
 
 # ---------------------------------------------------------------------------
@@ -447,6 +451,7 @@ def validate_path_trees() -> None:
 def main() -> None:
     validate_pipeline(schema_models())
     validate_path_trees()
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     for fname, content in (
             ("pipeline.mermaid", build_pipeline()),
             ("models.mermaid", build_models()),
