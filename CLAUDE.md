@@ -66,7 +66,7 @@ diagrams and states, per diagram, exactly what is checked and what isn't.
 | `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 19 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/DIAGRAMS.md` | The thirteen generated diagrams and what each one is for — including which parts are introspected from the code and which are declared-and-validated. Start with `overview.mermaid` (six boxes); it's the fastest way to see the shape of the whole project. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
-| `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
+| `design/DESIGN_NOTES.md` | ~2,500 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
 | `design/test_schemas.py` | 326 checks. Also the best worked example of how the models fit together. |
 | `orchestrator/stage_fns.py` | Typed `StageFns`/`HumanFns` Protocols — the exact signature each of the 8 stage fns (and the 2 human ones) must match. |
