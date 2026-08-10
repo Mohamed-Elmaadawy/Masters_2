@@ -146,7 +146,7 @@ def test_bad_config_shape_rejected() -> None:
         config_path = tmp_path / "config.yaml"
         config_path.write_text(yaml.safe_dump({"defaults": {"provider": "gemini"}}))
         input_path = write_input_json(tmp_path)
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
         ok("no runs/ directory was created", not (tmp_path / "runs").exists())
@@ -159,7 +159,7 @@ def test_malformed_yaml_rejected() -> None:
         config_path = tmp_path / "config.yaml"
         config_path.write_text("not: valid: yaml: [")
         input_path = write_input_json(tmp_path)
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
 
@@ -171,7 +171,7 @@ def test_bad_input_json_rejected_before_any_adapter() -> None:
         config_path = write_config_yaml(tmp_path, run_id="run-bad-input")
         input_path = tmp_path / "input.json"
         input_path.write_text(json.dumps({"requirements": []}))  # min_length=1 violated
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
 
@@ -181,7 +181,7 @@ def test_missing_input_file_rejected() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         config_path = write_config_yaml(tmp_path, run_id="run-missing-input")
-        code = _run([str(config_path), str(tmp_path / "does-not-exist.json")],
+        code = _run(["run", str(config_path), str(tmp_path / "does-not-exist.json")],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
 
@@ -202,7 +202,7 @@ def test_run_dir_collision_rejected() -> None:
         sentinel = existing_run_dir / "document.json"
         sentinel.write_text('{"sentinel": true}')
 
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
 
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
@@ -225,7 +225,7 @@ def test_happy_path_completes_with_exit_0() -> None:
         input_path = write_input_json(tmp_path, req_id=req_id)
         fake = FakeAdapter(_happy_path_responses(req_id))
 
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
                     human_fns_factory=_human_fns_unused)
 
@@ -257,7 +257,7 @@ def test_stage_error_exits_1() -> None:
         ]
         fake = FakeAdapter(responses)
 
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
                     human_fns_factory=_human_fns_unused)
 
@@ -297,7 +297,7 @@ def test_interrupted_by_eof_exits_130() -> None:
             return HumanFns(answer_questions=answer_questions, decide_at_cap=decide_at_cap_cli)
 
         messages: list[str] = []
-        code = _run([str(config_path), str(input_path)],
+        code = _run(["run", str(config_path), str(input_path)],
                     adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
                     human_fns_factory=human_fns_factory, output_fn=messages.append)
 
@@ -351,7 +351,7 @@ def test_cap_stopped_alone_does_not_exit_1() -> None:
                 decide_at_cap=lambda record: (
                     RunOutcome.CAP_STOPPED, "operator chose to stop rather than accept risk"))
 
-        code = _run([str(config_dict_path), str(input_path)],
+        code = _run(["run", str(config_dict_path), str(input_path)],
                     adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
                     human_fns_factory=human_fns_factory)
 
