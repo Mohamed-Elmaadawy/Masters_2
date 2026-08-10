@@ -6,7 +6,9 @@
 #   2.0    fails -- "Field may not be used twice on the same field", because
 #          NonEmptyStr (Annotated[str, Field(min_length=1)]) is combined with a
 #          separate Field(..., description=...) on the same attribute.
-#   2.1+   242/242 checks pass.
+#   2.1+   passed the full suite when last checked (suite size drifts as checks get
+#          added -- run `python -m design.test_schemas` for the current count, not
+#          this comment).
 # Pydantic v1 will not work at all: computed_field and model_validator are v2-only.
 pydantic>=2.1,<3
 

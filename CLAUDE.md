@@ -6,19 +6,22 @@ agent framework. Academic deliverable — correctness and defensibility matter m
 polish.
 
 The schema design phase is **finished**. The orchestrator control flow, the YAML run
-configuration, the Gemini/Groq provider adapters, and the eight real stage functions
-with their version-1 prompts are also **finished** — `orchestrator/pipeline.py`,
-`orchestrator/config.py`, `orchestrator/providers/`, `orchestrator/human_cli.py`, and
-`orchestrator/stages.py` are built, reviewed, and covered by green test suites. "The
-eight stages" means eight separately configured LLM calls (`design/schemas.py`'s
-`ALL_STAGES`) — the Refiner is one conceptual step in the pipeline's prose but two of
-those eight (`REFINER_QUESTIONER`/`REFINER_REWRITER`), each with its own
-model/prompt/config. The next and last phase is the CLI run entrypoint: read a
-`RunConfig`, resolve it, build a `StageFns` from `orchestrator/stages.py`'s eight
-factories and a `HumanFns` from `orchestrator/human_cli.py`, and call
-`orchestrator.pipeline.run_document`. See `design/DESIGN_NOTES.md`, "Real stage
-functions -- cross-stage validation" and "-- prompt provenance", for what changed in
-`orchestrator/stage_fns.py`/`pipeline.py` while building `stages.py`.
+configuration, the Gemini/Groq provider adapters, the eight real stage functions with
+their version-1 prompts, and the CLI run entrypoint are also **finished** —
+`orchestrator/pipeline.py`, `orchestrator/config.py`, `orchestrator/providers/`,
+`orchestrator/human_cli.py`, `orchestrator/stages.py`, and `orchestrator/cli.py` are
+built, reviewed, and covered by green test suites. "The eight stages" means eight
+separately configured LLM calls (`design/schemas.py`'s `ALL_STAGES`) — the Refiner is
+one conceptual step in the pipeline's prose but two of those eight
+(`REFINER_QUESTIONER`/`REFINER_REWRITER`), each with its own model/prompt/config.
+`orchestrator/cli.py` reads a `RunConfig` + a requirement-document JSON file, builds a
+`StageFns` from `orchestrator/stages.py`'s eight factories and a `HumanFns` from
+`orchestrator/human_cli.py`, and calls `orchestrator.pipeline.run_document`. What's
+still open: CLI resume (`orchestrator.pipeline.resume_document` exists but has no CLI
+wiring — see `orchestrator/cli.py`'s own docstring, "No resume in v1"). See
+`design/DESIGN_NOTES.md`, "Real stage functions -- cross-stage validation" and "--
+prompt provenance", for what changed in `orchestrator/stage_fns.py`/`pipeline.py` while
+building `stages.py`.
 
 ---
 
@@ -47,7 +50,7 @@ path. A generation failure is a real signal, not a nuisance.
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
 | `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
-| `design/test_schemas.py` | 321 checks. Also the best worked example of how the models fit together. |
+| `design/test_schemas.py` | 326 checks. Also the best worked example of how the models fit together. |
 | `orchestrator/stage_fns.py` | Typed `StageFns`/`HumanFns` Protocols — the exact signature each of the 8 stage fns (and the 2 human ones) must match. |
 | `orchestrator/config.py` | The YAML `RunConfig`/`ResolvedRunConfig` a real run is driven by — provider/model/temperature/output_mode per stage, retries, rate limits, resolved prompt hashes. |
 | `orchestrator/providers/` | `GeminiAdapter`/`GroqAdapter` and the capability/error-classification tables they use — dated, cited, and marked best-effort; re-verify before trusting deep into the future. |
