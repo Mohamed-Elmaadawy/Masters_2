@@ -536,6 +536,75 @@ def test_resume_mismatched_requirement_file_rejected() -> None:
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
 
 
+def test_resume_run_config_run_id_mismatch_rejected() -> None:
+    section("a run_config.json copied in from a different run_id fails to resume")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        req_id = "REQ-1"
+        config_path = write_config_yaml(tmp_path, run_id="run-original")
+        input_path = write_input_json(tmp_path, req_id=req_id)
+        fake = FakeAdapter(_happy_path_responses(req_id))
+
+        code = _run(["run", str(config_path), str(input_path)],
+                    adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
+                    human_fns_factory=_human_fns_unused)
+        ok("initial run completes", code == EXIT_SUCCESS)
+
+        run_dir = tmp_path / "runs" / "run-original"
+
+        # Build a completely different resolved config (different run_id) in a second
+        # temp dir, then copy ITS run_config.json over the original run's -- everything
+        # else in run_dir (document.json, requirements/*.json) still belongs to
+        # run-original, and is internally self-consistent on its own, which is exactly
+        # what makes this gap invisible to DocumentRunRecord's own validators.
+        with tempfile.TemporaryDirectory() as tmp2:
+            tmp2_path = Path(tmp2)
+            foreign_config_path = write_config_yaml(tmp2_path, run_id="run-foreign")
+            foreign_run_config = load_run_config(foreign_config_path)
+            foreign_resolved = resolve_run_config(foreign_run_config, foreign_config_path)
+            foreign_run_dir = run_dir_for(foreign_resolved)
+            write_run_config(foreign_run_dir, foreign_resolved)
+
+            (run_dir / "run_config.json").write_text(
+                (foreign_run_dir / "run_config.json").read_text())
+
+        messages: list[str] = []
+        code = _run(["resume", str(run_dir)],
+                    adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()},
+                    output_fn=messages.append)
+
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+        ok("message names both run_ids",
+           any("run-foreign" in m and "run-original" in m for m in messages))
+
+
+def test_resume_prompt_file_deleted_rejected() -> None:
+    section("deleting a prompt file (not just editing it) after the run started makes resume refuse")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        req_id = "REQ-1"
+        config_path, prompts = write_config_yaml_with_local_prompts(tmp_path, run_id="run-vanish-prompt")
+        input_path = write_input_json(tmp_path, req_id=req_id)
+        fake = FakeAdapter(_happy_path_responses(req_id))
+
+        code = _run(["run", str(config_path), str(input_path)],
+                    adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
+                    human_fns_factory=_human_fns_unused)
+        ok("initial run completes", code == EXIT_SUCCESS)
+
+        Path(prompts["classifier"]).unlink()
+
+        messages: list[str] = []
+        run_dir = tmp_path / "runs" / "run-vanish-prompt"
+        code = _run(["resume", str(run_dir)],
+                    adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()},
+                    output_fn=messages.append)
+
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+        ok("message names the stage and says the file is gone",
+           any("classifier" in m and "no longer exists" in m for m in messages))
+
+
 def test_resume_after_completion_makes_no_stage_calls() -> None:
     section("resuming a fully COMPLETED run makes no stage calls and exits 0")
     with tempfile.TemporaryDirectory() as tmp:
@@ -571,7 +640,9 @@ ALL_TESTS = [
     test_resume_completes_an_eof_interrupted_run,
     test_resume_missing_run_dir_rejected,
     test_resume_prompt_drift_rejected,
+    test_resume_prompt_file_deleted_rejected,
     test_resume_mismatched_requirement_file_rejected,
+    test_resume_run_config_run_id_mismatch_rejected,
     test_resume_after_completion_makes_no_stage_calls,
 ]
 

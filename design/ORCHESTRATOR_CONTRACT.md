@@ -204,6 +204,9 @@ asymmetry where `DocumentRunRecord.errors` allowed at most one entry per stage w
 
 *(DESIGN_NOTES: "Retry without redoing everything".)*
 
+See item 18 for the CLI-level resume path (`orchestrator/cli.py`'s `resume`
+subcommand) and what it additionally guards against.
+
 ## 7. Retries and failures
 
 Free-tier rate limits make retry-with-backoff the normal path, not an exception. On
@@ -616,6 +619,18 @@ whether from manual tampering or from two different runs colliding on the same
 `run_id`/`output_dir` — fails to load at all, in `resume`, before any provider adapter is
 constructed. No new marker file or `--force` flag was added for this; the existing
 schema-level check already does the job.
+
+That check alone leaves a gap, though: it only proves the document/requirement records
+agree *with each other*, not that `run_config.json` — loaded separately, by
+`read_resolved_run_config`, into a different model entirely — agrees with either of
+them. A `run_config.json` copied in from a different run is internally self-consistent
+(its own prompts hash to its own recorded `prompt_hash`es) and would pass every check
+above undetected, while every stage call `resume` then makes is built from that foreign
+config. So `_do_resume` also compares `resolved.run_id` (from `run_config.json`)
+directly against `record.metadata.run_id` (from `document.json`) and refuses with
+`EXIT_CONFIG_ERROR` before either mismatch reaches `_prompt_provenance_mismatches` or
+any adapter is constructed — the one id-agreement gap item 9's validator cannot see,
+because it never receives the separately-loaded `ResolvedRunConfig` at all.
 
 **What the schema's run_id check does NOT catch: a prompt file edited after the run
 started.** `ResolvedStageConfig` (`orchestrator/config.py`) freezes every stage's

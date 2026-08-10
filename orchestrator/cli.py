@@ -41,7 +41,7 @@ from typing import Callable, Optional
 import yaml
 from pydantic import ValidationError
 
-from design.schemas import ALL_STAGES, RequirementSet, RunOutcome, prompt_fingerprint
+from design.schemas import RequirementSet, RunOutcome, prompt_fingerprint
 from orchestrator.config import (
     ResolvedRunConfig, load_run_config, read_resolved_run_config, resolve_run_config,
     retry_args, run_dir_for, throttle_from, to_run_metadata, write_run_config,
@@ -175,6 +175,19 @@ def _finish(
     that must agree" shape CLAUDE.md names as this project's biggest bug source, applied
     to control flow instead of a data field.
     """
+    # ORDERING INVARIANT, tested only by inspection, not by an automated test (see
+    # orchestrator/test_cli.py's module docstring note on this): this call MUST happen
+    # before `execute` runs, because _do_run's `execute` closure writes run_dir/
+    # run_config.json (write_run_config) only once it is actually invoked, below. A
+    # prompt file re-read here (independent of resolve_run_config's own earlier
+    # read/hash, e.g. deleted in the narrow window between the two) must fail HERE,
+    # before any half-written run_dir exists -- not after. This was previously
+    # regressed once by moving write_run_config too early; a black-box CLI test cannot
+    # distinguish "resolve_run_config's own prompt check failed" from "this re-read
+    # failed" without either duplicating the former or monkeypatching this function
+    # directly (both were judged not worth the brittleness -- see the fix-wave report
+    # for 2026-08-10). Keep write_run_config/to_run_metadata inside `execute`, never
+    # move them before this line.
     stage_fns = _build_stage_fns(resolved, adapters)
     human_fns = human_fns_factory()
     throttle = throttle_from(resolved)
@@ -245,7 +258,21 @@ def _do_resume(
         # design/ORCHESTRATOR_CONTRACT.md item 18 relies on instead of a new marker: a
         # run directory holding files from more than one run fails to load, here,
         # before any adapter is constructed.
-        read_document_run(run_dir)
+        record = read_document_run(run_dir)
+
+        # DocumentRunRecord's own validators only check that requirement_records agree
+        # with metadata.run_id -- they never compare against the run_id inside a
+        # SEPARATELY loaded run_config.json, because that file lives outside the record
+        # entirely. Without this check, dropping a foreign run's run_config.json into
+        # this run_dir would resume using the foreign config's models/prompts while
+        # every record on disk still carries THIS run's run_id: nothing above would
+        # notice, because each file is internally self-consistent on its own -- see
+        # design/ORCHESTRATOR_CONTRACT.md item 18.
+        if resolved.run_id != record.metadata.run_id:
+            output_fn(f"Refusing to resume {run_dir}: run_config.json is for run "
+                      f"{resolved.run_id!r} but document.json is run "
+                      f"{record.metadata.run_id!r}")
+            return EXIT_CONFIG_ERROR
 
         mismatches = _prompt_provenance_mismatches(resolved)
         if mismatches:
