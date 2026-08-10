@@ -653,11 +653,13 @@ FILE_ROLES: dict[str, str] = {
     "orchestrator/providers/capabilities.py": "which model supports which output_mode.<br/>dated, cited, best-effort",
     "orchestrator/providers/gemini.py": "Gemini REST + error classification",
     "orchestrator/providers/groq.py": "Groq REST + error classification",
+    "orchestrator/providers/rotating.py": "RotatingKeyAdapter: wraps N single-key<br/>adapters, rotates past StageCallFailed only",
     "orchestrator/test_harness.py": "the big one: control flow, resume,<br/>cap, degraded runs, per-attempt records",
     "orchestrator/test_config.py": "config resolution suite",
     "orchestrator/test_stages.py": "stage-function suite",
     "orchestrator/test_stage_fns.py": "Protocol/signature suite",
     "orchestrator/test_providers.py": "adapter suite",
+    "orchestrator/test_rotating.py": "RotatingKeyAdapter suite",
     "orchestrator/test_cli.py": "CLI suite: exit codes, wiring, failure paths",
     "orchestrator/test_human_cli.py": "terminal HumanFns suite",
 }

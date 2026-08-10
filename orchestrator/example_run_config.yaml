@@ -12,6 +12,8 @@
 #
 # API keys are never in this file, by design -- GeminiAdapter.from_env()/
 # GroqAdapter.from_env() read GEMINI_API_KEY/GROQ_API_KEY from the environment only.
+# Set GEMINI_API_KEYS/GROQ_API_KEYS instead (comma-separated) to rotate across several
+# keys on quota exhaustion -- see orchestrator/providers/rotating.py.
 
 run_id: null          # omitted -> minted (uuid4 hex) at resolve time
 output_dir: runs      # resolved relative to THIS file's directory, not the cwd

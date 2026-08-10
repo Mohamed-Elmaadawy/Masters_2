@@ -33,6 +33,7 @@ framework: production code (`main`) always passes the real ones.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +55,7 @@ from orchestrator.pipeline import (
 from orchestrator.providers.base import ProviderAdapter
 from orchestrator.providers.gemini import GeminiAdapter
 from orchestrator.providers.groq import GroqAdapter
+from orchestrator.providers.rotating import RotatingKeyAdapter
 from orchestrator.stages import (
     make_check_consistency_fn, make_check_quality_fn, make_classify_fn,
     make_generate_tests_fn, make_map_dependencies_fn, make_refine_questioner_fn,
@@ -74,9 +76,29 @@ EXIT_INTERRUPTED = 130
 # OSError subclass) -- no separate branch needed for that.
 _CONFIG_ERRORS = (ValidationError, ValueError, OSError, RuntimeError, yaml.YAMLError)
 
+# GEMINI_API_KEYS/GROQ_API_KEYS (plural, comma-separated) take priority over the
+# single-key GEMINI_API_KEY/GROQ_API_KEY GeminiAdapter.from_env()/GroqAdapter.from_env()
+# read directly: a one-key setup keeps working unchanged against the singular var, and
+# only needs to switch to the plural var to opt into rotation across several accounts'
+# free-tier quota (see orchestrator/providers/rotating.py, design/DESIGN_NOTES.md
+# "Multi-key rotation for free-tier rate limits").
+def _gemini_adapter_from_env() -> ProviderAdapter:
+    if os.environ.get("GEMINI_API_KEYS"):
+        return RotatingKeyAdapter.from_env(
+            lambda k: GeminiAdapter(api_key=k), "GEMINI_API_KEYS")
+    return GeminiAdapter.from_env()
+
+
+def _groq_adapter_from_env() -> ProviderAdapter:
+    if os.environ.get("GROQ_API_KEYS"):
+        return RotatingKeyAdapter.from_env(
+            lambda k: GroqAdapter(api_key=k), "GROQ_API_KEYS")
+    return GroqAdapter.from_env()
+
+
 _DEFAULT_ADAPTER_FACTORIES: dict[str, Callable[[], ProviderAdapter]] = {
-    "gemini": GeminiAdapter.from_env,
-    "groq": GroqAdapter.from_env,
+    "gemini": _gemini_adapter_from_env,
+    "groq": _groq_adapter_from_env,
 }
 
 

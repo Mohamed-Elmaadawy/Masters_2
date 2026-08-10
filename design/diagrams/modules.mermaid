@@ -18,6 +18,7 @@ flowchart LR
         orchestrator_providers_capabilities["orchestrator.providers.capabilities"]
         orchestrator_providers_gemini["orchestrator.providers.gemini"]
         orchestrator_providers_groq["orchestrator.providers.groq"]
+        orchestrator_providers_rotating["orchestrator.providers.rotating"]
         orchestrator_stage_fns["orchestrator.stage_fns"]
         orchestrator_stages["orchestrator.stages"]
     end
@@ -31,6 +32,7 @@ flowchart LR
         orchestrator_test_harness["orchestrator.test_harness"]
         orchestrator_test_human_cli["orchestrator.test_human_cli"]
         orchestrator_test_providers["orchestrator.test_providers"]
+        orchestrator_test_rotating["orchestrator.test_rotating"]
         orchestrator_test_stage_fns["orchestrator.test_stage_fns"]
         orchestrator_test_stages["orchestrator.test_stages"]
     end
@@ -56,6 +58,7 @@ flowchart LR
     orchestrator_cli --> orchestrator_providers_base
     orchestrator_cli --> orchestrator_providers_gemini
     orchestrator_cli --> orchestrator_providers_groq
+    orchestrator_cli --> orchestrator_providers_rotating
     orchestrator_cli --> orchestrator_stages
     orchestrator_config --> design_schemas
     orchestrator_config --> ext_pydantic
@@ -81,6 +84,9 @@ flowchart LR
     orchestrator_providers_groq --> orchestrator_providers_base
     orchestrator_providers_groq --> orchestrator_providers_capabilities
     orchestrator_providers_groq --> orchestrator_stage_fns
+    orchestrator_providers_rotating --> design_schemas
+    orchestrator_providers_rotating --> orchestrator_providers_base
+    orchestrator_providers_rotating --> orchestrator_stage_fns
     orchestrator_stage_fns --> design_schemas
     orchestrator_stages --> design_schemas
     orchestrator_stages --> ext_pydantic
@@ -103,6 +109,7 @@ flowchart LR
     orchestrator_test_extract_document --> orchestrator_extract_document
     orchestrator_test_harness --> design_schemas
     orchestrator_test_harness --> orchestrator_pipeline
+    orchestrator_test_harness --> orchestrator_stage_fns
     orchestrator_test_human_cli --> design_schemas
     orchestrator_test_human_cli --> orchestrator_human_cli
     orchestrator_test_providers --> design_schemas
@@ -110,6 +117,10 @@ flowchart LR
     orchestrator_test_providers --> orchestrator_providers_gemini
     orchestrator_test_providers --> orchestrator_providers_groq
     orchestrator_test_providers --> orchestrator_stage_fns
+    orchestrator_test_rotating --> design_schemas
+    orchestrator_test_rotating --> orchestrator_providers_base
+    orchestrator_test_rotating --> orchestrator_providers_rotating
+    orchestrator_test_rotating --> orchestrator_stage_fns
     orchestrator_test_stage_fns --> design_schemas
     orchestrator_test_stage_fns --> orchestrator_pipeline
     orchestrator_test_stage_fns --> orchestrator_stage_fns
@@ -125,8 +136,8 @@ flowchart LR
     classDef req fill:#fff8e1,stroke:#f9a825,color:#e65100
     class orchestrator_cli,orchestrator_config,orchestrator_extract_document,orchestrator_human_cli,orchestrator_pipeline,orchestrator_stage_fns,orchestrator_stages req
     classDef test fill:#f1f8e9,stroke:#689f38,color:#33691e
-    class design_test_generate_arch_diagrams,design_test_generate_diagrams,design_test_schemas,orchestrator_test_cli,orchestrator_test_config,orchestrator_test_extract_document,orchestrator_test_harness,orchestrator_test_human_cli,orchestrator_test_providers,orchestrator_test_stage_fns,orchestrator_test_stages test
+    class design_test_generate_arch_diagrams,design_test_generate_diagrams,design_test_schemas,orchestrator_test_cli,orchestrator_test_config,orchestrator_test_extract_document,orchestrator_test_harness,orchestrator_test_human_cli,orchestrator_test_providers,orchestrator_test_rotating,orchestrator_test_stage_fns,orchestrator_test_stages test
     classDef provider fill:#f3e5f5,stroke:#8e24aa,color:#4a148c
-    class orchestrator_providers_base,orchestrator_providers_capabilities,orchestrator_providers_gemini,orchestrator_providers_groq provider
+    class orchestrator_providers_base,orchestrator_providers_capabilities,orchestrator_providers_gemini,orchestrator_providers_groq,orchestrator_providers_rotating provider
     classDef ext fill:#eceff1,stroke:#78909c,color:#37474f
     class ext_pydantic,ext_requests,ext_yaml ext

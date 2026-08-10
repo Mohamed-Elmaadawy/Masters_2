@@ -2406,3 +2406,75 @@ fixtures other tests depend on), a hand-constructed foreign-`run_id` requirement
 already-`COMPLETED` run (zero stage calls, exit 0). The prompt-drift guard
 (`_prompt_provenance_mismatches`) was mutation-tested by hand: inverting its `!=` to `==`
 turns `test_resume_prompt_drift_rejected` red.
+
+## Multi-key rotation for free-tier rate limits (2026-08-10)
+
+**Problem, precisely.** Free-tier Gemini/Groq keys don't bill past quota, they hard-cut
+(429). Running several experiments back-to-back hits that cut well before any cost is
+incurred -- "will bankrupt me" was the trigger phrasing, but the actual failure mode is a
+stalled run, not a bill. The user holds several accounts' worth of keys for both
+providers and wanted them used as a fallback chain instead of one key stalling the whole
+run.
+
+**Design: a wrapper, not a pipeline change.** `orchestrator/providers/rotating.py`'s
+`RotatingKeyAdapter` implements the same `ProviderAdapter` Protocol
+(`orchestrator/providers/base.py`) as `GeminiAdapter`/`GroqAdapter` and wraps a list of
+them. Nothing above the adapter layer -- `orchestrator/stages.py`, `StageFns` wiring,
+`pipeline.py`'s retry loop -- needed to change or even know rotation exists. This is the
+whole reason `ProviderAdapter` was a `Protocol` and not a concrete base class already;
+this is the first thing to actually exercise that.
+
+**Rotates on `StageCallFailed` only, never `StageCallFatal`/`StageCallPartial`.** Both
+`gemini.py` and `groq.py` already classify 429/`RESOURCE_EXHAUSTED`/`rate_limit_exceeded`
+(and plain transport failures -- timeout, 5xx) as `StageCallFailed`; that's the exact
+signal to switch keys on. `StageCallFatal` (bad credentials, capability mismatch,
+malformed request) is a property of the *request*, not the key -- equally fatal on every
+other key, so rotating past it would burn the whole key list reproducing the same error
+N times before raising, and misreport a single config bug as "N keys exhausted."
+`StageCallPartial` (inference happened, tokens spent, output unusable) isn't a key
+problem either. Both propagate immediately, same as a bare single-key adapter would.
+
+**Sticky index, not round-robin-per-call.** Once a key is exhausted for the rest of its
+quota window, retrying it first on every subsequent `complete()` call wastes one request
+per call just to reconfirm what's already known. `RotatingKeyAdapter` remembers which key
+last succeeded and starts there; only wraps forward through the list when the current key
+starts failing.
+
+**Env vars: new plural names, not a shared name reinterpreted.** `GEMINI_API_KEYS`/
+`GROQ_API_KEYS` (comma-separated) are new and separate from `GeminiAdapter.from_env`'s/
+`GroqAdapter.from_env`'s existing singular `GEMINI_API_KEY`/`GROQ_API_KEY`. A one-key
+setup keeps working unchanged; setting the plural var is what opts a provider into
+rotation (`orchestrator/cli.py`'s `_gemini_adapter_from_env`/`_groq_adapter_from_env`
+check the plural var first, fall back to the existing single-key `from_env()`
+otherwise). Rejected: silently accepting a comma inside `GEMINI_API_KEY` itself --
+ambiguous with a key that legitimately contains no comma today but might collide with a
+provider that later uses one in a key's own format, and it would make "one key" and
+"many keys" indistinguishable from the variable name alone.
+
+**Deliberately NOT done here -- read this before extending it:**
+- **No per-key rate-limit tracking.** `Throttle` (`orchestrator/pipeline.py`) still paces
+  by `"provider/model"` as a single shared bucket (`RateLimitConfig` in
+  `orchestrator/config.py`), unaware that N keys means roughly N times the real capacity.
+  Simplest fix, left to the operator: multiply `requests_per_minute`/`tokens_per_minute`
+  in the YAML by the key count. Making `Throttle` key-aware (a separate bucket per key,
+  informed by which key `RotatingKeyAdapter` is currently on) would pace more precisely,
+  but is real added complexity for a problem the YAML multiply already solves adequately
+  -- not worth it unless the manual multiply is measured to pace wrong in practice.
+- **No cross-provider fallback.** Gemini keys don't fall back to Groq keys or vice versa;
+  each provider rotates only within its own key list. `StageDefaults.provider`/
+  `StageOverride.provider` in `orchestrator/config.py` already pick a provider per stage
+  deliberately -- silently substituting a different provider on exhaustion would change
+  which model actually produced a stage's output without that being visible anywhere in
+  `ResolvedStageConfig`/`RunMetadata`.
+- **ToS risk is the user's call, not a code decision.** Using several personal/institutional
+  accounts' keys to aggregate free-tier quota may or may not be within a given provider's
+  terms of service; this was flagged, not resolved, before building this. Not re-litigated
+  here -- if it needs revisiting, revisit the ToS question itself, not this file.
+
+Test coverage: `orchestrator/test_rotating.py` -- rotates past `StageCallFailed` to a
+working key; does not rotate past `StageCallFatal`/`StageCallPartial` (second adapter's
+`.calls` stays 0, proving it was never invoked, not just that the right exception came
+back); raises the *last* key's failure when every key is exhausted; sticky-index behavior
+(second call starts at the key that succeeded last, first key not retried); empty adapter
+list rejected in `__init__`; `from_env` comma-parsing (whitespace-trimmed, trailing comma
+ignored) and its missing/all-blank-var `RuntimeError` cases.

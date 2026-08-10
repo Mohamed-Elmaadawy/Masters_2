@@ -4,7 +4,8 @@
 # docs/superpowers/plans/2026-08-08-first-real-run-checklist.md.
 #
 # API keys are never in this file, by design -- GroqAdapter.from_env() reads
-# GROQ_API_KEY from the environment only.
+# GROQ_API_KEY from the environment only. Set GROQ_API_KEYS instead (comma-separated)
+# to rotate across several keys on quota exhaustion -- see orchestrator/providers/rotating.py.
 
 run_id: themas
 output_dir: runs_groq   # resolved relative to THIS file's directory, not the cwd
