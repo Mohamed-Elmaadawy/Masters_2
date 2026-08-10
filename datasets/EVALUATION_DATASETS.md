@@ -10,10 +10,26 @@ papers (see `requirements_dataset.json`/`.xlsx`) — never one of the named corp
 Found while surveying the papers in the literature folder (2026-08-04). All are real,
 citable, and either public or obtainable.
 
+**Download attempt (2026-08-10):** 4 of 6 actually downloaded (PURE full corpus,
+PROMISE NFR, Dalpiaz, Riaz) — see each section below for exact location and real
+counts. All four are gitignored (`.gitignore`, "Reserved evaluation corpora"): large
+(60MB+ combined), external, and not part of the committed record — re-download from
+the URLs below if a fresh clone needs them. **Nothing extracts any of these into
+`RequirementSet` shape yet** — `orchestrator/extract_document.py` only reads the
+already-JSON-shaped `requirements_dataset.json`; PURE's real documents are PDF/DOC/
+HTML/XML, Dalpiaz/Riaz are plain text/JSON in their own shapes. That conversion is a
+real, not-yet-built prerequisite for using any of these, not a detail.
+
 ## 1. PURE (PUblic REquirements dataset)
 Ferrari, A., Spagnolo, G. O., Gnesi, S. (2017). *PURE: A dataset of public requirements
 documents.* RE'17, IEEE, pp. 502-505. https://doi.org/10.5281/zenodo.7118517 (19-document
 XML subset) / http://nlreqdataset.isti.cnr.it (full 79-document list + PDFs).
+
+**Downloaded (2026-08-10):** `datasets/pure-full/` (gitignored) — 79 files, exact
+match to the expected count, direct from `http://nlreqdataset.isti.cnr.it/req.zip`.
+Mixed formats: PDF/DOC/HTML, unstructured -- NOT the annotated XML subset
+(`datasets/requirements-xml/`, 18/19 files, already committed, small). Getting a
+requirement out of these 79 needs real document parsing per format, not built.
 
 ~79 real, complete SRS documents, publicly available. Best fit for evaluating the full
 pipeline end-to-end: whole documents map naturally onto `RequirementSet`, and it's
@@ -48,6 +64,11 @@ fit for evaluating the Classifier/Quality Checker at the single-requirement leve
 rather than whole-document flow. Cited by Alhoshan (2023) and Hey et al. (2020),
 both in the literature folder.
 
+**Downloaded (2026-08-10):** `datasets/promise-nfr/nfr.arff` (gitignored), 82KB, real
+ARFF from `http://promisedata.org/promised/trunk/promisedata.org/data/nfr/nfr.arff` --
+500+ labeled requirement sentences, 15 projects. Structured (`@ATTRIBUTE`/`@DATA`),
+straightforward to parse; no extraction tooling built yet.
+
 ## 3. Dalpiaz user story dataset
 Dalpiaz, F. (2018). *Requirements data sets (user stories).* Mendeley Data.
 https://data.mendeley.com/datasets/7zbk8zsd8y/1
@@ -56,6 +77,14 @@ https://data.mendeley.com/datasets/7zbk8zsd8y/1
 checking the pipeline handles informal/agile-style input as well as formal "shall"
 statements. Cited in Zhao et al. (2021).
 
+**Downloaded (2026-08-10):** `datasets/dalpiaz-user-stories/` (gitignored), 22 plain-text
+files (01.txt-22.txt, 4.9KB-19.4KB each), exact match to the expected 22-dataset count.
+Mendeley's UI download button doesn't expose a plain URL (client-side rendered); the
+working path is `https://data.mendeley.com/v1/datasets/7zbk8zsd8y/1/files/{file-id}/content`,
+found via the page's Signposting `linkset` header/endpoint -- worth remembering if this
+needs re-fetching. Files are named by an opaque Mendeley file id, not project name;
+project identity isn't recoverable from the API response used here.
+
 ## 4. SecReq
 Knauss, E., Houmb, S., Schneider, K., Islam, S., Jürjens, J. (2011). *Supporting
 requirements engineers in recognising security issues.* REFSQ'11, Springer, pp. 4-18.
@@ -63,12 +92,24 @@ requirements engineers in recognising security issues.* REFSQ'11, Springer, pp. 
 Security-focused requirement collection. Niche — only relevant if a security-specific
 evaluation angle is wanted. Cited in Alhoshan (2023).
 
+**Download attempt (2026-08-10): not available.** The project's original page
+(`se.uni-hannover.de/pages/en:projekte_re_secreq`) 301-redirects to the group's generic
+current page — the SecReq-specific project page is gone, no dataset link found anywhere
+searched. Not pursued further (niche use case per the note above); would need direct
+author contact to obtain.
+
 ## 5. Riaz's dataset
 Riaz, M., King, J., Slankas, J., Williams, L. *Hidden in plain sight: Automatically
 identifying security requirements from natural language artifacts.*
 
 Another security-focused requirement collection, cited alongside SecReq in Alhoshan
 (2023). Same niche use case.
+
+**Downloaded (2026-08-10):** `datasets/riaz-security/` (gitignored), 6 real JSON files,
+9.0MB, via a third-party GitHub mirror (`github.com/iambackend/Riaz-Dataset`) — the
+original authors' distribution channel is offline; this is not the canonical source,
+worth noting if provenance is ever questioned. Content: CCHIT/EHR/HL7/VLER/nursing
+requirement and user-story sets, ~1,100 security requirements per the paper's own count.
 
 ## 6. Traceability dataset collection
 Zogaan, W., Sharma, P., Mirahkorli, M., Arnaoudova, V. (2017). *Datasets from fifteen
@@ -78,6 +119,13 @@ Labeled for requirement-to-requirement traceability/dependency links. The one
 candidate specifically useful for evaluating `DependencyReport`/`DependencyLink`
 detection against ground truth, rather than requirement quality or test generation.
 Cited in Zhao et al. (2021).
+
+**Download attempt (2026-08-10): this is not a downloadable dataset at all.** It's a
+survey paper cataloging 73 *other* traceability datasets from a systematic literature
+review (2000-2016) — not itself a redistributable corpus with a file to fetch. Using it
+for real would mean picking one of the 73 datasets it surveys and locating THAT one
+independently; not attempted here. This entry's own description in this file
+overclaimed what the paper actually is — corrected here, not silently.
 
 ## Planned experiment: does whole-document consistency checking scale?
 

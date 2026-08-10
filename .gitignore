@@ -45,5 +45,15 @@ __MACOSX/
 # NOT ignored, deliberately:
 #   design/*.mermaid -- generated, but committed so a diff shows which arrows or fields
 #     a schema change moved.
-#   datasets/ -- the evaluation inputs are part of the record, and small.
+#   datasets/*.json, datasets/*.xlsx, datasets/requirements-xml/ -- the small schema-spot-check
+#     inputs are part of the record.
 .worktrees/
+
+# Reserved evaluation corpora (2026-08-10) -- large (60MB+ combined), external, and not
+# needed by anyone who doesn't already have this exact conversation's context. Unlike the
+# small schema-spot-check inputs above, these are NOT part of the committed record --
+# re-download per datasets/EVALUATION_DATASETS.md if a fresh clone needs them.
+datasets/pure-full/
+datasets/promise-nfr/
+datasets/riaz-security/
+datasets/dalpiaz-user-stories/
