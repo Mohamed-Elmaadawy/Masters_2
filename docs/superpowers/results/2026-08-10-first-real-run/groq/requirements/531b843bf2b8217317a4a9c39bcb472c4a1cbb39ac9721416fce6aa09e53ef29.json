@@ -1,0 +1,200 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-G",
+    "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "THEMAS-REQ-G",
+    "system_type": "other",
+    "rationale": "The requirement mentions a thermostat and a unique identifier, which suggests an embedded system or a device, rather than a web, mobile, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-G",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "THEMAS-REQ-G",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement does not clearly match any specific guidance rule, but it describes a simple identifier uniqueness condition. Given the lack of a clear match to any of the provided rules, and considering the requirement involves a condition (uniqueness) without a clear numeric range, threshold, or probabilistic/ML-produced output, the most fitting technique from the eligible list for this system type is exploratory, as it allows for a broad examination of the requirement without a predefined test structure."
+  },
+  "test_plan": {
+    "requirement_id": "THEMAS-REQ-G",
+    "test_cases": [
+      {
+        "id": "TC-12-THEMAS-REQ-G-1",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "exploratory",
+        "title": "Unique Identifier for Each Thermostat",
+        "preconditions": null,
+        "steps": [
+          "Create multiple thermostats in the THEMAS system",
+          "Obtain the unique identifier for each thermostat",
+          "Compare the unique identifiers to ensure they are distinct"
+        ],
+        "expected_result": "Each thermostat has a unique identifier, and no two thermostats have the same identifier"
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-G-2",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "exploratory",
+        "title": "Unique Identifier Persistence",
+        "preconditions": null,
+        "steps": [
+          "Create a thermostat in the THEMAS system",
+          "Record the unique identifier of the thermostat",
+          "Restart the THEMAS system",
+          "Verify that the thermostat's unique identifier remains the same"
+        ],
+        "expected_result": "The thermostat's unique identifier persists even after system restart"
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-G-3",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "exploratory",
+        "title": "Unique Identifier Uniqueness Across System Instances",
+        "preconditions": null,
+        "steps": [
+          "Create multiple instances of the THEMAS system",
+          "Create a thermostat in each system instance",
+          "Collect the unique identifiers from each thermostat",
+          "Verify that all unique identifiers are distinct across all system instances"
+        ],
+        "expected_result": "Unique identifiers are unique across all system instances"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "01214d03c9c3421bb53419b9f4eddded",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 11144, Requested 1352. Please try again in 2.48s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "01214d03c9c3421bb53419b9f4eddded",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 10712, Requested 1422. Please try again in 670ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "01214d03c9c3421bb53419b9f4eddded",
+      "attempt_number": 3,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1034,
+      "completion_tokens": 61
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "dc3a27c6c99049d694833724bba4343b",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 10576, Requested 1826. Please try again in 2.01s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "dc3a27c6c99049d694833724bba4343b",
+      "attempt_number": 2,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1514,
+      "completion_tokens": 27
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "842933926b4b4730a6475ff56ce96ea7",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 11285, Requested 1358. Please try again in 3.215s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "842933926b4b4730a6475ff56ce96ea7",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 10852, Requested 1350. Please try again in 1.01s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "842933926b4b4730a6475ff56ce96ea7",
+      "attempt_number": 3,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1038,
+      "completion_tokens": 138
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "d82ba19531c6460781f9ab5ae08b7481",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 10796, Requested 1680. Please try again in 2.38s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "d82ba19531c6460781f9ab5ae08b7481",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per minute (TPM): Limit 12000, Used 10366, Requested 1680. Please try again in 229.999999ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "d82ba19531c6460781f9ab5ae08b7481",
+      "attempt_number": 3,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1368,
+      "completion_tokens": 427
+    }
+  ],
+  "final_text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 5607
+}

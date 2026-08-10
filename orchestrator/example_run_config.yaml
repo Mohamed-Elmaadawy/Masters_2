@@ -5,10 +5,10 @@
 #   config = load_run_config(Path("orchestrator/example_run_config.yaml"))
 #   resolved = resolve_run_config(config, Path("orchestrator/example_run_config.yaml"))
 #
-# Prompt files under example_prompts/ are placeholders (the real 8 prompts are
-# orchestrator/stages.py's job, still out of scope) -- but they're real files with real
-# content, so prompt_hash is computed from them for real, the same way it would be for
-# the eventual production prompts.
+# Prompt files under example_prompts/ are the real v1 prompts orchestrator/stages.py
+# calls in production (written by the same commit that wired stages.py, 6ebd388) --
+# not placeholders. prompt_hash below is computed from this exact content, the same
+# way it is for a real run.
 #
 # API keys are never in this file, by design -- GeminiAdapter.from_env()/
 # GroqAdapter.from_env() read GEMINI_API_KEY/GROQ_API_KEY from the environment only.

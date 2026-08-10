@@ -1,0 +1,47 @@
+# First real run (2026-08-10): every stage on gemini/gemini-3.6-flash. Companion to
+# runs_groq.yaml -- same document, same prompts, same retry/max_revisions, different
+# provider -- see docs/superpowers/plans/2026-08-08-first-real-run-checklist.md.
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env() reads
+# GEMINI_API_KEY from the environment only.
+
+run_id: themas
+output_dir: runs_gemini   # resolved relative to THIS file's directory, not the cwd
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v1
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+# No per-stage overrides -- every stage uses `defaults` (gemini/gemini-3.6-flash).
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+
+prompts:
+  consistency_checker: example_prompts/consistency_checker.txt
+  dependency_mapper: example_prompts/dependency_mapper.txt
+  classifier: example_prompts/classifier.txt
+  quality_checker: example_prompts/quality_checker.txt
+  refiner_questioner: example_prompts/refiner_questioner.txt
+  refiner_rewriter: example_prompts/refiner_rewriter.txt
+  strategy_selector: example_prompts/strategy_selector.txt
+  test_generator: example_prompts/test_generator.txt

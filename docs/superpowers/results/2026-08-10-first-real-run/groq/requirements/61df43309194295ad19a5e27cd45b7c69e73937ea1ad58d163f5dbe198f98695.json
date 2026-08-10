@@ -1,0 +1,283 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-A",
+    "text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-A",
+    "system_type": "other",
+    "rationale": "The requirement describes a temperature control process with heating/cooling modes, which suggests an embedded system or a thermostat control system, not a web, mobile, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-A",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "non_atomic",
+            "span": null,
+            "explanation": "The requirement bundles two testable behaviors: activating the determine heating/cooling mode process and making a heating/cooling request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": null,
+            "explanation": "The requirement is missing information about what triggers the temperature change request.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-A",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "Should the requirement be split into two separate requirements, one for activating the determine heating/cooling mode process and another for making a heating/cooling request?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What specific event or condition triggers the temperature change request that activates the determine heating/cooling mode process?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-A",
+        "original_text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "refined_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-A",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": null,
+            "explanation": "The requirement is missing a condition for when the temperature change is requested, such as who or what requests the change.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-A",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What entity or process is capable of requesting a temperature change that would trigger the determine heating/cooling mode process?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-A",
+        "original_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "refined_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": [
+        "ISSUE-1"
+      ]
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-A",
+        "passed": false,
+        "issues": [
+          {
+            "id": "THEMAS-REQ-A-ISSUE-1",
+            "category": "non_atomic",
+            "span": null,
+            "explanation": "The requirement bundles two testable behaviors: 'the determine heating/cooling mode process is activated' and 'makes a heating/cooling request'.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": null,
+            "explanation": "The requirement is missing a condition for when 'a temperature change is requested'. What constitutes a temperature change request?",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "7bc542cc2c0d45309e235337fafff227",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1042,
+      "completion_tokens": 66
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8a0cd0e49b1e42c5877749f50914932f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1589,
+      "completion_tokens": 152
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "2b71a3046e7248b1b7df28526cfabc8c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1119,
+      "completion_tokens": 160
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "21af6f9db90d446a9180eaac88ff5d06",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1196,
+      "completion_tokens": 247
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "0ec109453998467aad35a47be25237ca",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1594,
+      "completion_tokens": 162
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "e5ebd6fe4f8e40bf8f7a47551c113b30",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1069,
+      "completion_tokens": 92
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "bb6b3cbb5d814e1d845e4726f24cf9d6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1133,
+      "completion_tokens": 177
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "55471f3a81784a008ccdcaf801192abe",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1594,
+      "completion_tokens": 169
+    }
+  ],
+  "final_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-A",
+    "original_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "refined_text": "If a temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    2,
+    1,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ],
+    "THEMAS-REQ-A-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 11561
+}

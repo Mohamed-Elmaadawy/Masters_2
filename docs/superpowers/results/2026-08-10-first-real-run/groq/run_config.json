@@ -1,0 +1,97 @@
+{
+  "run_id": "themas",
+  "output_dir": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\runs_groq",
+  "max_revisions": 3,
+  "retry": {
+    "max_attempts": 3,
+    "initial_delay_seconds": 2.0,
+    "multiplier": 2.0
+  },
+  "rate_limits": {
+    "groq/llama-3.3-70b-versatile": {
+      "requests_per_minute": 30.0
+    }
+  },
+  "stages": {
+    "consistency_checker": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "7aef6c8efb05",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\consistency_checker.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "dependency_mapper": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "57b7bcbdf714",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\dependency_mapper.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "classifier": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "d0b3f8685513",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\classifier.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "quality_checker": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "ceb5292b0bc1",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\quality_checker.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "refiner_questioner": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "8b09bc233a80",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\refiner_questioner.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "refiner_rewriter": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "5a1d82aa9cc4",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\refiner_rewriter.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "strategy_selector": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "419ccbe58a34",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\strategy_selector.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "test_generator": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile",
+      "prompt_version": "v1",
+      "prompt_hash": "6e2ad35a493f",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\test_generator.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    }
+  }
+}

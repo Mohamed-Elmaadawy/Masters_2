@@ -1,0 +1,173 @@
+{
+  "requirement_set": {
+    "doc_id": "themas-fischbach2022",
+    "requirements": [
+      {
+        "id": "THEMAS-REQ-A",
+        "text": "If the temperature change is requested, then the determine heating/cooling mode process is activated and makes a heating/cooling request.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-B",
+        "text": "If the current temperature value is strictly less than the lower value of the valid temperature range or if the received temperature value is strictly greater than the upper value of the valid temperature range, then the THEMAS system shall identify the current temperature value as an invalid temperature and shall output an invalid temperature status.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-C",
+        "text": "The THEMAS system shall maintain the ON/OFF status of each heating and cooling unit.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-D",
+        "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-E",
+        "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-F",
+        "text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-G",
+        "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+        "source_doc_id": "themas-fischbach2022"
+      },
+      {
+        "id": "THEMAS-REQ-H",
+        "text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+        "source_doc_id": "themas-fischbach2022"
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "themas",
+    "started_at": "2026-08-10T11:05:30.780825Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "ceb5292b0bc1",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "5a1d82aa9cc4",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "groq/llama-3.3-70b-versatile",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "themas-fischbach2022",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "themas-fischbach2022",
+    "dependencies": [
+      {
+        "from_requirement_id": "THEMAS-REQ-A",
+        "to_requirement_id": "THEMAS-REQ-C",
+        "explanation": "THEMAS-REQ-A depends on THEMAS-REQ-C because it needs to know the current heating/cooling mode, which is maintained by THEMAS-REQ-C."
+      },
+      {
+        "from_requirement_id": "THEMAS-REQ-B",
+        "to_requirement_id": "THEMAS-REQ-D",
+        "explanation": "THEMAS-REQ-B depends on THEMAS-REQ-D because it needs to determine if a temperature is valid, and THEMAS-REQ-D specifies the limits for valid temperatures."
+      },
+      {
+        "from_requirement_id": "THEMAS-REQ-E",
+        "to_requirement_id": "THEMAS-REQ-C",
+        "explanation": "THEMAS-REQ-E depends on THEMAS-REQ-C because it needs to know the current status of the heating unit, which is maintained by THEMAS-REQ-C."
+      },
+      {
+        "from_requirement_id": "THEMAS-REQ-F",
+        "to_requirement_id": "THEMAS-REQ-C",
+        "explanation": "THEMAS-REQ-F depends on THEMAS-REQ-C because it needs to know the current status of the heating/cooling unit, which is maintained by THEMAS-REQ-C."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "b0d1c50e1fe74a0eb6261b70a6a0f6a2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1044,
+      "completion_tokens": 23
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "76d88f531bf942c5b8efe2a7f5c3cccd",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1184,
+      "completion_tokens": 320
+    }
+  ],
+  "pending_requirement_ids": [
+    "THEMAS-REQ-A",
+    "THEMAS-REQ-B",
+    "THEMAS-REQ-C",
+    "THEMAS-REQ-D",
+    "THEMAS-REQ-E",
+    "THEMAS-REQ-F",
+    "THEMAS-REQ-G",
+    "THEMAS-REQ-H"
+  ],
+  "document_stage_tokens": 2571
+}
