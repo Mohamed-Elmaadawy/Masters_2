@@ -75,7 +75,19 @@ class Throttle:
     keeping the window's total below budget before a new call starts, but it cannot
     eliminate them -- a single large call can still push the window over budget after
     the fact, only visible to the NEXT call's wait_for_slot.
+
+    Test-authoring note (found by code review, 2026-08-10): wait_for_slot's TPM loop
+    only terminates because a real sleep_fn/now_fn pair always advances time together.
+    orchestrator/test_harness.py's OTHER Throttle fixtures mostly use
+    `Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)` -- a no-op sleep with a
+    clock that never moves -- which is fine for those tests (none of them set
+    tokens_per_minute), but combining that pattern WITH tokens_per_minute hangs forever:
+    an entry can never age out of a window whose clock never advances. Tests that
+    exercise tokens_per_minute (test_throttle_tokens_per_minute) use a fake_sleep that
+    advances its own clock, deliberately, for exactly this reason.
     """
+    _TOKEN_WINDOW_SECONDS = 60.0
+
     sleep_fn: Callable[[float], None] = time.sleep
     now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
     min_interval_seconds: dict[str, float] = field(default_factory=dict)
@@ -103,7 +115,7 @@ class Throttle:
             # budget, or empty.
             while window and sum(tokens for _, tokens in window) >= limit:
                 oldest_at, _ = window[0]
-                wait_seconds = 60.0 - (self.now_fn() - oldest_at).total_seconds()
+                wait_seconds = self._TOKEN_WINDOW_SECONDS - (self.now_fn() - oldest_at).total_seconds()
                 if wait_seconds > 0:
                     self.sleep_fn(wait_seconds)
                 self._prune_token_window(window)
@@ -121,14 +133,23 @@ class Throttle:
         # forever once `wait_seconds` in wait_for_slot's loop reaches exactly 0 -- no
         # further sleep_fn call ever happens (the `wait_seconds > 0` guard skips it), so
         # nothing ever advances again and the loop spins with zero progress.
-        cutoff = self.now_fn() - timedelta(seconds=60)
+        cutoff = self.now_fn() - timedelta(seconds=self._TOKEN_WINDOW_SECONDS)
         window[:] = [(at, tokens) for at, tokens in window if at > cutoff]
 
     def record_tokens(self, model: str, tokens: float) -> None:
         """Records tokens actually spent by one completed call, for tokens_per_minute
         pacing. Callers must never call this for a call that didn't happen -- a
         transport failure spends nothing (contract item 13); recording it anyway would
-        make the throttle pace against tokens that were never actually sent."""
+        make the throttle pace against tokens that were never actually sent.
+
+        A no-op for a model with no configured tokens_per_minute limit (found by code
+        review, 2026-08-10): wait_for_slot never reads _token_window for such a model
+        (its `if limit is not None` guard skips the whole branch), so every recorded
+        entry would sit there unread and unpruned for the life of the Throttle --
+        unbounded growth for exactly the common, sanctioned case of a model deliberately
+        left unthrottled by tokens (e.g. this repo's own runs_gemini.yaml)."""
+        if self.tokens_per_minute.get(model) is None:
+            return
         self._token_window.setdefault(model, []).append((self.now_fn(), tokens))
 
 

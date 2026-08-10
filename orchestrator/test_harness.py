@@ -811,6 +811,13 @@ def test_throttle_tokens_per_minute() -> None:
     slept.clear()
     throttle.wait_for_slot("unbudgeted-model")
     ok("a model with no tokens_per_minute entry never waits on tokens", slept == [])
+    # record_tokens must be a no-op for such a model, not just harmless -- wait_for_slot
+    # never reads _token_window when tokens_per_minute.get(model) is None, so anything
+    # appended there sits forever, unpruned: unbounded growth for exactly the common,
+    # sanctioned case of a model deliberately left unthrottled by tokens (found by code
+    # review, 2026-08-10).
+    ok("record_tokens never accumulates anything for an unthrottled-by-tokens model",
+       throttle._token_window.get("unbudgeted-model") in (None, []))
 
     # Three entries where removing only the SINGLE oldest still leaves the window over
     # budget -- wait_for_slot must keep waiting/pruning until it's actually back under

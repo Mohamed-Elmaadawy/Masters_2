@@ -7,6 +7,14 @@ numbers straight from the `attempts` records. No numbers estimated — everythin
 is read off `docs/superpowers/results/2026-08-10-first-real-run/groq/`'s actual
 `document.json`/`requirements/*.json`.
 
+**This directory is a historical snapshot, not a resumable run.** `groq/run_config.json`
+predates `orchestrator/config.py`'s `RateLimitConfig.tokens_per_minute` becoming a
+required field (added the same day, after this run, per
+`design/ORCHESTRATOR_CONTRACT.md` item 19) — it genuinely didn't exist when this ran, so
+the file is left as-is rather than rewritten to look like it did. `read_resolved_run_config`
+on this exact file now raises (`tokens_per_minute` — Field required); that's expected for
+an archived artifact, not a bug to fix here.
+
 **Gemini has no run in this directory.** See "Gemini: quota exhausted" below for why,
 and why none of the three attempts made were worth preserving.
 
@@ -86,11 +94,17 @@ succeeded). Per-requirement outcomes:
 | THEMAS-REQ-H | `error` | 2 |
 
 **Every `error` outcome was a transport failure, never a content problem** —
-`THEMAS-REQ-B`/`C`/`E` exhausted `max_attempts=3` on a Groq TPM (tokens-per-minute)
-429 at whichever stage they happened to be calling when the budget ran out;
-`THEMAS-REQ-H` exhausted retries on a plain dropped connection
-(`RemoteDisconnected('Remote end closed connection without response')`) at the
-`refiner_rewriter` stage — unrelated to rate limiting, a one-off transport blip.
+`THEMAS-REQ-B`/`C`/`E` each exhausted `max_attempts=3` on three consecutive Groq TPM
+(tokens-per-minute) 429s at whichever stage they happened to be calling when the
+budget ran out. **Correction (found by code review, verified against the raw
+`attempts` log, not assumed):** an earlier version of this document called
+`THEMAS-REQ-H`'s exhaustion "unrelated to rate limiting, a one-off transport blip" —
+that was wrong. Its failing `refiner_rewriter` invocation's three attempts were TPM
+429, TPM 429, then `RemoteDisconnected('Remote end closed connection without
+response')` — two of three exhausting attempts were the same TPM cause as `B`/`C`/`E`;
+only the final attempt was the dropped connection. All four `error` outcomes are
+predominantly TPM-driven, `THEMAS-REQ-H` merely with one non-TPM attempt mixed in
+rather than three uniform ones.
 
 ### §1 — id-mismatch rate, per stage, per model
 
