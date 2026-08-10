@@ -63,7 +63,7 @@ diagrams and states, per diagram, exactly what is checked and what isn't.
 
 | File | What it is |
 |---|---|
-| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 18 things the orchestrator must do that the schema deliberately does not enforce. |
+| `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 19 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/DIAGRAMS.md` | The thirteen generated diagrams and what each one is for — including which parts are introspected from the code and which are declared-and-validated. Start with `overview.mermaid` (six boxes); it's the fastest way to see the shape of the whole project. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
 | `design/DESIGN_NOTES.md` | ~2,000 lines of decisions, including rejected ones. Search it before re-litigating anything. |
@@ -153,6 +153,12 @@ overlooked. All are in `DESIGN_NOTES.md`:
   generator output gets rejected (6)
 - Mutation after construction bypasses validation — re-validate before persisting
 - Pairwise testing deferred; needs a real combinatorial algorithm, not an LLM
+- `Throttle`'s tokens-per-minute pacing (`orchestrator/pipeline.py`) bounds a call only
+  by tokens already spent, never the in-flight call's own cost — no per-provider
+  tokenizer was built to estimate it in advance. Reduces TPM 429s, does not eliminate
+  them. Deliberate: an approximate tokenizer's accuracy/maintenance cost wasn't judged
+  worth it for a mitigation that already helps without one (see
+  `design/ORCHESTRATOR_CONTRACT.md` item 19).
 
 ---
 

@@ -92,7 +92,7 @@ def write_config_yaml(tmp_path: Path, run_id: str, output_dir: str = "runs",
         "run_id": run_id,
         "output_dir": output_dir,
         "max_revisions": 3,
-        "rate_limits": {"gemini/fake-model": {"requests_per_minute": None}},
+        "rate_limits": {"gemini/fake-model": {"requests_per_minute": None, "tokens_per_minute": None}},
         "defaults": {"provider": "gemini", "model": "fake-model", "prompt_version": "v1"},
         "prompts": prompts,
     }
@@ -122,7 +122,7 @@ def write_config_yaml_with_local_prompts(
         "run_id": run_id,
         "output_dir": output_dir,
         "max_revisions": 3,
-        "rate_limits": {"gemini/fake-model": {"requests_per_minute": None}},
+        "rate_limits": {"gemini/fake-model": {"requests_per_minute": None, "tokens_per_minute": None}},
         "defaults": {"provider": "gemini", "model": "fake-model", "prompt_version": "v1"},
         "prompts": prompts,
     }

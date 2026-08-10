@@ -15,8 +15,12 @@ retry:
   initial_delay_seconds: 2.0
   multiplier: 2.0
 
+# 12000 is real, measured, and cited: this run's own Groq 429 body quoted "Rate limit
+# reached for model llama-3.3-70b-versatile ... tokens per minute (TPM): Limit 12000"
+# -- see ../docs/superpowers/results/2026-08-10-first-real-run/ANALYSIS.md, "Surprises"
+# #1. requests_per_minute (30) was never the binding constraint this run actually hit.
 rate_limits:
-  groq/llama-3.3-70b-versatile: {requests_per_minute: 30}
+  groq/llama-3.3-70b-versatile: {requests_per_minute: 30, tokens_per_minute: 12000}
 
 defaults:
   provider: groq

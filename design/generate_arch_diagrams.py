@@ -636,7 +636,7 @@ FILE_ROLES: dict[str, str] = {
     "design/generate_arch_diagrams.py": "<b>this script.</b> generates the 6 architecture diagrams",
     "design/test_generate_arch_diagrams.py": "suite for this script's five validators<br/>(each mutation-tested)",
     "design/DESIGN_NOTES.md": "every decision, including the rejected ones",
-    "design/ORCHESTRATOR_CONTRACT.md": "the 18 things the orchestrator must do<br/>that the schema deliberately does not enforce",
+    "design/ORCHESTRATOR_CONTRACT.md": "the 19 things the orchestrator must do<br/>that the schema deliberately does not enforce",
     "design/SCHEMA_AUDIT_CHECKLIST.md": "the eight lenses used to find schema gaps",
     "design/DIAGRAMS.md": "index of all 13 diagrams",
 

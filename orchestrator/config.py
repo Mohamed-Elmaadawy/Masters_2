@@ -80,16 +80,26 @@ class RateLimitConfig(BaseModel):
     """requests_per_minute is a required key with an optional value: the key must be
     present (see RunConfig.rate_limits's coverage check below) so a model can never be
     silently unthrottled by omission; the value itself can be null, meaning the
-    operator deliberately chose not to throttle it."""
+    operator deliberately chose not to throttle it.
+
+    tokens_per_minute (2026-08-10, added after the first real run --
+    docs/superpowers/results/2026-08-10-first-real-run/ANALYSIS.md): same
+    required-key/nullable-value pattern, for the same reason -- a model can never be
+    silently unthrottled by tokens just because the operator forgot the key. Feeds
+    orchestrator/pipeline.py's Throttle.tokens_per_minute, which paces on a rolling
+    60s window of tokens actually spent (see Throttle.record_tokens) -- request-count
+    pacing alone was not enough for a provider whose binding constraint turned out to
+    be tokens, not requests."""
     model_config = ConfigDict(extra="forbid")
     requests_per_minute: Optional[float] = Field(...)
+    tokens_per_minute: Optional[float] = Field(...)
 
-    @field_validator("requests_per_minute")
+    @field_validator("requests_per_minute", "tokens_per_minute")
     @classmethod
     def _positive_or_none(cls, v: Optional[float]) -> Optional[float]:
         if v is not None and v <= 0:
             raise ValueError(
-                "requests_per_minute must be > 0, or null for deliberately unthrottled")
+                "must be > 0, or null for deliberately unthrottled")
         return v
 
 
@@ -324,13 +334,23 @@ def throttle_from(resolved: ResolvedRunConfig) -> Throttle:
     in pipeline.py actually finds these entries. A model with an explicit `null` limit
     gets no key here, which is exactly Throttle's own "absent key = unthrottled"
     behavior -- reached deliberately (resolve_run_config required the key to exist with
-    an explicit value, null or numeric), not by omission."""
+    an explicit value, null or numeric), not by omission.
+
+    tokens_per_minute (2026-08-10) needs no unit conversion, unlike requests_per_minute
+    -- Throttle.tokens_per_minute is already "tokens per 60s window", the same unit
+    RateLimitConfig.tokens_per_minute is authored in, so the value passes straight
+    through."""
     min_interval = {
         key: 60.0 / rl.requests_per_minute
         for key, rl in resolved.rate_limits.items()
         if rl.requests_per_minute is not None
     }
-    return Throttle(min_interval_seconds=min_interval)
+    tokens_per_minute = {
+        key: rl.tokens_per_minute
+        for key, rl in resolved.rate_limits.items()
+        if rl.tokens_per_minute is not None
+    }
+    return Throttle(min_interval_seconds=min_interval, tokens_per_minute=tokens_per_minute)
 
 
 def retry_args(resolved: ResolvedRunConfig) -> tuple[int, Callable[[int], float]]:

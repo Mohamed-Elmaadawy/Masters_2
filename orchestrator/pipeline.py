@@ -14,7 +14,7 @@ import os
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -57,11 +57,31 @@ class Throttle:
     neither Gemini's nor Groq's official docs expose a static free-tier RPM number,
     both defer to a live per-account dashboard. min_interval_seconds must be filled in
     from that dashboard for a real run.
+
+    tokens_per_minute (2026-08-10, added after the first real run --
+    docs/superpowers/results/2026-08-10-first-real-run/ANALYSIS.md): request-count
+    pacing alone was not enough. Groq's binding constraint on that run was a
+    tokens-per-minute budget (12,000 TPM), not a request-count one, and
+    min_interval_seconds has no way to see that -- it only ever knew how many calls
+    were made, never how expensive each one was. tokens_per_minute paces on a rolling
+    60s window of tokens actually spent (see record_tokens), keyed by model, same
+    convention as min_interval_seconds: an absent key means unthrottled by tokens.
+
+    Honesty about what this does and does not guarantee: wait_for_slot can only bound a
+    call by tokens ALREADY spent in the last 60s -- it has no way to know the token cost
+    of the call it is about to let through (that would require a real tokenizer for
+    each provider/model, deliberately not built here, to avoid the accuracy and
+    maintenance cost of an approximate one). So this reduces the rate of TPM 429s by
+    keeping the window's total below budget before a new call starts, but it cannot
+    eliminate them -- a single large call can still push the window over budget after
+    the fact, only visible to the NEXT call's wait_for_slot.
     """
     sleep_fn: Callable[[float], None] = time.sleep
     now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc)
     min_interval_seconds: dict[str, float] = field(default_factory=dict)
     last_call_at: dict[str, datetime] = field(default_factory=dict, init=False)
+    tokens_per_minute: dict[str, float] = field(default_factory=dict)
+    _token_window: dict[str, list[tuple[datetime, float]]] = field(default_factory=dict, init=False)
 
     def wait_for_slot(self, model: str) -> None:
         interval = self.min_interval_seconds.get(model, 0.0)
@@ -71,7 +91,45 @@ class Throttle:
             elapsed = (now - last).total_seconds()
             if elapsed < interval:
                 self.sleep_fn(interval - elapsed)
+
+        limit = self.tokens_per_minute.get(model)
+        if limit is not None:
+            window = self._token_window.setdefault(model, [])
+            self._prune_token_window(window)
+            # A loop, not a single wait: aging out only the oldest entry can still leave
+            # the window over budget if several large entries landed close together (two
+            # calls that each used most of the budget, for instance) -- keep waiting for
+            # the next-oldest entry to age out until the window is actually back under
+            # budget, or empty.
+            while window and sum(tokens for _, tokens in window) >= limit:
+                oldest_at, _ = window[0]
+                wait_seconds = 60.0 - (self.now_fn() - oldest_at).total_seconds()
+                if wait_seconds > 0:
+                    self.sleep_fn(wait_seconds)
+                self._prune_token_window(window)
+
+        # Set once, at the very end, after all waiting (RPM and TPM) -- this must
+        # reflect when the real call is actually about to happen, not when the RPM
+        # portion of waiting happened to finish. Setting it earlier would make the
+        # NEXT call's RPM elapsed-time calculation start from a stale timestamp,
+        # understating real elapsed time and under-throttling the next call.
         self.last_call_at[model] = self.now_fn()
+
+    def _prune_token_window(self, window: list[tuple[datetime, float]]) -> None:
+        # Strict `>`, not `>=`: an entry exactly 60.0s old must be dropped, not kept.
+        # With `>=` (mutation-tested), an entry aged to exactly 60s stays in the window
+        # forever once `wait_seconds` in wait_for_slot's loop reaches exactly 0 -- no
+        # further sleep_fn call ever happens (the `wait_seconds > 0` guard skips it), so
+        # nothing ever advances again and the loop spins with zero progress.
+        cutoff = self.now_fn() - timedelta(seconds=60)
+        window[:] = [(at, tokens) for at, tokens in window if at > cutoff]
+
+    def record_tokens(self, model: str, tokens: float) -> None:
+        """Records tokens actually spent by one completed call, for tokens_per_minute
+        pacing. Callers must never call this for a call that didn't happen -- a
+        transport failure spends nothing (contract item 13); recording it anyway would
+        make the throttle pace against tokens that were never actually sent."""
+        self._token_window.setdefault(model, []).append((self.now_fn(), tokens))
 
 
 class StageFailed(Exception):
@@ -198,13 +256,19 @@ def call_stage(
             # Recorded as OTHER_FAILURE (not a new kind/result -- see StageCallPartial's
             # own docstring for why none was needed), which already permits, without
             # requiring, token counts. Retried normally: a malformed response on this
-            # attempt doesn't mean the next one will be.
+            # attempt doesn't mean the next one will be. Also recorded into the
+            # Throttle's tokens_per_minute window (2026-08-10) -- same reasoning as the
+            # attempt log: real tokens were spent, so real budget was consumed,
+            # regardless of whether the response could be parsed.
             last_kind, last_message = FailureKind.OTHER, str(e)
+            throttle.record_tokens(model_name, e.prompt_tokens + e.completion_tokens)
             attempt_sink.append(StageAttempt(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
                 result=AttemptResult.OTHER_FAILURE, error_message=last_message,
                 prompt_tokens=e.prompt_tokens, completion_tokens=e.completion_tokens))
         except StageCallFailed as e:
+            # No record_tokens call here, deliberately: a transport failure is rejected
+            # before inference ever runs (contract item 13) -- nothing was spent.
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
             attempt_sink.append(StageAttempt(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
@@ -215,6 +279,13 @@ def call_stage(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
                 result=AttemptResult.OTHER_FAILURE, error_message=last_message))
         else:
+            # stage_fn returned -- the call itself succeeded and result.prompt_tokens/
+            # completion_tokens are real, regardless of what happens to `result.raw`
+            # below (clean success, a schema-validation failure, or an id/extra_check
+            # mismatch): the tokens were spent either way (contract item 14). Recorded
+            # once here rather than in each of the three failure branches below, so it
+            # can never be missed in one of them.
+            throttle.record_tokens(model_name, result.prompt_tokens + result.completion_tokens)
             try:
                 parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:
@@ -316,12 +387,18 @@ def call_document_stage(
                 result=AttemptResult.FATAL_FAILURE, error_message=last_message))
             break
         except StageCallPartial as e:
+            # See call_stage's identical branch: real tokens spent, recorded into the
+            # Throttle's tokens_per_minute window even though the response couldn't be
+            # parsed (2026-08-10).
             last_kind, last_message = FailureKind.OTHER, str(e)
+            throttle.record_tokens(model_name, e.prompt_tokens + e.completion_tokens)
             attempt_sink.append(DocumentStageAttempt(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
                 result=AttemptResult.OTHER_FAILURE, error_message=last_message,
                 prompt_tokens=e.prompt_tokens, completion_tokens=e.completion_tokens))
         except StageCallFailed as e:
+            # No record_tokens call here, deliberately -- same reasoning as call_stage:
+            # a transport failure spends nothing (contract item 13).
             last_kind, last_message = FailureKind.TRANSPORT, str(e)
             attempt_sink.append(DocumentStageAttempt(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
@@ -332,6 +409,9 @@ def call_document_stage(
                 stage=stage, invocation_id=invocation_id, attempt_number=attempt_number,
                 result=AttemptResult.OTHER_FAILURE, error_message=last_message))
         else:
+            # See call_stage's identical branch: stage_fn returned, so these tokens are
+            # real regardless of what model_validate below decides (2026-08-10).
+            throttle.record_tokens(model_name, result.prompt_tokens + result.completion_tokens)
             try:
                 parsed = model_cls.model_validate(result.raw)
             except ValidationError as e:

@@ -24,10 +24,19 @@ retry:
 
 # One entry per distinct provider/model actually in use below -- resolve_run_config
 # rejects a config where any resolved model is missing an entry here. Gemini's own
-# free-tier dashboard is the source of truth for a real number; 15 rpm is illustrative.
+# free-tier dashboard is the source of truth for a real requests_per_minute number;
+# 15 rpm is illustrative. tokens_per_minute is null for Gemini -- the 2026-08-10 first
+# real run measured an absolute per-model request cap (20 requests) for
+# gemini-3.6-flash, not a token-rate limit, so there is no real TPM number to put here
+# (see docs/superpowers/results/2026-08-10-first-real-run/ANALYSIS.md); inventing one
+# would be worse than leaving it unthrottled by tokens.
 rate_limits:
-  gemini/gemini-3.6-flash: {requests_per_minute: 15}
-  groq/llama-3.3-70b-versatile: {requests_per_minute: 30}
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+  # 12000 is real, measured, and cited: Groq's own 429 body during that same run quoted
+  # "Rate limit reached for model llama-3.3-70b-versatile ... tokens per minute (TPM):
+  # Limit 12000" -- see ANALYSIS.md, "Surprises" #1. requests_per_minute (30) was never
+  # the binding constraint that run hit; tokens_per_minute is.
+  groq/llama-3.3-70b-versatile: {requests_per_minute: 30, tokens_per_minute: 12000}
 
 defaults:
   provider: gemini

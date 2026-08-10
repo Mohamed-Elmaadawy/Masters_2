@@ -761,6 +761,233 @@ def test_throttle() -> None:
     ok("a call after the interval has elapsed does not wait", slept == [])
 
 
+def test_throttle_tokens_per_minute() -> None:
+    """Scenario: Throttle also paces on tokens actually spent (record_tokens), not just
+    call count -- the 2026-08-10 real run found Groq's binding constraint was a
+    tokens-per-minute budget RPM pacing alone cannot see. Same fake-clock/no-op-sleep
+    discipline as test_throttle: assert the actual recorded delay, not just that one
+    happened."""
+    section("Throttle -- tokens-per-minute")
+    from orchestrator.pipeline import Throttle
+
+    slept: list[float] = []
+    clock = [0.0]
+
+    def fake_now():
+        return datetime(2026, 1, 1, tzinfo=timezone.utc).fromtimestamp(
+            clock[0], tz=timezone.utc)
+
+    def fake_sleep(seconds: float) -> None:
+        slept.append(seconds)
+        clock[0] += seconds
+
+    throttle = Throttle(sleep_fn=fake_sleep, now_fn=fake_now,
+                        tokens_per_minute={"budgeted-model": 100.0})
+
+    throttle.wait_for_slot("budgeted-model")
+    ok("no tokens recorded yet -- never waits", slept == [])
+    throttle.record_tokens("budgeted-model", 60.0)
+
+    clock[0] += 5.0
+    throttle.wait_for_slot("budgeted-model")
+    ok("60/100 tokens spent, still under budget -- no wait", slept == [])
+    throttle.record_tokens("budgeted-model", 50.0)  # window is now 110 tokens, over 100
+
+    clock[0] += 5.0  # 10s since the first recording (60 tokens), 5s since the second (50)
+    throttle.wait_for_slot("budgeted-model")
+    ok("over budget -- waits exactly until the OLDEST entry (60 tokens, 10s old) ages "
+       "out of the 60s window", slept == [50.0])
+    # After that sleep, clock advanced by 50s -> the 60-token entry is now 60s old
+    # (pruned) and the 50-token entry is 55s old (kept) -- window is 50 tokens, under
+    # budget, so a second call right after must not wait again.
+    slept.clear()
+    throttle.wait_for_slot("budgeted-model")
+    ok("after the wait, the aged-out entry is pruned and the call proceeds without "
+       "waiting again", slept == [])
+
+    # A model with no tokens_per_minute entry is unthrottled by tokens, no matter how
+    # many are recorded -- "skip if unset", same convention as min_interval_seconds.
+    throttle.record_tokens("unbudgeted-model", 10_000.0)
+    slept.clear()
+    throttle.wait_for_slot("unbudgeted-model")
+    ok("a model with no tokens_per_minute entry never waits on tokens", slept == [])
+
+    # Three entries where removing only the SINGLE oldest still leaves the window over
+    # budget -- wait_for_slot must keep waiting/pruning until it's actually back under
+    # budget (or empty), not stop after one wait. This is the case that actually
+    # distinguishes a while-loop from a single `if` check: with only two entries,
+    # removing the oldest one always leaves the remainder under budget by construction
+    # (verified by mutation -- an `if` in place of the `while` below passed every other
+    # assertion in this function unchanged, and only this scenario caught it).
+    clock2 = [0.0]
+    slept2: list[float] = []
+
+    def fake_now2():
+        return datetime(2026, 1, 1, tzinfo=timezone.utc).fromtimestamp(
+            clock2[0], tz=timezone.utc)
+
+    def fake_sleep2(seconds: float) -> None:
+        slept2.append(seconds)
+        clock2[0] += seconds
+
+    throttle2 = Throttle(sleep_fn=fake_sleep2, now_fn=fake_now2,
+                        tokens_per_minute={"heavy-model": 100.0})
+    throttle2.record_tokens("heavy-model", 60.0)   # t=0
+    clock2[0] += 1.0
+    throttle2.record_tokens("heavy-model", 60.0)   # t=1
+    clock2[0] += 1.0
+    throttle2.record_tokens("heavy-model", 60.0)   # t=2 -- window: 180 tokens, over 100
+
+    clock2[0] += 1.0  # t=3
+    throttle2.wait_for_slot("heavy-model")
+    # iter 1: oldest (60 @ t=0) ages out at t=60 -> sleep 57s (60 - (3-0)); remaining
+    #         window is [60 @ t=1, 60 @ t=2] = 120, STILL >= 100 -> loop must continue.
+    # iter 2: now t=60; oldest (60 @ t=1) ages out at t=61 -> sleep 1s; remaining
+    #         window is [60 @ t=2] = 60, under 100 -> loop exits.
+    ok("a window that's still over budget after removing only the oldest entry keeps "
+       "waiting for the next-oldest to age out too (two waits, not one)",
+       slept2 == [57.0, 1.0])
+
+    # Boundary: exactly AT the limit (not over it) must still wait -- the spec says
+    # "at/over", not "over" -- distinguishing >= from a plain > mutation, which passed
+    # every other assertion in this function unchanged (verified by mutation).
+    clock3 = [0.0]
+    slept3: list[float] = []
+
+    def fake_now3():
+        return datetime(2026, 1, 1, tzinfo=timezone.utc).fromtimestamp(
+            clock3[0], tz=timezone.utc)
+
+    def fake_sleep3(seconds: float) -> None:
+        slept3.append(seconds)
+        clock3[0] += seconds
+
+    throttle3 = Throttle(sleep_fn=fake_sleep3, now_fn=fake_now3,
+                        tokens_per_minute={"exact-model": 100.0})
+    throttle3.record_tokens("exact-model", 100.0)  # exactly at the limit, not over it
+
+    clock3[0] += 10.0
+    throttle3.wait_for_slot("exact-model")
+    ok("a window exactly AT the limit still waits (>= , not just >)",
+       slept3 == [50.0])
+
+
+def test_record_tokens_only_on_a_stage_fn_call_that_returns() -> None:
+    """call_stage must call throttle.record_tokens with the real token counts whenever
+    stage_fn itself returns (regardless of what happens to the parsed output
+    afterward -- success, a schema-validation failure, or the requirement_id check),
+    and must NEVER call it for a StageCallFailed (transport_failure) -- contract item
+    13: a transport failure is rejected before inference ever runs, so there is
+    nothing to record. This is the one place Throttle's token pacing can go silently
+    wrong: recording tokens for a call that never happened would make the throttle
+    think more budget was spent than actually was."""
+    section("record_tokens wiring: call_stage")
+    from orchestrator.pipeline import call_stage, StageFailed, Throttle
+    from orchestrator.stage_fns import StageCallPartial
+    from design.schemas import Classification
+
+    recorded: list[tuple[str, float]] = []
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    throttle.record_tokens = lambda model, tokens: recorded.append((model, tokens))
+
+    # -- StageCallPartial: inference happened, tokens were spent, even though stage_fn
+    # raised rather than returned -- this is the one exception branch besides success/
+    # validation-failure that must still record real tokens. --
+    fn0 = Scripted([StageCallPartial("truncated body", prompt_tokens=7, completion_tokens=3)])
+    try:
+        call_stage(fn0, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-0",
+                  "fake-model", throttle, [], "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a StageCallPartial still records the tokens it genuinely spent",
+       recorded == [("fake-model", 10.0)])
+    recorded.clear()
+
+    # -- a transport failure (retried, still fails) must record nothing --
+    fn = Scripted([StageCallFailed("429"), StageCallFailed("429"), StageCallFailed("429")])
+    try:
+        call_stage(fn, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-1",
+                  "fake-model", throttle, [], "R1", max_attempts=3,
+                  backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a transport failure records no tokens", recorded == [])
+
+    # -- a schema-validation failure: stage_fn DID return, tokens were spent --
+    fn2 = Scripted([{"requirement_id": "R1", "system_type": "not-a-real-type",
+                     "rationale": "r"}])  # invalid enum value -> ValidationError
+    try:
+        call_stage(fn2, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-2",
+                  "fake-model", throttle, [], "R1", max_attempts=1,
+                  backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a schema-validation failure still records the tokens that call actually spent",
+       recorded == [("fake-model", 15.0)])  # Scripted's default (prompt=10, completion=5)
+
+    # -- success: tokens recorded once more --
+    recorded.clear()
+    fn3 = Scripted([{"requirement_id": "R1", "system_type": "web", "rationale": "r"}])
+    call_stage(fn3, ("R1",), Classification, PipelineStage.CLASSIFIER, "inv-3",
+              "fake-model", throttle, [], "R1", max_attempts=1,
+              backoff_seconds=lambda a: 0.0)
+    ok("a successful call records the tokens it spent", recorded == [("fake-model", 15.0)])
+
+
+def test_record_tokens_only_on_a_document_stage_fn_call_that_returns() -> None:
+    """call_document_stage's twin of test_record_tokens_only_on_a_stage_fn_call_that_returns
+    -- CLAUDE.md: 'a fix at one level needs checking at the other, in the same
+    change.' Same three cases: transport failure records nothing, a StageCallPartial
+    and a schema-validation failure both still record real tokens, success records
+    them too."""
+    section("record_tokens wiring: call_document_stage")
+    from orchestrator.pipeline import call_document_stage, StageFailed, Throttle
+    from orchestrator.stage_fns import StageCallPartial
+    from design.schemas import ConsistencyReport, DocumentStage
+
+    recorded: list[tuple[str, float]] = []
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+    throttle.record_tokens = lambda model, tokens: recorded.append((model, tokens))
+
+    fn0 = Scripted([StageCallPartial("truncated body", prompt_tokens=7, completion_tokens=3)])
+    try:
+        call_document_stage(fn0, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-0", "fake-model", throttle, [], DOC.doc_id, max_attempts=1,
+                            backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a StageCallPartial still records the tokens it genuinely spent",
+       recorded == [("fake-model", 10.0)])
+    recorded.clear()
+
+    fn = Scripted([StageCallFailed("429"), StageCallFailed("429"), StageCallFailed("429")])
+    try:
+        call_document_stage(fn, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-1", "fake-model", throttle, [], DOC.doc_id, max_attempts=3,
+                            backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a transport failure records no tokens", recorded == [])
+
+    fn2 = Scripted([{"doc_id": "WRONG-DOC", "conflicts": []}])  # doc_id mismatch -> VALIDATION
+    try:
+        call_document_stage(fn2, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                            "inv-2", "fake-model", throttle, [], DOC.doc_id, max_attempts=1,
+                            backoff_seconds=lambda a: 0.0)
+    except StageFailed:
+        pass
+    ok("a doc_id-mismatch validation failure still records the tokens that call spent",
+       recorded == [("fake-model", 15.0)])
+
+    recorded.clear()
+    fn3 = Scripted([{"doc_id": DOC.doc_id, "conflicts": []}])
+    call_document_stage(fn3, (DOC,), ConsistencyReport, DocumentStage.CONSISTENCY_CHECKER,
+                        "inv-3", "fake-model", throttle, [], DOC.doc_id, max_attempts=1,
+                        backoff_seconds=lambda a: 0.0)
+    ok("a successful call records the tokens it spent", recorded == [("fake-model", 15.0)])
+
+
 def test_on_disk_round_trip() -> None:
     """Contract items 9 and 10: document.json is written with requirement_records=[],
     each requirement gets its own file, and everything re-validates before persisting."""
@@ -3665,6 +3892,8 @@ def main() -> int:
     print("orchestrator simulation harness")
     print("=" * 72)
     for fn in (test_resume_positions, test_stage_fns_typo_is_a_typeerror, test_throttle,
+              test_throttle_tokens_per_minute, test_record_tokens_only_on_a_stage_fn_call_that_returns,
+              test_record_tokens_only_on_a_document_stage_fn_call_that_returns,
               test_call_stage, test_id_check_parameters_have_no_default,
               test_requirement_id_mismatch_is_validation_at_every_stage,
               test_requirement_id_mismatch_end_to_end,

@@ -660,6 +660,47 @@ counts, the exact drift this check exists to catch.
 
 ---
 
+## 19. Token-per-minute throttling, not just request-count
+
+**The gap, measured, not hypothesized.** The 2026-08-10 first real run against actual
+LLM APIs (`docs/superpowers/results/2026-08-10-first-real-run/ANALYSIS.md`) found
+`Throttle`'s only pacing mechanism, `min_interval_seconds` (requests per minute), had
+nothing to pace on when a provider's actual binding constraint was tokens, not request
+count: Groq's own 429 body quoted a 12,000-tokens-per-minute budget for
+`llama-3.3-70b-versatile`, while that run's `requests_per_minute: 30` was never close to
+the real limit. 4 of 8 requirements exhausted retries and hard-failed as a result — a
+measured 59.2% transport-failure rate, not an estimate.
+
+**The mechanism.** `Throttle.tokens_per_minute: dict[str, float]` (`orchestrator/
+pipeline.py`), same per-model, absent-key-means-unthrottled convention as
+`min_interval_seconds`. `record_tokens(model, tokens)` appends `(now, tokens)` to a
+rolling window; `wait_for_slot` prunes that window to the last 60s and, if the sum is at
+or over the configured limit, sleeps until the oldest entry ages out — in a loop, not a
+single wait, because removing only the single oldest entry can still leave the window
+over budget if several large calls landed close together. Wired into `call_stage`/
+`call_document_stage`: `record_tokens` is called with the real token count whenever
+`stage_fn` itself returns (success, a schema-validation failure, or an id/`extra_check`
+mismatch — the call happened and spent tokens either way, contract item 14) or raises
+`StageCallPartial` (inference happened even though the response couldn't be parsed) —
+and is **never** called for a `StageCallFailed` (transport failure): that request was
+rejected before inference ran, so nothing was spent (contract item 13). Configured via
+`orchestrator/config.py`'s `RateLimitConfig.tokens_per_minute` — same required-key,
+nullable-value pattern as `requests_per_minute`, so a model can never be silently
+unthrottled by tokens just because the operator forgot the key.
+
+**What this does NOT fix — stated honestly, not implied as solved.** `wait_for_slot` can
+only bound a call by tokens *already spent* in the last 60s; it has no way to know the
+token cost of the call it is about to let through (that would require a real tokenizer
+per provider/model — deliberately not built, to avoid the accuracy and maintenance cost
+of an approximate one). So this **reduces** the rate of TPM 429s, it does not
+**eliminate** them: a single large call can still push the window over budget, visible
+only to the *next* call's `wait_for_slot`. See CLAUDE.md's Known-open list.
+
+*(DESIGN_NOTES: none yet — see the ANALYSIS.md citation above for the full measurement;
+this item states the mechanism, not a repeated narrative.)*
+
+---
+
 ## Things the schema does NOT check, by design
 
 Worth knowing so they are not assumed handled:

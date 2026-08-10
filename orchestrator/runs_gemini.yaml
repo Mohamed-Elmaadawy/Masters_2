@@ -14,8 +14,11 @@ retry:
   initial_delay_seconds: 2.0
   multiplier: 2.0
 
+# tokens_per_minute is null: this run measured an absolute per-model request cap (20
+# requests) for gemini-3.6-flash, not a token-rate limit -- see ../docs/superpowers/
+# results/2026-08-10-first-real-run/ANALYSIS.md. No real TPM number exists to put here.
 rate_limits:
-  gemini/gemini-3.6-flash: {requests_per_minute: 15}
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
 
 defaults:
   provider: gemini

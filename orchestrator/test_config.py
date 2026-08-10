@@ -72,7 +72,7 @@ def write_prompts(dir_path: Path, text_by_stage: dict = None) -> dict:
 def base_config_dict(dir_path: Path, **overrides) -> dict:
     d = dict(
         defaults=dict(provider="gemini", model="gemini-3.6-flash", prompt_version="v1"),
-        rate_limits={"gemini/gemini-3.6-flash": {"requests_per_minute": 15}},
+        rate_limits={"gemini/gemini-3.6-flash": {"requests_per_minute": 15, "tokens_per_minute": None}},
         prompts=write_prompts(dir_path),
     )
     d.update(overrides)
@@ -89,7 +89,8 @@ def test_extra_field_rejected() -> None:
         rejects("unknown key inside a stage override",
                 lambda: StageOverride.model_validate({"bogus": 1}))
         rejects("unknown key inside a rate limit entry",
-                lambda: RateLimitConfig.model_validate({"requests_per_minute": 1, "bogus": 1}))
+                lambda: RateLimitConfig.model_validate(
+                    {"requests_per_minute": 1, "tokens_per_minute": None, "bogus": 1}))
 
 
 def test_unknown_stage_key_rejected() -> None:
@@ -133,21 +134,44 @@ def test_rate_limit_coverage_required() -> None:
         rejects("missing rate_limits entry for the only model in use",
                 lambda: resolve_run_config(config, Path(tmp) / "config.yaml"))
 
-        d2 = base_config_dict(Path(tmp), rate_limits={"gemini/gemini-3.6-flash": {"requests_per_minute": None}})
+        d2 = base_config_dict(Path(tmp), rate_limits={"gemini/gemini-3.6-flash": {
+            "requests_per_minute": None, "tokens_per_minute": None}})
         config2 = RunConfig.model_validate(d2)
         resolved = resolve_run_config(config2, Path(tmp) / "config.yaml")
         ok("explicit null is accepted as deliberately unthrottled",
            resolved.rate_limits["gemini/gemini-3.6-flash"].requests_per_minute is None)
         ok("throttle_from gives that model no min_interval entry",
            "gemini/gemini-3.6-flash" not in throttle_from(resolved).min_interval_seconds)
+        ok("throttle_from gives that model no tokens_per_minute entry either",
+           "gemini/gemini-3.6-flash" not in throttle_from(resolved).tokens_per_minute)
 
 
 def test_rate_limit_value_must_be_positive_or_null() -> None:
-    section("requests_per_minute must be > 0 or explicitly null")
-    rejects("zero is rejected", lambda: RateLimitConfig.model_validate({"requests_per_minute": 0}))
-    rejects("negative is rejected", lambda: RateLimitConfig.model_validate({"requests_per_minute": -5}))
-    accepts("null is accepted", lambda: RateLimitConfig.model_validate({"requests_per_minute": None}))
-    accepts("a positive value is accepted", lambda: RateLimitConfig.model_validate({"requests_per_minute": 15}))
+    section("requests_per_minute/tokens_per_minute must each be > 0 or explicitly null")
+    rejects("requests_per_minute zero is rejected",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": 0, "tokens_per_minute": None}))
+    rejects("requests_per_minute negative is rejected",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": -5, "tokens_per_minute": None}))
+    accepts("requests_per_minute null is accepted",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": None, "tokens_per_minute": None}))
+    accepts("requests_per_minute a positive value is accepted",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": 15, "tokens_per_minute": None}))
+    rejects("tokens_per_minute zero is rejected",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": None, "tokens_per_minute": 0}))
+    rejects("tokens_per_minute negative is rejected",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": None, "tokens_per_minute": -12000}))
+    accepts("tokens_per_minute null is accepted",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": None, "tokens_per_minute": None}))
+    accepts("tokens_per_minute a positive value is accepted",
+            lambda: RateLimitConfig.model_validate(
+                {"requests_per_minute": None, "tokens_per_minute": 12000}))
 
 
 def test_override_merge_picks_right_scalar_per_field() -> None:
@@ -157,8 +181,8 @@ def test_override_merge_picks_right_scalar_per_field() -> None:
         d = base_config_dict(
             Path(tmp),
             stages={stage: {"model": "gemini-3.1-pro-preview", "temperature": 0.2}},
-            rate_limits={"gemini/gemini-3.6-flash": {"requests_per_minute": 15},
-                        "gemini/gemini-3.1-pro-preview": {"requests_per_minute": 10}},
+            rate_limits={"gemini/gemini-3.6-flash": {"requests_per_minute": 15, "tokens_per_minute": None},
+                        "gemini/gemini-3.1-pro-preview": {"requests_per_minute": 10, "tokens_per_minute": None}},
         )
         config = RunConfig.model_validate(d)
         resolved = resolve_run_config(config, Path(tmp) / "config.yaml")
@@ -218,7 +242,7 @@ def test_output_mode_capability_checked_before_any_env_var() -> None:
                 Path(tmp),
                 defaults=dict(provider="gemini", model="gemini-2.0-flash", prompt_version="v1",
                              output_mode="json_schema"),
-                rate_limits={"gemini/gemini-2.0-flash": {"requests_per_minute": 15}},
+                rate_limits={"gemini/gemini-2.0-flash": {"requests_per_minute": 15, "tokens_per_minute": None}},
             )
             config = RunConfig.model_validate(d)
             rejects("unsupported output_mode fails at resolve, with no key ever read",
@@ -348,8 +372,9 @@ def test_tampered_run_config_json_cannot_load() -> None:
         rejects_tampered("a rate_limits entry deleted, leaving a model uncovered",
                          lambda c: c["rate_limits"].popitem())
         rejects_tampered("an unused rate_limits entry injected for a model nothing uses",
-                         lambda c: c["rate_limits"].__setitem__("groq/totally-unused-model",
-                                                                {"requests_per_minute": 5}))
+                         lambda c: c["rate_limits"].__setitem__(
+                             "groq/totally-unused-model",
+                             {"requests_per_minute": 5, "tokens_per_minute": None}))
         rejects_tampered("an extra unknown top-level field injected (extra='forbid')",
                          lambda c: c.__setitem__("bogus_field", 1))
 
@@ -409,9 +434,17 @@ def test_run_dir_for_defends_even_if_the_field_validator_is_bypassed() -> None:
 def test_no_field_looks_key_shaped() -> None:
     section("no config model has a field that could hold a secret")
     suspicious = {"key", "api_key", "secret", "token", "password", "credential"}
+    # Narrow, explicit exemption -- NOT a loosened substring set, which would blunt
+    # this check for a real future secret-shaped field (api_token, auth_token, ...).
+    # RateLimitConfig.tokens_per_minute matches "token" as a substring but holds an
+    # LLM token-count budget (orchestrator/pipeline.py's Throttle.tokens_per_minute),
+    # never a credential -- confirmed by reading the field, not assumed here.
+    known_false_positives = {("RateLimitConfig", "tokens_per_minute")}
     for model in (RunConfig, StageDefaults, StageOverride, RateLimitConfig,
                   ResolvedRunConfig):
         for name in model.model_fields:
+            if (model.__name__, name) in known_false_positives:
+                continue
             ok(f"{model.__name__}.{name} does not look key-shaped",
                not any(s in name.lower() for s in suspicious))
 
