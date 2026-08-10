@@ -1,0 +1,58 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-H",
+    "text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "error",
+  "errors": [
+    {
+      "stage": "classifier",
+      "invocation_id": "8652786abfac473ab15e168655077505",
+      "kind": "transport",
+      "message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99262, Requested 1346. Please try again in 8m45.312s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "retry_count": 2
+    }
+  ],
+  "cap_reason": null,
+  "classification": null,
+  "rounds": [],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "8652786abfac473ab15e168655077505",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99270, Requested 1346. Please try again in 8m52.223999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "8652786abfac473ab15e168655077505",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99267, Requested 1262. Please try again in 7m37.056s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "8652786abfac473ab15e168655077505",
+      "attempt_number": 3,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99262, Requested 1346. Please try again in 8m45.312s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    }
+  ],
+  "final_text": "When an event occurs, the THEMAS system shall identify the event type and format an appropriate event message.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [],
+  "issue_history": {},
+  "total_tokens": 0
+}

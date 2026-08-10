@@ -1,0 +1,58 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-D",
+    "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "error",
+  "errors": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c9106b752a9c4933803ad66457cc0a6a",
+      "kind": "transport",
+      "message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99301, Requested 1255. Please try again in 8m0.383999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "retry_count": 2
+    }
+  ],
+  "cap_reason": null,
+  "classification": null,
+  "rounds": [],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c9106b752a9c4933803ad66457cc0a6a",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99308, Requested 1255. Please try again in 8m6.431999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "c9106b752a9c4933803ad66457cc0a6a",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99305, Requested 1341. Please try again in 9m18.144s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "c9106b752a9c4933803ad66457cc0a6a",
+      "attempt_number": 3,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99301, Requested 1255. Please try again in 8m0.383999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    }
+  ],
+  "final_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [],
+  "issue_history": {},
+  "total_tokens": 0
+}

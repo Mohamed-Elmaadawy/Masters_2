@@ -1,0 +1,58 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-F",
+    "text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+    "source_doc_id": "themas-fischbach2022"
+  },
+  "run_id": "themas",
+  "outcome": "error",
+  "errors": [
+    {
+      "stage": "classifier",
+      "invocation_id": "35f01492c75e469ebc1b0631dfebf8a6",
+      "kind": "transport",
+      "message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99282, Requested 1264. Please try again in 7m51.744s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "retry_count": 2
+    }
+  ],
+  "cap_reason": null,
+  "classification": null,
+  "rounds": [],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "35f01492c75e469ebc1b0631dfebf8a6",
+      "attempt_number": 1,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99289, Requested 1348. Please try again in 9m10.367999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "35f01492c75e469ebc1b0631dfebf8a6",
+      "attempt_number": 2,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99286, Requested 1264. Please try again in 7m55.2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "classifier",
+      "invocation_id": "35f01492c75e469ebc1b0631dfebf8a6",
+      "attempt_number": 3,
+      "result": "transport_failure",
+      "error_message": "groq returned HTTP 429: {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kzf40bwge5krezag73a1848n` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99282, Requested 1264. Please try again in 7m51.744s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    }
+  ],
+  "final_text": "The heating/cooling unit shall have no real time delay when these statuses are sent to the THEMAS system.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [],
+  "issue_history": {},
+  "total_tokens": 0
+}
