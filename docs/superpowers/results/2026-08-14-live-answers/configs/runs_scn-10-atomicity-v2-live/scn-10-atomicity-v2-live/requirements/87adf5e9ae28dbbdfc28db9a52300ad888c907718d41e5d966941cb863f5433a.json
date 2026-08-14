@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "AUTOGEN-US2",
+    "text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-10-atomicity-v2-live",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "AUTOGEN-US2",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding context (inventory management/reporting) mentions web interfaces, mobile apps, or machine learning capabilities, so it defaults to 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague adjective with no measurable threshold or target metric (e.g., uptime percentage or mean time between failures).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective with no quantifiable performance criteria (e.g., response time, resource utilization, or throughput).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable target or threshold should be used to define 'reliable' (for example, uptime percentage, maximum failure rate, or mean time between failures)?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What quantifiable criteria should be used to define 'efficient' (for example, maximum response time, resource consumption limits, or transaction throughput)?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No number exists. This is a generated user story about an unnamed \"product\" -- there's no system, no domain, no spec behind it. Uptime and MTBF aren't interchangeable either; you'd have to define what counts as a failure first. Whoever owns the product sets this, not me.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No number exists. This is a generated user story about an unnamed \"product\" -- there's no system, no domain, no spec behind it. Uptime and MTBF aren't interchangeable either; you'd have to define what counts as a failure first. Whoever owns the product sets this, not me.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague adjective with no measurable threshold or objective acceptance criteria.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective with no measurable threshold or defined performance metric.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should 'reliable' be quantitatively defined or measured (for example, target uptime percentage or maximum allowable failure rate)?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific metrics or thresholds should be used to define 'efficient' (for example, maximum response time, processing speed, or resource usage bounds)?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Still no number. \"Defined by the product owner\" just says someone else will decide later; it doesn't make the requirement testable.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Still no number. \"Defined by the product owner\" just says someone else will decide later; it doesn't make the requirement testable.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague adjective without a specific, measurable threshold or operational definition.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective without measurable performance metrics or quantifiable constraints.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "91dfe85660a346838eefac6750bd4d41",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 810,
+      "completion_tokens": 54
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "87cc4a73c35f4cf189992bfe98fd9279",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 132
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "6b4f5bd8a85243cbbdb2ba6d46e23b69",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1218,
+      "completion_tokens": 194
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "a1bc9bf949bc4c7886b89dafef34f981",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1473,
+      "completion_tokens": 282
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "153455442a2e4bc9a8f7cf447f958264",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 95
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "42be51bd01644c2d8963432718aef43f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1195,
+      "completion_tokens": 188
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b63289558ac54e0fac15c1f6eabb58a2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1437,
+      "completion_tokens": 193
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "2409cc005fd1478396dcb328bec56be5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 111
+    }
+  ],
+  "final_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+  "final_requirement": {
+    "requirement_id": "AUTOGEN-US2",
+    "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Still no number. \"Defined by the product owner\" just says someone else will decide later; it doesn't make the requirement testable.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12647
+}

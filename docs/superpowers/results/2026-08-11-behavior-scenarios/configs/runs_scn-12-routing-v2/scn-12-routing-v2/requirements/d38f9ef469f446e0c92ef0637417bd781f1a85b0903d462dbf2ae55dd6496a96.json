@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "LUITEL-R1",
+    "text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-12-routing-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "LUITEL-R1",
+    "system_type": "other",
+    "rationale": "The requirement specifies a performance and availability constraint regarding system reconfiguration and reaching a steady state, which describes general backend/infrastructure or embedded system behavior rather than a web, mobile, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+      "quality_report": {
+        "requirement_id": "LUITEL-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "steady state",
+            "explanation": "The term 'steady state' is vague and lacks a measurable threshold or explicit parameters to define when the system has reached this state.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "maximize availability",
+            "explanation": "The phrase 'maximize availability' uses the unbounded term 'maximize', which lacks a specific, testable target or metric.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "LUITEL-R1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific criteria or measurable operational parameters define when the system has reached a \"steady state\" after reconfiguration?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific, testable availability metric or percentage target should replace the phrase \"maximize availability\"?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "LUITEL-R1",
+        "original_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "refined_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+      "quality_report": {
+        "requirement_id": "LUITEL-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "steady state",
+            "explanation": "The term \"steady state\" is vague and lacks a measurable definition or specific operational criteria to determine when it has been reached.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "maximize availability",
+            "explanation": "The phrase \"maximize availability\" is a vague goal with no measurable threshold or metric for verification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "LUITEL-R1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should 'steady state' be specifically defined or measured in terms of operational criteria to determine when the system has reached it after reconfiguration?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific metric or quantitative threshold should be used to define or verify 'maximize availability'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "LUITEL-R1",
+        "original_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "refined_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+      "quality_report": {
+        "requirement_id": "LUITEL-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "steady state",
+            "explanation": "The term 'steady state' is ambiguous and lacks a specific, measurable threshold or operational definition to determine when it has been achieved.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "maximize availability",
+            "explanation": "The phrase 'maximize availability' uses the vague goal 'maximize', which provides no measurable threshold or quantitative target.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "a6cade9a028541b0877266d006d14e92",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 874,
+      "completion_tokens": 62
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f1d041e0612e4dc690f4f8e93408113f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1752,
+      "completion_tokens": 170
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "d4a5c66d87aa48fa8ac5f34b3d069728",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1208,
+      "completion_tokens": 116
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "d5c3fb8c6d47401f85fc43572f74eb0c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1470,
+      "completion_tokens": 222
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "0efc243932d44f72bc743ca902422a7e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1752,
+      "completion_tokens": 122
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "2169ede5e85f45d38e0f1e2c3658e678",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1202,
+      "completion_tokens": 121
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "956d6c878d22426a915b08f6217e545f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1470,
+      "completion_tokens": 236
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e14f629d652543c9b2381f77042365db",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1752,
+      "completion_tokens": 110
+    }
+  ],
+  "final_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+  "final_requirement": {
+    "requirement_id": "LUITEL-R1",
+    "original_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+    "refined_text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12639
+}

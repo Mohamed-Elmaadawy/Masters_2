@@ -1,0 +1,367 @@
+{
+  "requirement": {
+    "id": "AUTOGEN-US3",
+    "text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-11a-cap-generate-v2-live",
+  "outcome": "cap_generated",
+  "errors": [],
+  "cap_reason": "S11a: human decision scripted to generate tests from best-effort text at the revision cap, to exercise the CAP_GENERATED branch. Contrast with scn-11b, same fixture, human decision scripted to stop instead.",
+  "classification": {
+    "requirement_id": "AUTOGEN-US3",
+    "system_type": "other",
+    "rationale": "The target requirement is an extremely generic user story with no contextual signals or specific indicators for web, mobile, or AI systems, classifying it as 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "As a user, I want a product that meets my needs so that I can get value for my money.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "meets my needs",
+            "explanation": "The phrase 'meets my needs' is vague and subjective, lacking any measurable criteria or specific functionality.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "get value for my money",
+            "explanation": "The phrase 'get value for my money' is vague and subjective, with no measurable threshold or metric defined.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US3",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement AUTOGEN-US3, the phrase 'meets my needs' is vague. What specific user needs, functionalities, or performance criteria should the product satisfy?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement AUTOGEN-US3, the phrase 'get value for my money' is subjective. What specific measurable outcomes, efficiency gains, or metrics define this value for the user?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US3",
+        "original_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "refined_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "As a user, I want a product that meets my needs so that I can get value for my money.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "meets my needs",
+            "explanation": "The phrase 'meets my needs' is subjective and vague, lacking any measurable threshold or specific functional acceptance criteria.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "AUTOGEN-US3-ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "value for my money",
+            "explanation": "The phrase 'value for my money' is vague and subjective with no objective or quantifiable criteria to verify.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US3",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific functional requirements, features, or performance standards should be defined to clarify the phrase 'meets my needs'?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "AUTOGEN-US3-ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What objective criteria or measurable outcomes should be used to evaluate or verify the phrase 'value for my money'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US3",
+        "original_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "refined_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "As a user, I want a product that meets my needs so that I can get value for my money.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "meets my needs",
+            "explanation": "The phrase 'meets my needs' is vague and subjective, lacking specific, measurable criteria or defined functionality.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "AUTOGEN-US3-ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "value for my money",
+            "explanation": "The phrase 'value for my money' is subjective and does not provide a measurable threshold or quantifiable metric for verification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "AUTOGEN-US3",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement text is generic, high-level, and subjective ('meets my needs', 'get value for my money') without specific numeric thresholds, conditional rules, state transitions, performance metrics, or concrete multi-step flows. Following the guidance rule for requirements where no specific structured criteria match, exploratory testing is selected."
+  },
+  "test_plan": {
+    "requirement_id": "AUTOGEN-US3",
+    "test_cases": [
+      {
+        "id": "TC-11-AUTOGEN-US3-1",
+        "requirement_ids": [
+          "AUTOGEN-US3"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory evaluation of core product functionality and user value delivery",
+        "preconditions": "Product is deployed in a standard test environment and accessible by a target user persona.",
+        "steps": [
+          "Explore key user workflows across the product interface without a rigid script.",
+          "Perform end-to-end tasks aligned with core target user needs, noting friction points, missing features, or impediments to task completion.",
+          "Evaluate whether completed tasks successfully produce outcomes that deliver tangible utility and value."
+        ],
+        "expected_result": "Product enables smooth task execution and delivers clear functional utility without major usability blockers or unexpected failures."
+      },
+      {
+        "id": "TC-11-AUTOGEN-US3-2",
+        "requirement_ids": [
+          "AUTOGEN-US3"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory assessment of product usability and user feedback mechanisms",
+        "preconditions": "Product is accessible with test accounts having default permissions.",
+        "steps": [
+          "Navigate critical paths and secondary product features from the perspective of a new user.",
+          "Attempt common user actions and intentionally deviate to test error feedback, guidance clarity, and recovery options.",
+          "Assess user experience quality, system responsiveness, and overall value perception."
+        ],
+        "expected_result": "System provides intuitive navigation, helpful error feedback, and clear output that supports user satisfaction and perceived value."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "9ab1b5208eaa43c09c56c46ced824c25",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 781,
+      "completion_tokens": 52
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "2c6fcab098684a29b24533b82d039c5b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1756,
+      "completion_tokens": 165
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "add75bd104ea43c5897062077bbe5f33",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1208,
+      "completion_tokens": 204
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b0242ec3449b4d8b987d85fc69b674fc",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1427,
+      "completion_tokens": 198
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "cacc869f41e04618b4cff122e9bfdfc3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1756,
+      "completion_tokens": 165
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "d6bc8c7eec0f44a5a68d64b815fea55f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1214,
+      "completion_tokens": 185
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "c3f750a5fba5461fb5df16a1950b21a5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1458,
+      "completion_tokens": 229
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "75aff53354434d3a81b215b4b3b0f08f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1756,
+      "completion_tokens": 166
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "7d051dc2a6314fe599866570ceaf877a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1111,
+      "completion_tokens": 90
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "e73618e4a947457e8c47c4be2cce4c45",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1455,
+      "completion_tokens": 412
+    }
+  ],
+  "final_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+  "final_requirement": {
+    "requirement_id": "AUTOGEN-US3",
+    "original_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+    "refined_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "AUTOGEN-US3-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 15788
+}

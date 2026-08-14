@@ -1,0 +1,152 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R6",
+    "text": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution-v2",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R6",
+    "system_type": "other",
+    "rationale": "The requirement describes functionality for European Train Control System (ETCS) onboard railway equipment switching operational levels based on trackside signals. This is an embedded/control system for rail safety, not a web application, mobile app, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R6",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-ERTMS-R6",
+    "system_type": "other",
+    "techniques": [
+      "decision_table",
+      "state_based",
+      "equivalence_partitioning"
+    ],
+    "rationale": "Decision table testing applies because the requirement involves multiple combined conditions (line fitted levels, trackside level priority rankings, and onboard equipment capabilities) that determine the target ETCS level output. State-based testing applies because the requirement explicitly describes transitions between operational ETCS levels (states) triggered by passing trackside level transitions. Equivalence partitioning applies to partition inputs such as trackside priority configurations and train equipment status into valid matching and non-matching classes."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-ERTMS-R6",
+    "test_cases": [
+      {
+        "id": "TC-13-PURE-ERTMS-R6-1",
+        "requirement_ids": [
+          "PURE-ERTMS-R6"
+        ],
+        "technique_used": "decision_table",
+        "title": "Level transition to multi-level line where train is equipped for highest priority level",
+        "preconditions": "Train onboard is equipped for ETCS Level 1 and Level 2, currently operating in Level 1.",
+        "steps": [
+          "Approach level transition point.",
+          "Receive trackside level transition announcement indicating line fitted with Level 1 and Level 2, with trackside priority Level 2 > Level 1.",
+          "Pass the level transition point."
+        ],
+        "expected_result": "Onboard automatically switches state to Level 2 as it is the highest trackside priority level for which the train is equipped."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R6-2",
+        "requirement_ids": [
+          "PURE-ERTMS-R6"
+        ],
+        "technique_used": "decision_table",
+        "title": "Level transition where top trackside priority level is not equipped on train",
+        "preconditions": "Train onboard is equipped for ETCS Level 1 and Level 2, but NOT equipped for Level 3. Train currently operating in Level 1.",
+        "steps": [
+          "Approach level transition point.",
+          "Receive trackside level transition announcement indicating line fitted with Level 1, Level 2, and Level 3, with trackside priority Level 3 > Level 2 > Level 1.",
+          "Pass the level transition point."
+        ],
+        "expected_result": "Onboard switches to Level 2, which is the highest trackside priority level for which the train is equipped, ignoring unequipped Level 3."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R6-3",
+        "requirement_ids": [
+          "PURE-ERTMS-R6"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition from Level 0 to highest equipped trackside priority level upon crossing border",
+        "preconditions": "Train onboard is operating in state Level 0 (Unfitted) and is equipped with capabilities for Level 1 and Level 2.",
+        "steps": [
+          "Drive train in Level 0 towards level transition border.",
+          "Receive trackside information announcing transition to multi-level line fitted with Level 1 and Level 2 with priority Level 2 > Level 1.",
+          "Cross the physical level transition border."
+        ],
+        "expected_result": "Onboard state transitions successfully from Level 0 to Level 2 upon passing the transition location."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R6-4",
+        "requirement_ids": [
+          "PURE-ERTMS-R6"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Level selection when trackside priority prioritizes a lower numeric level over a higher numeric level",
+        "preconditions": "Train onboard is equipped with ETCS Level 1, Level 2, and Level NTC. Train is currently operating in Level NTC.",
+        "steps": [
+          "Approach level transition to a line fitted with Level 1 and Level 2.",
+          "Receive trackside priority message specifying priority ranking: Level 1 > Level 2.",
+          "Pass the level transition border."
+        ],
+        "expected_result": "Onboard switches to Level 1, strictly adhering to the priority order specified by trackside rather than highest numerical level value."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "f0c465f57f9e4e3f85d5795bc8341c37",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1041,
+      "completion_tokens": 73
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "3bb8a8a5de99444aba3f4a3cc0f76821",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1780,
+      "completion_tokens": 24
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "9e3d3f74798b4bff9bef9bd0712d67e7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1135,
+      "completion_tokens": 156
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "fd8f52303cab459a97f154b941905bb7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1518,
+      "completion_tokens": 886
+    }
+  ],
+  "final_text": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 6613
+}

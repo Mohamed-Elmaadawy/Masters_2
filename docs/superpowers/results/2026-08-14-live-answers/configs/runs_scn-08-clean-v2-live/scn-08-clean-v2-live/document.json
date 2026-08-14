@@ -1,0 +1,110 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-08-clean",
+    "requirements": [
+      {
+        "id": "THEMAS-REQ-G",
+        "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-08-clean-v2-live",
+    "started_at": "2026-08-14T13:12:49.756228Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-08-clean",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "scn-08-clean",
+    "dependencies": []
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "c2d6889f4e60406381b6887410be72ad",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 778,
+      "completion_tokens": 19
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "4c0fb795b78b402c8706716b2a02c9d1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 937,
+      "completion_tokens": 18
+    }
+  ],
+  "pending_requirement_ids": [
+    "THEMAS-REQ-G"
+  ],
+  "document_stage_tokens": 1752
+}

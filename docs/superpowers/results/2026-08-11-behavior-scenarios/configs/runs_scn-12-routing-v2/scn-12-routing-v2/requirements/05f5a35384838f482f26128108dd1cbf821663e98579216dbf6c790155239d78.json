@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "ACTAPP-R2-AC1",
+    "text": "Accurately identifies when the user is driving.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-12-routing-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "ACTAPP-R2-AC1",
+    "system_type": "mobile",
+    "rationale": "The requirement originates from a mobile application ('ACTAPP') focused on detecting real-time user activity such as driving, which relies on smartphone motion sensors, GPS, and mobile activity recognition APIs."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Accurately identifies when the user is driving.",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Accurately",
+            "explanation": "The term 'Accurately' is a vague adverb without a measurable threshold or quantifiable accuracy metric (such as a required precision rate or percentage threshold).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Accurately identifies when the user is driving.",
+            "explanation": "The requirement lacks an explicit actor or subject (e.g., 'The system shall...') specifying what entity performs the identification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable threshold or percentage metric should be used to define 'Accurately' for driving identification?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "Which specific system or component should be specified as the actor performing the identification in 'Accurately identifies when the user is driving.'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "original_text": "Accurately identifies when the user is driving.",
+        "refined_text": "Accurately identifies when the user is driving.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Accurately identifies when the user is driving.",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Accurately",
+            "explanation": "The term 'Accurately' is a vague adverb that does not specify a measurable threshold or quantifiable accuracy criteria (e.g., precision percentage or maximum acceptable delay).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Accurately identifies when the user is driving.",
+            "explanation": "The requirement is missing an actor (e.g., 'The application shall') as well as the specific triggers or sensor conditions required to initiate and perform driving detection.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the requirement \"Accurately identifies when the user is driving.\", what specific quantifiable accuracy criteria or measurable threshold (such as a precision percentage or maximum detection delay) should replace the word \"Accurately\"?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In the requirement \"Accurately identifies when the user is driving.\", what system or actor is responsible for performing the identification, and what specific triggers or sensor conditions initiate the driving detection?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "original_text": "Accurately identifies when the user is driving.",
+        "refined_text": "Accurately identifies when the user is driving.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Accurately identifies when the user is driving.",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Accurately",
+            "explanation": "The word 'Accurately' is a vague adverb without a quantifiable threshold or measurable accuracy metric (e.g., false-positive/false-negative rates or confidence percentage).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Accurately identifies when the user is driving.",
+            "explanation": "The requirement is missing an explicit system actor (e.g., 'The application shall...') as well as the trigger or conditions required to initiate and test driving detection.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "8dde9d817a0644f095a7c5e464ee7c35",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 869,
+      "completion_tokens": 62
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "cb604b6bd94a4ba985f53bf5f5d3befb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 203
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "0525b5a799ed4fb8b15e3163c9919557",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1214,
+      "completion_tokens": 143
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "6523a0276b034df6ba46a5d7369fa429",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 215
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e2e6aad5c6854e2c962ca8200b133286",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 194
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "8c370a3f3840447bbf128ec8d73fac71",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1226,
+      "completion_tokens": 215
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "255fbee07e3a44e8ada60c8586d441f1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 254
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d55a8f060a7b4a50a3cacfa9067c47a2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 155
+    }
+  ],
+  "final_text": "Accurately identifies when the user is driving.",
+  "final_requirement": {
+    "requirement_id": "ACTAPP-R2-AC1",
+    "original_text": "Accurately identifies when the user is driving.",
+    "refined_text": "Accurately identifies when the user is driving.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12903
+}

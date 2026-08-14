@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "AUTOGEN-US2",
+    "text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-10-atomicity-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "AUTOGEN-US2",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding document context regarding inventory and sales reporting contains specific indicators for web, mobile, or AI-driven systems, so it defaults to 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The adjective 'reliable' is vague and lacks a measurable threshold or metric (e.g., uptime percentage, mean time between failures).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The adjective 'efficient' is vague and lacks a measurable threshold or performance metric (e.g., execution time, resource consumption limits).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable metric or acceptance criterion (such as a minimum uptime percentage or mean time between failures) should be used to define \"reliable\" in this requirement?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific performance metric or threshold (such as maximum execution time or resource consumption limits) should be used to define \"efficient\" in this requirement?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague adjective without a measurable threshold or specific quantitative metric (such as uptime percentage or mean time between failures).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective without a defined performance metric or measurable threshold (such as resource utilization or processing speed).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific quantitative metric or threshold (such as uptime percentage or mean time between failures) should be defined to measure the term 'reliable'?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific performance metric or threshold (such as resource utilization or processing speed) should be defined to measure the term 'efficient'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague adjective without a defined, measurable threshold or metric for acceptable system behavior.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective without a specific measurable performance or resource-usage threshold.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "ce4c8921c6c745d08fb5ad961ba6d62a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 810,
+      "completion_tokens": 56
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "736fd435e5cc456497ea77b599b5f6d0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 113
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "755177ec6f4c4f8498724798e77e2adb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1215,
+      "completion_tokens": 136
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "caa677b45cc84923ab41f325376bb47e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1473,
+      "completion_tokens": 282
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ffd620c2e5fd4b1ba500f2295611a422",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 171
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "87fd25ae7d3742f2a8ccafe220344427",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1215,
+      "completion_tokens": 149
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "adb31b672d8c4090b9ae05d0f019dc09",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1473,
+      "completion_tokens": 282
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "85d90c88ac264344b039d509d5101504",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1755,
+      "completion_tokens": 159
+    }
+  ],
+  "final_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+  "final_requirement": {
+    "requirement_id": "AUTOGEN-US2",
+    "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "refined_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12799
+}

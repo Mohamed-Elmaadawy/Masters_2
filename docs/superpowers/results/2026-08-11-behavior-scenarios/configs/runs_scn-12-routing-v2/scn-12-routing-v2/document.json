@@ -1,0 +1,122 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-12-routing",
+    "requirements": [
+      {
+        "id": "LUITEL-R1",
+        "text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability.",
+        "source_doc_id": null
+      },
+      {
+        "id": "THEMAS-REQ-B",
+        "text": "If the current temperature value is strictly less than the lower value of the valid temperature range or if the received temperature value is strictly greater than the upper value of the valid temperature range, then the THEMAS system shall identify the current temperature value as an invalid temperature and shall output an invalid temperature status.",
+        "source_doc_id": null
+      },
+      {
+        "id": "ACTAPP-R2-AC1",
+        "text": "Accurately identifies when the user is driving.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-12-routing-v2",
+    "started_at": "2026-08-14T12:55:29.977770Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-12-routing",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "scn-12-routing",
+    "dependencies": []
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "670ad0bb4aeb423a8349078048f2fe91",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 877,
+      "completion_tokens": 19
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "8eeb4fb766ca4c29a6cbf653a0b1c70d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1036,
+      "completion_tokens": 18
+    }
+  ],
+  "pending_requirement_ids": [
+    "LUITEL-R1",
+    "THEMAS-REQ-B",
+    "ACTAPP-R2-AC1"
+  ],
+  "document_stage_tokens": 1950
+}

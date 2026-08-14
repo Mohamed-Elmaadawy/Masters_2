@@ -1,0 +1,273 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-E",
+    "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-09-vague-v2-live",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-E",
+    "system_type": "other",
+    "rationale": "The requirement describes deterministic temperature monitoring and control logic for a heating unit module, which represents an embedded or physical control system rather than a web, mobile, or AI system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "this condition",
+            "explanation": "The demonstrative phrase 'this condition' has an unresolved referent, as the specific condition is not defined within the requirement text.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "vague_pronoun",
+            "span": "this module",
+            "explanation": "The demonstrative phrase 'this module' has an unresolved referent, as the target module is not identified within the requirement text.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-E",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "What specific condition is meant by the phrase 'this condition' in requirement THEMAS-REQ-E?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "vague_pronoun",
+            "question_text": "Which specific module is referred to by the phrase 'this module' in requirement THEMAS-REQ-E?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This condition\" refers to Condition 2 in SRS-010: the current temperature has moved outside the trigger band but is still within the overtemperature bounds -- LO <= T < LT (needs heating) or UT < T <= UO (needs cooling). It is the condition indicating a unit must be turned on, as distinct from Condition 1 (LT <= T <= UT), where the setting is satisfied and both units are turned off.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This module\" is the Determine H/C Mode process (SRS-010), within the Monitor Temperature component. The sentence appears in that process's own Processing section, and the request it emits is SRS-010's declared output H/C Request, consumed by Determine Status of All H/C Units (SRS-011).",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-E",
+        "original_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "refined_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This condition\" refers to Condition 2 in SRS-010: the current temperature has moved outside the trigger band but is still within the overtemperature bounds -- LO <= T < LT (needs heating) or UT < T <= UO (needs cooling). It is the condition indicating a unit must be turned on, as distinct from Condition 1 (LT <= T <= UT), where the setting is satisfied and both units are turned off.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This module\" is the Determine H/C Mode process (SRS-010), within the Monitor Temperature component. The sentence appears in that process's own Processing section, and the request it emits is SRS-010's declared output H/C Request, consumed by Determine Status of All H/C Units (SRS-011).",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "THEMAS-REQ-E-ISSUE-1",
+            "category": "incomplete",
+            "span": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+            "explanation": "Condition 2 evaluates true for two distinct temperature ranges (LO <= T < LT or UT < T <= UO), but the statement only specifies an outcome for heating ('in case LO = T_LT'), leaving the system behavior for the upper temperature range (UT < T <= UO) completely unspecified.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-E",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "THEMAS-REQ-E-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "The requirement states that Condition 2 includes the upper temperature range (UT < T <= UO), but it only specifies outputting an H/C Request to turn on the heating unit for the lower range. What action or H/C Request should the Determine H/C Mode process output when the temperature is in the range UT < T <= UO?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Not covered by the recorded transcript for this requirement and issue category.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-E",
+        "original_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+        "refined_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Not covered by the recorded transcript for this requirement and issue category.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "THEMAS-REQ-E-ISSUE-2",
+            "category": "incomplete",
+            "span": "UT < T <= UO",
+            "explanation": "The requirement evaluates Condition 2 which includes two temperature ranges ('LO <= T < LT' and 'UT < T <= UO'), but only defines an action for the lower range, leaving the required system behavior incomplete when UT < T <= UO is true.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "d2e451563cd4411bbeb748db857aa9c1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 823,
+      "completion_tokens": 60
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ed36ea4efb4147898d2d364370522235",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1762,
+      "completion_tokens": 132
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "52428849544c405c80cfaf148889d052",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1222,
+      "completion_tokens": 141
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "9a4a66eee9ad466aa2f4b07567205731",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1564,
+      "completion_tokens": 314
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "287d73a260e7437da81ff24accf68e06",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1807,
+      "completion_tokens": 183
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "7714f4e7fcd843c5bb191cc706f2e176",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1343,
+      "completion_tokens": 124
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "599122c18605449082f59245be000f67",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1399,
+      "completion_tokens": 204
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "2516fcfdb0ea4608bf4eed60bfebcc62",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1807,
+      "completion_tokens": 131
+    }
+  ],
+  "final_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-E",
+    "original_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+    "refined_text": "If Condition 2 (LO <= T < LT or UT < T <= UO) is true, then the Determine H/C Mode process shall output an H/C Request to turn on the heating unit in case LO = T_LT.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Not covered by the recorded transcript for this requirement and issue category.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "THEMAS-REQ-E-ISSUE-1": [
+      2
+    ],
+    "THEMAS-REQ-E-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 13016
+}

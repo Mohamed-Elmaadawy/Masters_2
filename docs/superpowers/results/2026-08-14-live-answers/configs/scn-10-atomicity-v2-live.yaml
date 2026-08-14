@@ -1,0 +1,47 @@
+# Behavior scenario config -- v2 prompts replayed against the frozen live-human
+# transcript. Copy of scn-10-atomicity.yaml with only run_id, output_dir, and
+# defaults.prompt_version changed; prompt files themselves are unchanged paths.
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env() reads
+# GEMINI_API_KEY from the environment only. Set GEMINI_API_KEYS instead (comma-separated)
+# to rotate across several keys on quota exhaustion -- see orchestrator/providers/rotating.py.
+
+run_id: scn-10-atomicity-v2-live
+output_dir: runs_scn-10-atomicity-v2-live   # resolved relative to THIS file's directory, not the cwd
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v2
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+
+prompts:
+  classifier: ../../../../../orchestrator/example_prompts/classifier.txt
+  quality_checker: ../../../../../orchestrator/example_prompts/quality_checker.txt
+  refiner_questioner: ../../../../../orchestrator/example_prompts/refiner_questioner.txt
+  refiner_rewriter: ../../../../../orchestrator/example_prompts/refiner_rewriter.txt
+  strategy_selector: ../../../../../orchestrator/example_prompts/strategy_selector.txt
+  test_generator: ../../../../../orchestrator/example_prompts/test_generator.txt
+  consistency_checker: ../../../../../orchestrator/example_prompts/consistency_checker.txt
+  dependency_mapper: ../../../../../orchestrator/example_prompts/dependency_mapper.txt

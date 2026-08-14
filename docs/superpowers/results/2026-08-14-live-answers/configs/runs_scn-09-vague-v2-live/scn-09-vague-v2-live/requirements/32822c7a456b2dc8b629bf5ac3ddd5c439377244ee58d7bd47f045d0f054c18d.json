@@ -1,0 +1,273 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-D",
+    "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-09-vague-v2-live",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "THEMAS-REQ-D",
+    "system_type": "other",
+    "rationale": "The requirement describes temperature signal filtering and processing for a thermal/heating control module, which represents an embedded or control system rather than a web, mobile, or AI application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-D",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "these limits",
+            "explanation": "The demonstrative phrase 'these limits' is an unresolved referent that is not defined within the requirement text.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-D",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "The phrase 'these limits' does not specify which values or bounds apply. What specific temperature limits should be checked before outputting temperatures for subsequent processing?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "These limits' refers to the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-D",
+        "original_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "refined_text": "Temperatures that do not exceed the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005 shall be output for subsequent processing.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "These limits' refers to the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Temperatures that do not exceed the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005 shall be output for subsequent processing.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-D",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "THEMAS-REQ-D",
+    "system_type": "other",
+    "techniques": [
+      "equivalence_partitioning",
+      "boundary_value_analysis"
+    ],
+    "rationale": "The requirement specifies a threshold filtering rule based on a numerical temperature limit ('do not exceed the overtemperature limits'). Per the selection guidance, numeric ranges or thresholds trigger Equivalence Partitioning (to partition inputs into temperatures <= limit which are output, and > limit which are excluded) and Boundary Value Analysis (to test exact boundary values at, just below, and just above the overtemperature threshold)."
+  },
+  "test_plan": {
+    "requirement_id": "THEMAS-REQ-D",
+    "test_cases": [
+      {
+        "id": "TC-12-THEMAS-REQ-D-1",
+        "requirement_ids": [
+          "THEMAS-REQ-D"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Valid Temperature Processing Below Overtemperature Limit",
+        "preconditions": "System initialized with overtemperature limit of 100.0°C configured via the initialization file per SRS-005.",
+        "steps": [
+          "Provide a temperature reading of 75.0°C to the input stream.",
+          "Process the temperature reading through the filter stage."
+        ],
+        "expected_result": "The 75.0°C temperature reading is forwarded and output for subsequent processing."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-D-2",
+        "requirement_ids": [
+          "THEMAS-REQ-D"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Invalid Temperature Processing Exceeding Overtemperature Limit",
+        "preconditions": "System initialized with overtemperature limit of 100.0°C configured via the initialization file per SRS-005.",
+        "steps": [
+          "Provide a temperature reading of 125.0°C to the input stream.",
+          "Process the temperature reading through the filter stage."
+        ],
+        "expected_result": "The 125.0°C temperature reading exceeds the limit and is excluded from being output for subsequent processing."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-D-3",
+        "requirement_ids": [
+          "THEMAS-REQ-D"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value Analysis - Temperature Exactly Equal to Limit",
+        "preconditions": "System initialized with overtemperature limit of 100.0°C configured via the initialization file per SRS-005.",
+        "steps": [
+          "Provide a temperature reading of exactly 100.0°C to the input stream.",
+          "Process the temperature reading through the filter stage."
+        ],
+        "expected_result": "Since 100.0°C does not exceed the limit, the reading is output for subsequent processing."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-D-4",
+        "requirement_ids": [
+          "THEMAS-REQ-D"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value Analysis - Temperature Just Below Limit",
+        "preconditions": "System initialized with overtemperature limit of 100.0°C configured via the initialization file per SRS-005.",
+        "steps": [
+          "Provide a temperature reading of 99.9°C to the input stream.",
+          "Process the temperature reading through the filter stage."
+        ],
+        "expected_result": "The 99.9°C reading is output for subsequent processing."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-D-5",
+        "requirement_ids": [
+          "THEMAS-REQ-D"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value Analysis - Temperature Just Above Limit",
+        "preconditions": "System initialized with overtemperature limit of 100.0°C configured via the initialization file per SRS-005.",
+        "steps": [
+          "Provide a temperature reading of 100.1°C to the input stream.",
+          "Process the temperature reading through the filter stage."
+        ],
+        "expected_result": "The 100.1°C reading exceeds the limit and is suppressed/not output for subsequent processing."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c19ff4e0c0ec47c99444f0f09964a151",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 811,
+      "completion_tokens": 56
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "547cbbe961d3454787df0a87233544ef",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1750,
+      "completion_tokens": 63
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "fdbca3762b404fdba65bbf9d74a47922",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1141,
+      "completion_tokens": 91
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b1f4328abd6a47a5baaa24181200ddf6",
+      "attempt_number": 1,
+      "result": "validation_failure",
+      "error_message": "RefinedRequirement used an answer to 'Q1' that is not among this round's answers",
+      "prompt_tokens": 1358,
+      "completion_tokens": 171
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b1f4328abd6a47a5baaa24181200ddf6",
+      "attempt_number": 2,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1358,
+      "completion_tokens": 171
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "56f721f507d647cda2f43fcfe27842c2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1771,
+      "completion_tokens": 19
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "822c28bf44454beb84a104a72e2f0ac3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1126,
+      "completion_tokens": 113
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "e8ef71c4c04b41d197f33f6bc05e1c3a",
+      "attempt_number": 1,
+      "result": "validation_failure",
+      "error_message": "test case 'TC-12-THEMAS-REQ-D-1' references unknown requirement id(s) ['SRS-005', 'SRS-009'] -- not in this document's requirement set",
+      "prompt_tokens": 1505,
+      "completion_tokens": 1236
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "e8ef71c4c04b41d197f33f6bc05e1c3a",
+      "attempt_number": 2,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1505,
+      "completion_tokens": 700
+    }
+  ],
+  "final_text": "Temperatures that do not exceed the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005 shall be output for subsequent processing.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-D",
+    "original_text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+    "refined_text": "Temperatures that do not exceed the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005 shall be output for subsequent processing.",
+    "revision_number": 1,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "These limits' refers to the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    0
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ]
+  },
+  "total_tokens": 14945
+}

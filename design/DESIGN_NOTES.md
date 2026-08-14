@@ -1117,6 +1117,33 @@ an outcome member), the rest of the document completes normally, and the human s
 requirement in the SRS and re-runs. No id invention, no partial re-analysis, no traceability
 loss — the split happens where the document is authored.
 
+#### Prompt v2 measured 2026-08-14 — definition fix held on the clean case, refuted on a real one
+
+The "independently testable + one positive/one negative example" fix proposed above shipped
+in `orchestrator/example_prompts/quality_checker.txt` (commit `2178774`) and was re-run
+against the same four scenarios covering every affected requirement, refusing answer policy
+unchanged. Full numbers: `docs/superpowers/results/2026-08-11-behavior-scenarios/RESULTS-V2.md`.
+
+- `THEMAS-REQ-B` (the causal-chain misfire cited above) **stopped firing** — held as predicted.
+- `LUITEL-R7` (the genuine three-reports case, this entry's own contrast example) **still
+  fires** — the definition did not over-correct into silence on a real positive.
+- `PURE-ERTMS-R2` ("train and shunting movements") was predicted to stop firing and **did
+  not** — v2's own explanation invokes the new "independently testable" language and judges
+  the two movement types genuinely separable, which is defensible on the text (two operating
+  modes, not two steps of one operation). The 2026-08-14 evidence table above miscategorized
+  this one as a conjunction-split; it is closer to the three-reports case than to
+  `THEMAS-REQ-A`/`THEMAS-REQ-B`/`THEMAS-REQ-H`.
+
+So the detector-precision fix is real but partial: it removes the mechanical
+split-on-"and" failure mode for causal chains without suppressing genuine bundling, which is
+what it was supposed to do. It is not a blanket cure for over-flagging — `PURE-ERTMS-R2`
+shows the model can still classify a boundary case as bundling under the tightened wording.
+No prompt change made in response to this result (per the batch's own rule: a refuted
+prediction is a result, not a failure to patch away). The structural gap this entry opened
+with — no expressible fix once a genuine `NON_ATOMIC` is confirmed — is unaffected either
+way; this result is entirely about detector precision, the concern the 2026-08-14
+"Measured" note above already reprioritized ahead of the schema question.
+
 **Do not build any of this yet.** All 14 real `non_atomic` flags measured above are false
 positives, so a split workflow built today would be machinery serving wrong flags. Fix the
 category definition first, then count what genuine cases remain.
@@ -1569,6 +1596,110 @@ requirement already states a measurable value (leave it), whether the answer sup
 all (do not manufacture specification-shaped deferrals), and whether the human asked for no
 change (make none). Frequency still small — n=1, n=1, n=1 — so count them in the next suite
 before changing anything.
+
+**Prompt v2 measured 2026-08-14 — all three variants held.** The three rules above shipped in
+`orchestrator/example_prompts/refiner_rewriter.txt` (commit `2178774`) and were re-run against
+the refusing answer policy on the same four scenarios covering all three cited instances. Full
+numbers: `docs/superpowers/results/2026-08-11-behavior-scenarios/RESULTS-V2.md`.
+
+- `LUITEL-R1`: v2 final text is the original, unchanged — no `[TBD]` beside the `5s`.
+- `AUTOGEN-US2`: v2 final text is the original, unchanged — no deferral phrase.
+- `PURE-THEMAS-R6`: v2 final text is byte-for-byte identical to the input in both runs (the
+  refusing-policy baseline had already left it unchanged here — the reformatting instance
+  originally cited was from the 2026-08-14 live-human session, not this baseline — so this
+  result confirms the rule holds under the refusing policy rather than fixing a regression
+  this particular baseline had).
+
+n is still 1 per variant — this is confirmation on the same three cited instances, not a
+frequency measurement across a wider corpus. No outcome changed anywhere in the four-scenario
+re-run (15/15 requirement-slots kept their 2026-08-13 outcome).
+
+**Correction to the sentence that used to end this entry.** It claimed the three rules
+"did not introduce any new failure to generate text at all in place of a legitimate rewrite".
+Counting rewrites directly in both sets of run records shows otherwise:
+
+| | v1 (2026-08-13) | v2 |
+|---|---|---|
+| rewrites | 19 | 18 |
+| no-ops | 14 | **18** |
+| text-changing rewrites | **5** | **0** |
+
+Every text change disappeared, not only the three targeted ones. The two collateral losses:
+
+- `PURE-ERTMS-R2` — v1 rewrote "shall **be able to** supervise" to "shall supervise", a genuine
+  improvement (unprompted by any answer, but an improvement).
+- `ACTAPP-R2-AC1` — v1 rewrote "Accurately identifies when the user is driving" to "**The
+  system** identifies when the user is driving within [measurable accuracy threshold TBD]",
+  which supplied a missing actor — a real `INCOMPLETE` fix — alongside the placeholder the new
+  rules correctly suppress.
+
+**This is logical, not a bug, and it has a consequence worth stating plainly.** New rule 2
+("if an answer supplies no concrete value, make no change") fires *universally* under the
+refusing policy, because that policy never supplies one. So under this answer policy the
+Rewriter is now formally inert: it cannot change text at all. Refusing-policy runs can
+therefore no longer distinguish "the rules work as intended" from "the refinement stage is
+disabled" — the two are indistinguishable by construction.
+
+Two things follow. First, the rules must next be measured against the **frozen live
+transcript** (`docs/superpowers/results/2026-08-14-live-answers/answers.json`), the only run
+where answers carry content and the rules can be selective; that is the test that can refute
+them. Second, the unchanged outcome mix (15/15) despite losing every text change is itself a
+result: these outcomes were never driven by rewriting, which corroborates the same finding
+under Known Limitation 10.
+
+**Measured 2026-08-14 — replay of the frozen live-human transcript against v2: selective, not
+silencing.** Full numbers:
+`docs/superpowers/results/2026-08-14-live-answers/RESULTS-V2-LIVE.md`. Same nine
+requirement-slots as the 2026-08-14 live session (`SESSION.md`, same directory), same frozen
+`answers.json`, only the prompt version differs. Text-changing rewrites: **5/9 (v1) -> 3/9
+(v2)**, not 5/9 -> 0/9 as under the refusing policy. The count is exactly explained by which
+v1 changes were real content versus artifacts: all three substantive changes survived
+(`THEMAS-REQ-D`'s named referent, `THEMAS-REQ-E`'s named condition and bounds,
+`PURE-THEMAS-R6-P`'s 5°F -> 3°F cross-requirement fix); both named artifacts were suppressed
+(`AUTOGEN-US2`'s deferral phrase, `PURE-THEMAS-R6`'s cosmetic reformat — this entry's own
+variants 2 and 3, now confirmed against a real human answer rather than only the refusing
+policy's canned refusal). Answers the open question directly: the rules distinguish "supply no
+value" from "supply real content" correctly on this transcript.
+
+One requirement's comparison broke, unrelated to either prompt edit: `THEMAS-REQ-E` flipped
+`COMPLETED` (v1) -> `CAP_STOPPED` (v2). v2's own round-1 rewrite named the referent correctly
+but specified an action for only one of the condition's two branches, and the Quality Checker
+caught the resulting `incomplete` gap in round 2 — a category that never arose under v1, so
+the frozen transcript has no answer for it, the replay fallback fired, and the requirement
+capped instead of completing. A transcript-replay limitation (one miss, one outcome flip, both
+reported as regression-guard trips in RESULTS-V2-LIVE.md rather than absorbed silently), not a
+defect in either edited prompt.
+
+**Verified against the round texts, and it settles a misreading worth recording.** The two
+rewrites in full:
+
+- v1 round 2: "If Condition 2 is true (the current temperature T is outside the trigger band
+  but within the overtemperature bounds), then the Determine H/C Mode process shall output an
+  H/C Request to turn on the heating unit **in case LO <= T < LT**."
+- v2 round 1: "If Condition 2 **(LO <= T < LT or UT < T <= UO)** is true, then the Determine
+  H/C Mode process shall output an H/C Request to turn on the heating unit **in case
+  LO = T_LT**."
+
+Two differences, and they cut against v2, not for it:
+
+1. **v1 repaired the corrupted clause; v2 did not.** v1's tail reads `LO <= T < LT`; v2 left
+   the source's mangled `LO = T_LT` intact (see Known Limitation 5 on that corruption).
+2. **v2 introduced a real incompleteness.** It inlined *both* branches of Condition 2
+   (`LO <= T < LT` heating, `UT < T <= UO` cooling) into the condition, while the action still
+   covers only the heating unit. The cooling branch now has a stated trigger and no stated
+   behaviour. The `INCOMPLETE` flag in rounds 2 and 3 is therefore **correct**, not checker
+   noise.
+
+An earlier reading of this comparison — that v2 produced the better requirement and merely
+suffered the worse label — was wrong, and the round texts refute it. The `COMPLETED` ->
+`CAP_STOPPED` flip reflects a genuine defect in v2's rewrite, compounded by the replay
+fallback firing because the frozen transcript has no answer for an `INCOMPLETE` question that
+never arose under v1.
+
+The general point still stands and is worth keeping separate from this instance: outcome
+labels alone cannot rank two runs, because a rewrite can clear one category and create
+another. Report final text quality alongside outcomes. Here, doing that happens to confirm the
+label rather than contradict it.
 
 ## `RequirementSet.requirements` min_length fix (2026-08-05)
 

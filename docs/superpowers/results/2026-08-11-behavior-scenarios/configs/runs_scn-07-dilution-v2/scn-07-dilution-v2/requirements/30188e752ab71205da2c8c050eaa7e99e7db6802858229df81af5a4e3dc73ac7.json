@@ -1,0 +1,245 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R5",
+    "text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R5",
+    "system_type": "other",
+    "rationale": "The requirement describes automatic brake application within an ERTMS/ETCS train control and onboard safety system. This is an embedded control system and does not involve web, mobile, or AI-driven components."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "after the transition",
+            "explanation": "The requirement does not specify a time limit or distance threshold within which the driver must acknowledge the transition, making the condition for applying the brake incomplete and untestable.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "What is the specific time limit or distance threshold within which the driver must acknowledge 'after the transition' before the brake is applied?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-ERTMS-R5-ISSUE-1",
+            "category": "incomplete",
+            "span": "does not acknowledge after the transition",
+            "explanation": "The requirement lacks a specified time limit or response window (e.g., within X seconds) within which the driver must acknowledge the transition before the system triggers the brake application.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-ERTMS-R5-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the phrase \"does not acknowledge after the transition\", what is the specific time limit or response window (e.g., number of seconds) within which the driver must acknowledge the transition before the brake is applied?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-ERTMS-R5-ISSUE-1",
+            "category": "incomplete",
+            "span": "does not acknowledge after the transition",
+            "explanation": "The requirement does not specify a time limit or distance threshold within which the driver must acknowledge the transition before the brake is applied, leaving the triggering condition incomplete for testing.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "72a22b766c44494b983cc5ef4364d771",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1012,
+      "completion_tokens": 63
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "1da6a8d8b5204b6bbad99c7d69d6654f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1821,
+      "completion_tokens": 108
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "87e877f7de10404387a6b599a5b7fe16",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1149,
+      "completion_tokens": 72
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "c9c1ac2daace442a802767455d620c0f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1378,
+      "completion_tokens": 142
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7b601a31b11c44cf8634352b08ae23e1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1821,
+      "completion_tokens": 113
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "c834be9cecbe41eb945739f047a6bf31",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1163,
+      "completion_tokens": 135
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "4d48d23d2432495f97ece8a84df88456",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1378,
+      "completion_tokens": 170
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f9147e65947f4f158a240d7cc1b04292",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1821,
+      "completion_tokens": 112
+    }
+  ],
+  "final_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R5",
+    "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "PURE-ERTMS-R5-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12458
+}

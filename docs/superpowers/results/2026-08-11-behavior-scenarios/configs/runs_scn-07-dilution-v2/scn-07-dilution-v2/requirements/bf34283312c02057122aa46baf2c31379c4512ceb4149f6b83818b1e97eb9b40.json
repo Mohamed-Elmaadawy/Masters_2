@@ -1,0 +1,185 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R4",
+    "text": "The driver shall acknowledge the level transitions, if requested from trackside.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution-v2",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R4",
+    "system_type": "other",
+    "rationale": "The requirement describes a driver interaction within the European Train Control System (ETCS / ERTMS), which is an onboard railway safety and signaling control system (an embedded/industrial system), rather than a web application, mobile application, or machine-learning system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The driver shall acknowledge the level transitions, if requested from trackside.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R4",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-ERTMS-R4",
+    "system_type": "other",
+    "techniques": [
+      "decision_table",
+      "state_based",
+      "use_case"
+    ],
+    "rationale": "Decision table testing applies because the requirement contains conditional logic (whether trackside requests a transition and whether the driver acknowledges it) driving distinct system outcomes. State-based testing applies because ERTMS level transitions represent discrete state changes in system operation. Use case testing applies because there is a multi-step operational scenario and a known dependency with requirement PURE-ERTMS-R5 regarding the workflow and consequences of driver acknowledgment."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-ERTMS-R4",
+    "test_cases": [
+      {
+        "id": "TC-13-PURE-ERTMS-R4-1",
+        "requirement_ids": [
+          "PURE-ERTMS-R4"
+        ],
+        "technique_used": "decision_table",
+        "title": "Level transition requested from trackside with prompt driver acknowledgment",
+        "preconditions": "Train is operating on track with trackside level transition order requesting acknowledgment.",
+        "steps": [
+          "1. Trackside sends a level transition request requiring driver acknowledgment.",
+          "2. System prompts driver to acknowledge level transition on DMI.",
+          "3. Driver presses the acknowledgment button within the allowed time limit."
+        ],
+        "expected_result": "The system accepts the acknowledgment, transitions to the requested ERTMS level, and continues normal operation without brake intervention."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R4-2",
+        "requirement_ids": [
+          "PURE-ERTMS-R4",
+          "PURE-ERTMS-R5"
+        ],
+        "technique_used": "decision_table",
+        "title": "Level transition requested from trackside without driver acknowledgment",
+        "preconditions": "Train is operating on track with trackside level transition order requesting acknowledgment.",
+        "steps": [
+          "1. Trackside sends a level transition request requiring driver acknowledgment.",
+          "2. System prompts driver to acknowledge level transition on DMI.",
+          "3. Driver fails to acknowledge within the required time window."
+        ],
+        "expected_result": "The system registers the missing acknowledgment and triggers brake application safety action as per PURE-ERTMS-R5."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R4-3",
+        "requirement_ids": [
+          "PURE-ERTMS-R4"
+        ],
+        "technique_used": "decision_table",
+        "title": "Level transition requested without acknowledgment prompt requirement",
+        "preconditions": "Train is operating on track approaching an automatic level transition zone.",
+        "steps": [
+          "1. Trackside sends a level transition request that does NOT require driver acknowledgment.",
+          "2. Train reaches the level transition boundary."
+        ],
+        "expected_result": "System transitions level automatically without requiring driver acknowledgment or issuing an acknowledgment prompt on the DMI."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R4-4",
+        "requirement_ids": [
+          "PURE-ERTMS-R4"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition from ERTMS Level 1 to Level 2 upon trackside request and driver acknowledgment",
+        "preconditions": "Train is currently operating in ERTMS Level 1 state.",
+        "steps": [
+          "1. Train passes balise group announcing Level 2 transition requiring driver acknowledgment.",
+          "2. System enters 'Level Transition Pending Acknowledgment' state.",
+          "3. Driver acknowledges the transition via Driver Machine Interface (DMI)."
+        ],
+        "expected_result": "System transitions state from Level 1 to Level 2 and confirms active Level 2 status."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R4-5",
+        "requirement_ids": [
+          "PURE-ERTMS-R4",
+          "PURE-ERTMS-R5"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition timeout handling when level transition acknowledgment is ignored",
+        "preconditions": "Train is operating in ERTMS Level 2 state approaching Level 1 area.",
+        "steps": [
+          "1. Trackside orders level transition to Level 1 requiring acknowledgment.",
+          "2. System enters 'Level Transition Pending' state and starts acknowledgment timer.",
+          "3. Timer expires without driver acknowledgment."
+        ],
+        "expected_result": "System transitions to 'Brake Application' state per requirement PURE-ERTMS-R5 due to unacknowledged level transition."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R4-6",
+        "requirement_ids": [
+          "PURE-ERTMS-R4",
+          "PURE-ERTMS-R5"
+        ],
+        "technique_used": "use_case",
+        "title": "End-to-End Operational Workflow for Trackside Requested Level Transition",
+        "preconditions": "Train is in commercial service under ERTMS supervision.",
+        "steps": [
+          "1. Train receives trackside level transition command requiring driver acknowledgment.",
+          "2. DMI displays visual signal and emits audible alert for level transition acknowledgment.",
+          "3. Driver acknowledges transition within time limit.",
+          "4. Train enters new ERTMS level zone successfully."
+        ],
+        "expected_result": "Level transition completes successfully, DMI displays new active ERTMS level, and continuous supervision proceeds under new level rules."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "88cfbfac8b5b49c184fc719cf66df664",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1011,
+      "completion_tokens": 74
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "a803071e308d49efada28a29446a5b82",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1820,
+      "completion_tokens": 20
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "20958f9bda354d92a91901125daac189",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1175,
+      "completion_tokens": 120
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "8bbf5f9438dd4ed88ba5b3e4343e2831",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1551,
+      "completion_tokens": 880
+    }
+  ],
+  "final_text": "The driver shall acknowledge the level transitions, if requested from trackside.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 6651
+}

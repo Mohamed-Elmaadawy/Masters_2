@@ -1,0 +1,116 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-09-vague",
+    "requirements": [
+      {
+        "id": "THEMAS-REQ-D",
+        "text": "Temperatures that do not exceed these limits shall be output for subsequent processing.",
+        "source_doc_id": null
+      },
+      {
+        "id": "THEMAS-REQ-E",
+        "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-09-vague-v2-live",
+    "started_at": "2026-08-14T13:13:35.176813Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-09-vague",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "scn-09-vague",
+    "dependencies": []
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "076b6941c3384980928353e63d5e036d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 817,
+      "completion_tokens": 20
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "83b3212777894ac48942f4d1f51561a5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 976,
+      "completion_tokens": 19
+    }
+  ],
+  "pending_requirement_ids": [
+    "THEMAS-REQ-D",
+    "THEMAS-REQ-E"
+  ],
+  "document_stage_tokens": 1832
+}

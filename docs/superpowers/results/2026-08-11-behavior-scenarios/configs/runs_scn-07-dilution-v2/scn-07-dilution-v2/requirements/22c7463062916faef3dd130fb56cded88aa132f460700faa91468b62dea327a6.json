@@ -1,0 +1,243 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R8",
+    "text": "The DMI shall indicate the result of the self-test.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R8",
+    "system_type": "other",
+    "rationale": "The requirement relates to the Driver Machine Interface (DMI) and self-test functions of the European Train Control System (ETCS), an embedded railway control and safety system, which does not fit into web, mobile, or AI categories."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The DMI shall indicate the result of the self-test.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The DMI shall indicate the result of the self-test.",
+            "explanation": "The requirement does not specify the trigger or condition for when the DMI must indicate the self-test result (e.g., upon completion of the self-test execution).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In the requirement 'The DMI shall indicate the result of the self-test.', under what specific condition or trigger (for example, immediately upon completion of the self-test execution) must the DMI indicate the result?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "original_text": "The DMI shall indicate the result of the self-test.",
+        "refined_text": "The DMI shall indicate the result of the self-test.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The DMI shall indicate the result of the self-test.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The DMI shall indicate the result of the self-test.",
+            "explanation": "The requirement lacks a trigger or condition specifying when the DMI must indicate the result (e.g., upon completion of the self-test or upon receiving the self-test status).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In requirement PURE-ERTMS-R8 ('The DMI shall indicate the result of the self-test.'), under what specific trigger or condition (e.g., upon completion of the self-test or upon receiving the self-test status) should the DMI indicate the result?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "original_text": "The DMI shall indicate the result of the self-test.",
+        "refined_text": "The DMI shall indicate the result of the self-test.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The DMI shall indicate the result of the self-test.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R8",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The DMI shall indicate the result of the self-test.",
+            "explanation": "The requirement is missing a trigger or condition specifying when the DMI shall indicate the result (e.g., upon completion of the self-test).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "978d91d0b086498d83eee5744051a75b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1010,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "bfe32c765a6148e6bc1966ce0f263ac9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1826,
+      "completion_tokens": 85
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "29f2d49dfe1046ed88ec02e06f978812",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1160,
+      "completion_tokens": 103
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "8579db3c6d1343f9901973086bc4c66f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1376,
+      "completion_tokens": 138
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "a35f9c2cd66d4fb1b5e76685bb9c4334",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1826,
+      "completion_tokens": 94
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "09fc25fb71cc4e15b73b80ebbdfd56ac",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1162,
+      "completion_tokens": 143
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "1d0cba141e4c4d228b8f95d57e6a3c7d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1376,
+      "completion_tokens": 128
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d0b2490993bf436fbb223953d13fdece",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1826,
+      "completion_tokens": 87
+    }
+  ],
+  "final_text": "The DMI shall indicate the result of the self-test.",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R8",
+    "original_text": "The DMI shall indicate the result of the self-test.",
+    "refined_text": "The DMI shall indicate the result of the self-test.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12411
+}

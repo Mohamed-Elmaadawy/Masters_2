@@ -1,0 +1,163 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-07-dilution",
+    "requirements": [
+      {
+        "id": "PURE-ERTMS-R1",
+        "text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R2",
+        "text": "ETCS shall be able to supervise train and shunting movements.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R3",
+        "text": "The current application level shall be indicated on the DMI.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R4",
+        "text": "The driver shall acknowledge the level transitions, if requested from trackside.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R5",
+        "text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R6",
+        "text": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R7",
+        "text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R8",
+        "text": "The DMI shall indicate the result of the self-test.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-07-dilution-v2",
+    "started_at": "2026-08-14T12:47:04.551915Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-07-dilution",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "scn-07-dilution",
+    "dependencies": [
+      {
+        "from_requirement_id": "PURE-ERTMS-R5",
+        "to_requirement_id": "PURE-ERTMS-R4",
+        "explanation": "PURE-ERTMS-R5 specifies the brake application consequence if the driver fails to acknowledge a level transition requested according to PURE-ERTMS-R4."
+      },
+      {
+        "from_requirement_id": "PURE-ERTMS-R8",
+        "to_requirement_id": "PURE-ERTMS-R7",
+        "explanation": "PURE-ERTMS-R8 requires the DMI to display the result of the self-test, which depends on the self-test execution specified in PURE-ERTMS-R7."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "9f60af6935224031befe46d4ea4f3981",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1017,
+      "completion_tokens": 20
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "3faa52c358934714aa69dade2388f8c4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1176,
+      "completion_tokens": 197
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-ERTMS-R1",
+    "PURE-ERTMS-R2",
+    "PURE-ERTMS-R3",
+    "PURE-ERTMS-R4",
+    "PURE-ERTMS-R5",
+    "PURE-ERTMS-R6",
+    "PURE-ERTMS-R7",
+    "PURE-ERTMS-R8"
+  ],
+  "document_stage_tokens": 2410
+}

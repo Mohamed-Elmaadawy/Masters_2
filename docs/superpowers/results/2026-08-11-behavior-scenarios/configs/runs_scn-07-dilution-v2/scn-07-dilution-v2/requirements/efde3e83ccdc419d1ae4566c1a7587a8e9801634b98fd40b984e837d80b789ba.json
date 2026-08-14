@@ -1,0 +1,279 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R1",
+    "text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution-v2",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R1",
+    "system_type": "other",
+    "rationale": "ETCS (European Train Control System) is an onboard railway embedded safety and control system, which does not fall under web applications, mobile applications, or AI systems."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The adverb 'safely' is vague and does not define a measurable or verifiable standard or threshold for safety.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "information",
+            "explanation": "The requirement specifies providing 'information' without defining what specific data or indicators must be displayed to the driver, or under what conditions/triggers.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific safety standards, operational limits, or criteria define what it means to drive 'safely' in this context?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What specific 'information' (e.g., current speed, speed limits, movement authority) must be provided to the driver, and under what conditions or triggers should this information be displayed?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "original_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "refined_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The word 'safely' is a vague adverb without a measurable threshold or defined criteria for compliance.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-ERTMS-R1, what specific measurable criteria, speed parameters, or safety thresholds should replace the term 'safely' to define compliance?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "original_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "refined_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The word 'safely' is a vague adverb that lacks a specific, measurable threshold or objective criteria for testing.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-ERTMS-R1-ISSUE-1",
+            "category": "incomplete",
+            "span": "information",
+            "explanation": "The requirement fails to specify what exact information must be provided to the driver and under what operational conditions or triggers it should be displayed.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c3cedbe3ef6546c5823b9a49378d3870",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1014,
+      "completion_tokens": 56
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "38c1658c41a64dacacd30e539d58fe30",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1753,
+      "completion_tokens": 127
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "c7e0e7cd0a4840ffa9b27207add48f71",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1205,
+      "completion_tokens": 195
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f2ebfd69b3584f81bb0619fdbad3aa5e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1462,
+      "completion_tokens": 228
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "0228c0e777cf41b8a0201ab1afc31c21",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1753,
+      "completion_tokens": 69
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "d2fd9d2ff2bb4a3293c223cec7b49908",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1141,
+      "completion_tokens": 83
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "26323df9ef9e4689b0b16d372d815f38",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1389,
+      "completion_tokens": 145
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "3492b931ed7b46b083b4c54ab86d5a0f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1753,
+      "completion_tokens": 185
+    }
+  ],
+  "final_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R1",
+    "original_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+    "refined_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    1,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "PURE-ERTMS-R1-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 12558
+}

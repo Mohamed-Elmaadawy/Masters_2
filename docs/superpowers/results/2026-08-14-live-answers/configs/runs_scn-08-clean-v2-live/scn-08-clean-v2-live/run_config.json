@@ -1,0 +1,98 @@
+{
+  "run_id": "scn-08-clean-v2-live",
+  "output_dir": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\docs\\superpowers\\results\\2026-08-14-live-answers\\configs\\runs_scn-08-clean-v2-live",
+  "max_revisions": 3,
+  "retry": {
+    "max_attempts": 3,
+    "initial_delay_seconds": 2.0,
+    "multiplier": 2.0
+  },
+  "rate_limits": {
+    "gemini/gemini-3.6-flash": {
+      "requests_per_minute": 15.0,
+      "tokens_per_minute": null
+    }
+  },
+  "stages": {
+    "consistency_checker": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "7aef6c8efb05",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\consistency_checker.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "dependency_mapper": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "57b7bcbdf714",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\dependency_mapper.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "classifier": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "d0b3f8685513",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\classifier.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "quality_checker": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "1d0f79545e45",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\quality_checker.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "refiner_questioner": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "8b09bc233a80",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\refiner_questioner.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "refiner_rewriter": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "e0e31d8d8b7b",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\refiner_rewriter.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "strategy_selector": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "419ccbe58a34",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\strategy_selector.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    },
+    "test_generator": {
+      "provider": "gemini",
+      "model": "gemini-3.6-flash",
+      "prompt_version": "v2",
+      "prompt_hash": "6e2ad35a493f",
+      "prompt_path": "C:\\Users\\Mohamed Elmaadawy\\Documents\\Masters_2\\orchestrator\\example_prompts\\test_generator.txt",
+      "temperature": 1.0,
+      "timeout_seconds": 30.0,
+      "output_mode": "text"
+    }
+  }
+}

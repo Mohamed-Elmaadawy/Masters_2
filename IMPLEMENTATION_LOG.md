@@ -26,6 +26,85 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-14 — Prompt v2 batch: non_atomic definition + rewriter no-op rules, re-run on 4 scenarios
+
+**Changed:** `orchestrator/example_prompts/quality_checker.txt` (non_atomic definition
+tightened to "independently testable", one positive/one negative example added) and
+`orchestrator/example_prompts/refiner_rewriter.txt` (three rules against inventing text
+when an answer gives no concrete value, or confirms the requirement is already
+correct/measurable), committed as `2178774`. New configs
+`docs/superpowers/results/2026-08-11-behavior-scenarios/configs/scn-{04,07,10,12}-*-v2.yaml`
+(`prompt_version: v2`, distinct `run_id`/`output_dir`, baseline `runs_scn-*` dirs from
+2026-08-13 untouched). New
+`docs/superpowers/results/2026-08-11-behavior-scenarios/RESULTS-V2.md`.
+
+**Why:** implements `docs/superpowers/plans/2026-08-14-prompt-v2-batch.md` — the two
+prompt-only fixes proposed for Known Limitation 8 (non_atomic over-flagging causal chains)
+and Known Limitation 11 (Rewriter inventing text where none should appear), batched into
+one re-run per the plan's cost/attribution argument.
+
+**Impact:** re-ran the four scenarios containing every affected requirement (15
+requirement-slots, PAID Gemini key, refusing answer policy unchanged) and compared every
+requirement's outcome, quality-report categories, and rewrite text against the 2026-08-13
+baseline run records. Of six pre-registered predictions: 5 held, 1 refuted
+(`PURE-ERTMS-R2` still flagged `non_atomic` under the tightened definition — the model's
+own explanation judges the two movement types genuinely independent, a defensible read).
+All three regression guards passed: zero new `VALIDATION_FAILURE`, zero outcome changes
+across all 15 slots, zero `COMPLETED`↔cap flips. Net token cost +1.3% (153,871 → 155,822
+across the four scenarios). No prompt change made in response to the refutation. Full
+per-prediction detail and quoted model output in RESULTS-V2.md; folded into
+`design/DESIGN_NOTES.md` Known Limitations 8 and 11.
+
+**Amended same day, after counting rewrites directly in both sets of run records.** The
+outcome-level guards passed, but the entry above understated the effect. Text-changing
+rewrites went **5 -> 0** (rewrites 19 -> 18, no-ops 14 -> **18**): every text change vanished,
+not only the three targeted ones. Collateral: `PURE-ERTMS-R2` lost "shall **be able to**
+supervise" -> "shall supervise" (a genuine improvement) and `ACTAPP-R2-AC1` lost the addition
+of a missing actor ("**The system** identifies…") alongside the placeholder that was meant to
+go.
+
+Logical rather than defective — new rule 2 fires universally under a policy that never
+supplies a value — but it means **refusing-policy runs can no longer distinguish "the rules
+work" from "the Rewriter is disabled"**. Next measurement, named: replay the frozen live
+transcript (`docs/superpowers/results/2026-08-14-live-answers/answers.json`) against v2, the
+only run where answers carry content and the rules can be selective.
+
+Also unreconciled: this entry reports +1.3% token cost, while cost computed from the same
+records is essentially flat ($0.3387 -> $0.3385) with attempts down 101 -> 98. Likely raw
+tokens vs. weighted cost; settle which figure RESULTS-V2.md should carry.
+
+## 2026-08-14 — Prompt v2 replayed against the frozen live-human transcript
+
+**Changed:** new configs
+`docs/superpowers/results/2026-08-14-live-answers/configs/scn-{08-clean,09-vague,
+10-atomicity,04-conflict-numeric,11a-cap-generate,11b-cap-stop}-v2-live.yaml`
+(`prompt_version: v2`, `run_id`/`output_dir` suffixed `-v2-live`, prompts unchanged from
+the already-committed `orchestrator/example_prompts/`). New
+`docs/superpowers/results/2026-08-14-live-answers/RESULTS-V2-LIVE.md`. No prompt,
+schema, fixture, or driver edited.
+
+**Why:** answers the question the same-day refusing-policy batch amendment raised —
+under a policy that supplies no content, text-changing rewrites went 5→0, which cannot
+distinguish "the rules work" from "the Rewriter is disabled." Replaying the same nine
+requirement-slots' frozen live-human answers (`answers.json`, unchanged) against v2 is
+the one comparison where answers carry real content and the rules can be selective. See
+`design/DESIGN_NOTES.md` Known Limitation 11.
+
+**Impact:** ran via `answering_policy_driver.py` (PAID Gemini key, transcript replay,
+unchanged). Text-changing rewrites: 5/9 (v1-live) → 3/9 (v2-live) — not 5/9 → 0/9. All
+three substantive v1 changes survived (`THEMAS-REQ-D`, `THEMAS-REQ-E`,
+`PURE-THEMAS-R6-P`); both of the two named artifacts were suppressed (`AUTOGEN-US2`'s
+deferral phrase, `PURE-THEMAS-R6`'s cosmetic reformat) — the rules are measurably
+selective, not silencing. All 6 pre-registered predictions held (one, `THEMAS-REQ-E`,
+with a caveat). Two regression guards tripped, both the same requirement and root
+cause: 1 replay miss and 1 `COMPLETED`→`CAP_STOPPED` flip on `THEMAS-REQ-E`, traced to
+v2's own round-1 rewrite introducing a new `incomplete` gap the frozen transcript has
+no answer for — not a defect in either edited prompt, reported rather than patched
+around. Zero new `VALIDATION_FAILURE`. Cost $0.2667 (v2-live) vs $0.2833 (v1-live,
+`SESSION.md`), both measured from real token counts. Full per-prediction detail, quoted
+model output, and three drift-warning examples in RESULTS-V2-LIVE.md; folded into
+`design/DESIGN_NOTES.md` Known Limitation 11.
+
 ## 2026-08-14 — Live answer policy run: six scenarios, nine requirements, real human
 
 **Changed:** new `docs/superpowers/results/2026-08-14-live-answers/` — `live_bridge_driver.py`

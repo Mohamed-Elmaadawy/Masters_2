@@ -1,0 +1,124 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-04-conflict-numeric",
+    "requirements": [
+      {
+        "id": "PURE-THEMAS-R6",
+        "text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-THEMAS-R6-P",
+        "text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-04-conflict-numeric-v2",
+    "started_at": "2026-08-14T12:45:12.701303Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-04-conflict-numeric",
+    "conflicts": [
+      {
+        "requirement_ids": [
+          "PURE-THEMAS-R6",
+          "PURE-THEMAS-R6-P"
+        ],
+        "explanation": "PURE-THEMAS-R6 mandates that temperature deviation shall not exceed a maximum of 3 degrees Fahrenheit, whereas PURE-THEMAS-R6-P permits a temperature deviation of up to 5 degrees Fahrenheit before reporting an error."
+      }
+    ]
+  },
+  "dependency_report": {
+    "doc_id": "scn-04-conflict-numeric",
+    "dependencies": []
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "ec1205d2bd714869a748698656fe944a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 831,
+      "completion_tokens": 98
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "884b0acf5b704e46a7576f8c25da8fff",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 990,
+      "completion_tokens": 26
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-THEMAS-R6",
+    "PURE-THEMAS-R6-P"
+  ],
+  "document_stage_tokens": 1945
+}
