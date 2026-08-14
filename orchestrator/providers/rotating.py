@@ -24,11 +24,21 @@ for the same reason: it is not a key problem.
 Ordering: starts at whichever key last succeeded (self._index), not always index 0 --
 once a key is exhausted for the rest of its quota window, retrying it first on every
 subsequent call would waste one request per call confirming what is already known.
+
+Switch diagnostic (2026-08-11): a key switch is otherwise invisible -- nothing about
+which index served a given call is persisted anywhere in RequirementRunRecord/
+DocumentRunRecord (StageAttempt/DocumentStageAttempt record tokens and outcome, not
+which adapter instance produced them), so during a real run there is no way to see
+rotation happen at all short of reading this file. complete() prints one line to
+stderr, only on the call where the index actually changes (never on every call, never on
+a call that succeeds on the first try) -- cheap enough to leave on permanently rather
+than making it an opt-in flag nobody remembers to set before the run that needed it.
 """
 
 from __future__ import annotations
 
 import os
+import sys
 from typing import Callable, Optional
 
 from design.schemas import OutputMode
@@ -40,17 +50,24 @@ class RotatingKeyAdapter:
     """Wraps N single-key ProviderAdapter instances (all the same provider/adapter
     class) behind the one ProviderAdapter.complete() shape, so nothing above this layer
     -- orchestrator/stages.py, orchestrator/cli.py's StageFns wiring, pipeline.py's
-    retry loop -- needs to know rotation is happening at all."""
+    retry loop -- needs to know rotation is happening at all.
 
-    def __init__(self, adapters: list[ProviderAdapter]):
+    label (2026-08-11): purely cosmetic, prefixes the stderr switch diagnostic (e.g.
+    "gemini") so a run using both providers' rotation at once can tell which one just
+    switched keys. Optional and defaults to "provider" -- never affects behavior,
+    routing, or which adapters are called."""
+
+    def __init__(self, adapters: list[ProviderAdapter], label: str = "provider"):
         if not adapters:
             raise ValueError("RotatingKeyAdapter requires at least one adapter")
         self._adapters = list(adapters)
         self._index = 0
+        self._label = label
 
     @classmethod
     def from_env(
         cls, make_adapter: Callable[[str], ProviderAdapter], env_var: str,
+        label: str = "provider",
     ) -> "RotatingKeyAdapter":
         """env_var holds a comma-separated key list (e.g. GEMINI_API_KEYS=key1,key2).
         Deliberately a new, separate env var name from GeminiAdapter.from_env's
@@ -64,7 +81,7 @@ class RotatingKeyAdapter:
         keys = [k.strip() for k in raw.split(",") if k.strip()]
         if not keys:
             raise RuntimeError(f"{env_var} is set but contains no non-empty keys")
-        return cls([make_adapter(k) for k in keys])
+        return cls([make_adapter(k) for k in keys], label=label)
 
     def complete(
         self, prompt: str, *, model: str, temperature: float, timeout_seconds: float,
@@ -73,6 +90,7 @@ class RotatingKeyAdapter:
         schema_name: Optional[str] = None,
     ) -> CompletionResult:
         n = len(self._adapters)
+        start_index = self._index
         last_exc: Optional[StageCallFailed] = None
         for offset in range(n):
             idx = (self._index + offset) % n
@@ -85,6 +103,10 @@ class RotatingKeyAdapter:
                 last_exc = e
                 continue
             self._index = idx
+            if idx != start_index:
+                print(
+                    f"[RotatingKeyAdapter:{self._label}] key {start_index + 1}/{n} "
+                    f"-> key {idx + 1}/{n} (model={model!r})", file=sys.stderr)
             return result
         assert last_exc is not None  # n >= 1 (checked in __init__), so the loop ran >= once
         raise last_exc

@@ -10,8 +10,9 @@ pattern as orchestrator/test_stages.py's provider stand-in.
 
 from __future__ import annotations
 
+import io
 import os
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stderr
 
 from design.schemas import OutputMode
 from orchestrator.providers.base import CompletionResult

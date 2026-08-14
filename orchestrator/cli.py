@@ -85,14 +85,14 @@ _CONFIG_ERRORS = (ValidationError, ValueError, OSError, RuntimeError, yaml.YAMLE
 def _gemini_adapter_from_env() -> ProviderAdapter:
     if os.environ.get("GEMINI_API_KEYS"):
         return RotatingKeyAdapter.from_env(
-            lambda k: GeminiAdapter(api_key=k), "GEMINI_API_KEYS")
+            lambda k: GeminiAdapter(api_key=k), "GEMINI_API_KEYS", label="gemini")
     return GeminiAdapter.from_env()
 
 
 def _groq_adapter_from_env() -> ProviderAdapter:
     if os.environ.get("GROQ_API_KEYS"):
         return RotatingKeyAdapter.from_env(
-            lambda k: GroqAdapter(api_key=k), "GROQ_API_KEYS")
+            lambda k: GroqAdapter(api_key=k), "GROQ_API_KEYS", label="groq")
     return GroqAdapter.from_env()
 
 
