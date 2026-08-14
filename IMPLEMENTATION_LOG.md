@@ -26,6 +26,67 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-14 — PURE XML extractor: 805 requirements across five untouched documents
+
+**Changed:** new `tools/extract_pure_xml.py` and `tools/test_extract_pure_xml.py` (104
+checks, plain-script convention, seven mutations run). New `datasets/pure-extracted/` —
+five `<doc_id>.json` RequirementSets, five `<doc_id>.manifest.json` provenance sidecars,
+and `extraction-summary.json`. Correction note appended to
+`docs/superpowers/plans/2026-08-14-evaluation-design.md` section 5. Nothing under
+`design/` or `orchestrator/` touched, so no diagram regeneration is due —
+`generate_arch_diagrams.py`'s `INTERNAL_PACKAGES` is `("design", "orchestrator")` and
+does not scan `tools/` (checked, not assumed).
+
+**Why:** step 2 of `docs/superpowers/plans/2026-08-14-evaluation-design.md` section 7 —
+the corpus the Q1 ablation runs against. Deterministic XML parse rather than LLM
+extraction, per that plan's circularity argument; PURE's own annotators decide what counts
+as a requirement, so this project does not have to. Exclusions are enforced by
+`SPENT_DOCUMENTS` (section 5 item 4), not remembered.
+
+**Impact:** 805 requirements emitted and validated as `RequirementSet` — eirene_fun 583,
+cctns 115, gamma j 51, keepass 32, peering 24. `themas` and `ertms` skipped by the
+exclusion list, with the reason printed and recorded in the summary. Extraction is
+byte-identical across runs (asserted). Four findings that change what the plan assumed:
+
+1. **The plan's counts were regex overcounts.** `<req id=` also appears inside
+   commented-out empty template blocks (5 in cctns, 9 in gamma j), which no parser sees.
+   Parsed totals are 115 not 120, and 51 not 60; the untouched corpus is **805, not 819**,
+   and the six-document figure is 1,004 not 1,018. Pinned as test constants so it cannot
+   drift back.
+
+2. **`<req id>` is section-local, not document-unique**, so three of the five documents
+   fail `RequirementSet._ids_are_unique` on their raw ids (cctns 24 repeats, gamma j 6,
+   peering 4; ertms 8). Ids are therefore synthesised ordinally
+   (`PURE-CCTNS-0001…0115`, document order). The section path is *not* a usable fallback:
+   cctns's duplicates all sit inside one `<p id="">`. Provenance (source file, section
+   path, original `<req id>`, file position, text hash) lives in the manifest sidecar, not
+   on `Requirement` — decided against adding schema surface for extraction bookkeeping.
+
+3. **`<itemize>`/`<enum>` bullets are preserved as newline + "- "** rather than
+   space-joined into the sentence, for 75 of eirene_fun's 583. A space-join manufactures
+   run-on requirements, which is precisely the shape the Quality Checker over-flags as
+   `non_atomic` (Known Limitation 8) — the flag would then be measuring extraction, not
+   the requirement.
+
+4. **eirene_fun repeats its own section number at the head of every text_body**, stripped
+   on exact match against the `<req id>` (583/583). Two have the number fused to the first
+   word ("11.2.1.10It shall…"), so the delimiter is optional and a digit/dot guard stops a
+   shorter id eating a longer number's leading digit. Both halves are mutation-tested.
+
+**Two corpus quirks recorded as counts, flagged but never filtered, because they bear on
+sampling and on Known Limitation 1:** eirene_fun carries **10 `Deleted.` tombstones** —
+withdrawn clauses PURE still tags as `<req>` — and **31 verbatim-repeated texts** (71
+requirements involved); peering has 3 repeated texts out of 24, cctns 1 of 115. Whoever
+draws the evaluation sample now has numbers rather than a discovery during hand-scoring.
+
+**Not measured yet:** plan section 5 item 5, the extraction-corruption scan over this
+output. The cheap signals were clean on all five (no mojibake, no flattened comparison
+operators — themas, the known-corrupt document, is excluded anyway), but that is not the
+scan. Also unaddressed by choice: 6 of keepass's 32 texts begin with their own `REQ-n:`
+label, which is the document's own prose and does not match the `<req id>`, so the
+stripping rule correctly leaves it.
+
+
 ## 2026-08-14 — Prompt v2 batch: non_atomic definition + rewriter no-op rules, re-run on 4 scenarios
 
 **Changed:** `orchestrator/example_prompts/quality_checker.txt` (non_atomic definition

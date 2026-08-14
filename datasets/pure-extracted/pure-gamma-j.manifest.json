@@ -1,0 +1,791 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-14T16:38:14+00:00",
+  "doc_id": "pure-gamma-j",
+  "source_file": "0000 - gamma j.xml",
+  "source_sha256": "4830091b276df2f7bec48d414533624cffda8bc98ca33abb593d99dc928142d4",
+  "counts": {
+    "requirements": 51,
+    "skipped_empty": 0,
+    "with_bullets": 1,
+    "id_prefix_stripped": 0,
+    "duplicate_original_ids": 6,
+    "duplicate_texts": 0,
+    "deleted_marker": 0
+  },
+  "requirements": [
+    {
+      "id": "PURE-GAMMA-J-0001",
+      "original_req_id": "OE-1",
+      "section_path": [
+        "2",
+        "2.4"
+      ],
+      "position": 0,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a7ae684561fd6abf4b53383533d168a177a76db999466a3e3779bf6387da1419",
+      "text_chars": 145,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0002",
+      "original_req_id": "OE-2",
+      "section_path": [
+        "2",
+        "2.4"
+      ],
+      "position": 1,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "cee660b51429ba42d603eac705a762073bcaccfec51b4b90449da36be27adc5b",
+      "text_chars": 349,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0003",
+      "original_req_id": "OE-3",
+      "section_path": [
+        "2",
+        "2.4"
+      ],
+      "position": 2,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "405bc1669d10205576d7df16bcb2d455ae8ce04e2bd6c785b7c809e786263262",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0004",
+      "original_req_id": "OE-4",
+      "section_path": [
+        "2",
+        "2.4"
+      ],
+      "position": 3,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "61a99745ffcb1145ecf8adcc84d5eb6cab6f35bed88a59321b790886730b5b12",
+      "text_chars": 60,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0005",
+      "original_req_id": "CO-1",
+      "section_path": [
+        "2",
+        "2.5"
+      ],
+      "position": 4,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "ff2043010e90fa715b931dd230216c72313875711332727bdf6799f74dd535fd",
+      "text_chars": 155,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0006",
+      "original_req_id": "CO-2",
+      "section_path": [
+        "2",
+        "2.5"
+      ],
+      "position": 5,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "32f02346c149be56df6c70b3b486dbc62a5a5ae63e63ea0b63949c326f2bcdaf",
+      "text_chars": 247,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0007",
+      "original_req_id": "UD-1",
+      "section_path": [
+        "2",
+        "2.6"
+      ],
+      "position": 6,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "fb5929e96766a8df6419b58949c3b95b4c4222c1ecf3d4845028b4a57bddf905",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0008",
+      "original_req_id": "UD-2",
+      "section_path": [
+        "2",
+        "2.6"
+      ],
+      "position": 7,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d89ed154b81654f5ae7c894af94cd2d9f6e363594cbcf79a7527c7b7be8f4f74",
+      "text_chars": 119,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0009",
+      "original_req_id": "AD-1",
+      "section_path": [
+        "2",
+        "2.7"
+      ],
+      "position": 8,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "118c5af3f031eac04ad3f6e72418a43a24c3f6b83eede9b67eb729be4fd999ca",
+      "text_chars": 92,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0010",
+      "original_req_id": "AD-2",
+      "section_path": [
+        "2",
+        "2.7"
+      ],
+      "position": 9,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d1f420ceb5b16b4a0e934a82abaf1307b64735e87f078594ad2fa84bf63d5fe0",
+      "text_chars": 72,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0011",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 10,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "62c0b3cb91961e074280c251a307e49cea51f1db34300f4e048e191f0249968d",
+      "text_chars": 108,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0012",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 11,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f28a1f48b8a7d8d22c79df891eff7132aa2b35f30ef12677d7efefbd3d60dff9",
+      "text_chars": 90,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0013",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 12,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "40eba14b35d6bfec076631bf93041de867c422654c2660842546ff0b02bde1a8",
+      "text_chars": 61,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0014",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 13,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "2cf96c8abd3f765ef46c67208b8e3c3f461cc13dcf052d89119e3e280155cf1e",
+      "text_chars": 74,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0015",
+      "original_req_id": "5",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 14,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "b88ecd7bfc893158069b645a48c3c0869fe85936d02e1f20cab33a2ed9606d2f",
+      "text_chars": 81,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0016",
+      "original_req_id": "6",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 15,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d3f85745e321089e90ca50bee36e3cea6119652c530f6f6825e0d0f3cc310264",
+      "text_chars": 76,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0017",
+      "original_req_id": "7",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 16,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "80ae6546584382090fc3558f97f02aaebd82d6732ca617956fc5194219909585",
+      "text_chars": 72,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0018",
+      "original_req_id": "8",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 17,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "178a87410293bd3abf0e849aa682d57212ed221a0ba4dd374bdc3fec954c1a90",
+      "text_chars": 76,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0019",
+      "original_req_id": "9",
+      "section_path": [
+        "5",
+        "5.1"
+      ],
+      "position": 18,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "6f0750d675c28a8b1bc8eb479d10ec7df3e77247dd6ea25592d3e467a8bf3c54",
+      "text_chars": 60,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0020",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.2"
+      ],
+      "position": 19,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "348ee0ba2df4d7b87bd81afb838550f23ef8ee7c65dd9272476071365322a282",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0021",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 20,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "66507a585eb41c2b94f31aa087b9d468d7ed274a4b3125aad63dc460a0259353",
+      "text_chars": 53,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0022",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 21,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "04cd313a5c1b355bc12fda3eae5797f4e0a30aa20b32e48f4e6affb21cd6b7e0",
+      "text_chars": 61,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0023",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 22,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5e4071d487226fa036c2b225f33783c797ec0f11009f10b0ddf5be2e5e56647f",
+      "text_chars": 55,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0024",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 23,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "1539e0a62ef204ccfc92950f5983be3fa6e9d2b2fdf683cc652b000fffedac75",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0025",
+      "original_req_id": "5",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 24,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "1bc46ef2560f99361dd35792d955627c00be914b4ae00b0feb22057d5d012e46",
+      "text_chars": 58,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0026",
+      "original_req_id": "6",
+      "section_path": [
+        "5",
+        "5.3"
+      ],
+      "position": 25,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5e7b8ad465d6da0880b747e89059252b62be4062b87bf0b9dce132ecf4179cd5",
+      "text_chars": 101,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0027",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.4"
+      ],
+      "position": 26,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "0f4fb71e4309938414f7e390d1076800a565f05946c3fb39f3ca3610a546fb4e",
+      "text_chars": 48,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0028",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.5"
+      ],
+      "position": 27,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "ebb6b55b0a04e5e094efdfe9155916dc28e84c38932a7c795eee483565c9f42e",
+      "text_chars": 73,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0029",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.5"
+      ],
+      "position": 28,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a5dec373df0bc2eb555698fe424231c48863f0260639bc98e9942a158feccb96",
+      "text_chars": 102,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0030",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.5"
+      ],
+      "position": 29,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "ce6a9de76ab17d52d50f4f86ad9f5d2eafe44d8d5b5bece510dd99286cb0b5bc",
+      "text_chars": 79,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0031",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.5"
+      ],
+      "position": 30,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "416bc601e60d1e98e4a6b429df1b038098922566432d7d85d83e62bee305a14f",
+      "text_chars": 84,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0032",
+      "original_req_id": "5",
+      "section_path": [
+        "5",
+        "5.5"
+      ],
+      "position": 31,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "1145368b40922e186f17ba801c2d24342654ca70037d6983ad560af38eb8e761",
+      "text_chars": 50,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0033",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 32,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5dc7d6de37daa7e8c7c8e37c6a768c11632319af79acd25d277941204d5d3f47",
+      "text_chars": 31,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0034",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 33,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5ea032e3e4938a09b7e727520979f7b2464289667e4e5d888910b93fd201d4c8",
+      "text_chars": 33,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0035",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 34,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "e157dcc72734e5514388a58b34f595ef5af5bad558ba84365ae8bd102d90cba0",
+      "text_chars": 87,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0036",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 35,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "c3447c961bcad9466d304498873d655d13b07095e4eba2e426778220be1ae7a4",
+      "text_chars": 46,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0037",
+      "original_req_id": "5",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 36,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5cd2e63929861f90d73117ddeb344d3e065f387f4078d0a5983c2e4c24793b22",
+      "text_chars": 73,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0038",
+      "original_req_id": "6",
+      "section_path": [
+        "5",
+        "5.6"
+      ],
+      "position": 37,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "da99b876f47d342b0bcc1394694332a8111b66d1fa1133d81d4b23b2923ee8a0",
+      "text_chars": 79,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0039",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.7"
+      ],
+      "position": 38,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "0f34b6670dae937cd6661a96f6ddd6381c66a2186f515f1b69fd6f575b9f6a7c",
+      "text_chars": 49,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0040",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.7"
+      ],
+      "position": 39,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "78c4f228d6c5659bdbbaeb1accd5d49a2fdff71276154a1ebefdd66ad0b0dc40",
+      "text_chars": 59,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0041",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.7"
+      ],
+      "position": 40,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "2682a9e48f491270e79d846ccb3f68b8f03dc2ef1fd5b6169976eedfdc635304",
+      "text_chars": 89,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0042",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.7"
+      ],
+      "position": 41,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d958b286ed295dad07ef65630542d368423de2186f974ee78995cce00cdffc79",
+      "text_chars": 36,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0043",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.8"
+      ],
+      "position": 42,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "cb7b98e93eef7e24af256b2b49164b8a441a64d7023027976fa6705c3c57a605",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0044",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.8"
+      ],
+      "position": 43,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "13cfa8bc6609b87da3c7c4e8fe0024ef1c0c52130ff1279028a539c48cb54177",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0045",
+      "original_req_id": "1",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.9"
+      ],
+      "position": 44,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "828e960795690de00f71a469f7c8318b4aaba0c86718b1f5eff82851520bbbe7",
+      "text_chars": 50,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0046",
+      "original_req_id": "2",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.9"
+      ],
+      "position": 45,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "4ae694352f086243f2c1b7042c7f13e93a9d092473910382f3f482c012f9a4f9",
+      "text_chars": 63,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0047",
+      "original_req_id": "3",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.9"
+      ],
+      "position": 46,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f7b1bb36e84adae11239cce64cdbcce0ccd2b4da08099587a75af5ea6cf5040b",
+      "text_chars": 54,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0048",
+      "original_req_id": "4",
+      "section_path": [
+        "5",
+        "5.6",
+        "5.9"
+      ],
+      "position": 47,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f9c114a07ac267d6f49b747856e5f7174d79088f85e146c0964c2b4fd91411d1",
+      "text_chars": 72,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0049",
+      "original_req_id": "1",
+      "section_path": [
+        "6"
+      ],
+      "position": 48,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "2a3b342a6a0ae5b164561fbb882eeab3316c9156b51304601342c212b89b8b48",
+      "text_chars": 74,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0050",
+      "original_req_id": "2",
+      "section_path": [
+        "6"
+      ],
+      "position": 49,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "dd9524946ca7b583c30f0595d3f28702ba8272bee7de296d29c32f798e9d6e6a",
+      "text_chars": 81,
+      "flags": []
+    },
+    {
+      "id": "PURE-GAMMA-J-0051",
+      "original_req_id": "3",
+      "section_path": [
+        "6"
+      ],
+      "position": 50,
+      "text_body_count": 1,
+      "bullet_items": 5,
+      "id_prefix_stripped": false,
+      "text_sha256": "a8404992640daa738d66dce3470eb4685f89ce2701c2e9c33b7cf47304d838e1",
+      "text_chars": 178,
+      "flags": []
+    }
+  ],
+  "skipped_empty": []
+}

@@ -1,0 +1,90 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-14T16:38:14+00:00",
+  "input_dir": "datasets/requirements-xml/XMLZIPFile",
+  "documents": [
+    {
+      "doc_id": "pure-cctns",
+      "source_file": "0000 - cctns.xml",
+      "requirements": 115,
+      "counts": {
+        "requirements": 115,
+        "skipped_empty": 0,
+        "with_bullets": 8,
+        "id_prefix_stripped": 0,
+        "duplicate_original_ids": 24,
+        "duplicate_texts": 1,
+        "deleted_marker": 0
+      }
+    },
+    {
+      "doc_id": "pure-gamma-j",
+      "source_file": "0000 - gamma j.xml",
+      "requirements": 51,
+      "counts": {
+        "requirements": 51,
+        "skipped_empty": 0,
+        "with_bullets": 1,
+        "id_prefix_stripped": 0,
+        "duplicate_original_ids": 6,
+        "duplicate_texts": 0,
+        "deleted_marker": 0
+      }
+    },
+    {
+      "doc_id": "pure-eirene-fun-7-2",
+      "source_file": "2007-eirene_fun_7-2.xml",
+      "requirements": 583,
+      "counts": {
+        "requirements": 583,
+        "skipped_empty": 0,
+        "with_bullets": 75,
+        "id_prefix_stripped": 583,
+        "duplicate_original_ids": 0,
+        "duplicate_texts": 31,
+        "deleted_marker": 10
+      }
+    },
+    {
+      "doc_id": "pure-keepass",
+      "source_file": "2008 - keepass.xml",
+      "requirements": 32,
+      "counts": {
+        "requirements": 32,
+        "skipped_empty": 0,
+        "with_bullets": 0,
+        "id_prefix_stripped": 0,
+        "duplicate_original_ids": 0,
+        "duplicate_texts": 0,
+        "deleted_marker": 0
+      }
+    },
+    {
+      "doc_id": "pure-peering",
+      "source_file": "2008 - peering.xml",
+      "requirements": 24,
+      "counts": {
+        "requirements": 24,
+        "skipped_empty": 0,
+        "with_bullets": 0,
+        "id_prefix_stripped": 0,
+        "duplicate_original_ids": 4,
+        "duplicate_texts": 3,
+        "deleted_marker": 0
+      }
+    }
+  ],
+  "skipped": [
+    {
+      "source_file": "1998 - themas.xml",
+      "slug": "themas",
+      "reason": "spent: pulled into requirements_dataset.json as pure-themas-1998-full (also the one document with flattened comparison operators)"
+    },
+    {
+      "source_file": "2007-ertms.xml",
+      "slug": "ertms",
+      "reason": "spent: pulled into requirements_dataset.json as pure-ertms-2007"
+    }
+  ],
+  "total_requirements": 805
+}
