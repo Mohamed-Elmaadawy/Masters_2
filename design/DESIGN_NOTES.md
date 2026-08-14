@@ -717,6 +717,35 @@ PDFs and mathematical notation did not survive in this document. Any requirement
 comparison is suspect. Check how widespread this is before PURE carries evaluation weight — a
 corpus that silently turns `<=` into `=` corrupts far more than one example.
 
+**Measured 2026-08-14 — the risk is real but confined to one document, not corpus-wide.**
+Scanned all 18 files of the committed annotated subset (`datasets/requirements-xml/XMLZIPFile/`)
+for three signatures: `X = Y = Z` comparison chains, `T_LT`-shaped underscore tokens, and
+surviving Unicode math (`<=`, `>=`, `!=`, `+/-`).
+
+- Only **6 of 18** documents contain any mathematical `=` at all — SRS text is overwhelmingly
+  prose, so most files have nothing to corrupt.
+- Of those six, most `=` uses are key-value labels, not comparisons: `0000 - gamma j.xml`
+  ("ID = User ID of the...", 21 occurrences), `2005 - microcare.xml`, `1995 - gemini.xml`.
+- **`1998 - themas.xml` is the only file showing the flattened-comparison signature** — the
+  `X = Y = Z` chains ("If `T = LO` or `UO = T`", "Condition 1: `LT = T = UT`"). Note that its
+  other `=` uses are legitimate definitions (`LO : Lower Overtemperature Value = TSET - OD`),
+  so the damage is specifically to *comparisons*, not to all notation.
+- **`2006 - eirene sys 15.xml` retained 7 Unicode math symbols**, which proves extraction
+  *can* preserve them. So the corruption is per-document — a function of the source PDF's
+  fonts or glyph encoding — rather than a systemic property of the PURE pipeline.
+- `2007-ertms.xml` has one math-ish `=` ("speed = zero"), which is prose. The ERTMS-derived
+  fixtures are unaffected.
+
+**Why it looked systemic from inside this project:** THEMAS is the single document this work
+has leaned on most — the schema spot-check, all three 2026-08-10 runs, and several behaviour
+fixtures. The one damaged document is the one everything was built on.
+
+**Scope of this measurement, stated honestly:** it covers the 18-file annotated XML subset
+only. The 79-document full corpus (`datasets/pure-full/`, PDF/DOC/HTML) is not parsed by
+anything in this project yet, so nothing is known about corruption there. Re-run this scan as
+part of whatever extraction is eventually built for it — the three signatures above are cheap
+and the script is trivial to reproduce.
+
 **Third observation, from the live loop:** naming a referent is not sufficient.
 `THEMAS-REQ-E` round 1 replaced "this condition" with "Condition 2" — an improvement, and it
 silently repaired the mangled inequality — and round 2 flagged `VAGUE_PRONOUN` *again*,

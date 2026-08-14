@@ -57,6 +57,32 @@ echoed-message glitch, caught and not recorded) are in `SESSION.md`.
 
 ---
 
+## 2026-08-14 — PURE extraction-corruption scan: confined to one document, not corpus-wide
+
+**Changed:** `design/DESIGN_NOTES.md`, Known Limitation 5 — measurement appended under the
+live-session evidence.
+
+**Why:** the live session found `LO = T_LT` to be a flattened `LO <= T <= LT`, which raised an
+unmeasured risk that PDF-to-XML extraction had damaged comparisons across the PURE corpus.
+Several fixtures are PURE-derived, so this had to be settled before more runs depend on them.
+
+**Impact:** the risk is narrowed, and the alarm I raised is partly withdrawn. Scanned all 18
+files of `datasets/requirements-xml/XMLZIPFile/` for comparison chains, underscore-joined
+tokens, and surviving Unicode math:
+
+- 6 of 18 documents contain any mathematical `=`; most SRS text is prose.
+- `1998 - themas.xml` is the **only** file with the flattened-comparison signature.
+- `2006 - eirene sys 15.xml` retains 7 Unicode math symbols, proving extraction can preserve
+  them — so this is per-document (source PDF encoding), not systemic.
+- `2007-ertms.xml` is unaffected, so the ERTMS fixtures are sound.
+
+Explains why it looked systemic: THEMAS is the document this project has used for the schema
+spot-check, all three 2026-08-10 runs, and several fixtures. Scope limit recorded: the 79-file
+full corpus is unparsed, so nothing is known about it — the scan should be repeated when an
+extractor for it is built.
+
+---
+
 ## 2026-08-14 — Live-answer session results folded into the design notes
 
 **Changed:** `design/DESIGN_NOTES.md` — Known Limitations 5, 7, 8, 10 and 11 extended with

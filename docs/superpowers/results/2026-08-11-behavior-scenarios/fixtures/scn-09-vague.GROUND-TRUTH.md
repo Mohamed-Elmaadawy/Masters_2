@@ -14,6 +14,32 @@ Both requirements verbatim from `datasets/requirements_dataset.json`, doc
 
 (`source_doc_id` left `None` on both — see scn-01-dep-pair.GROUND-TRUTH.md's note.)
 
+**Note added 2026-08-14 — `LO = T_LT` is a corrupted inequality, not domain notation.** The
+fixture text above is verbatim from `datasets/requirements_dataset.json` and is kept
+unchanged, because three completed runs plus the live-answer session used it and editing it
+would break their comparability. But the underlying source
+(`datasets/requirements-xml/XMLZIPFile/1998 - themas.xml`, SRS-010) actually reads:
+
+> "…output a request to turn on the heating unit if `LO ≤ T ≤ LT` or the cooling unit if
+> `UT ≤ T ≤ UO`."
+
+The `≤` signs were flattened to `=` and a space was lost during PDF-to-XML extraction. The same
+damage appears elsewhere in that document ("If `T = LO` or `UO = T`", "Condition 1:
+`LT = T = UT`"). Both `LO` and `LT` are defined one paragraph above the requirement that uses
+them (`LT = TSET − TD`, `LO = TSET − OD`).
+
+Consequences for anyone reading this fixture later:
+
+- Do **not** treat `LO = T_LT` as an example of undefined domain notation. It is not a
+  meaningful expression, so no detector could resolve it, and Known Limitation 5 was reframed
+  on that basis (see `design/DESIGN_NOTES.md`).
+- "this condition" resolves to Condition 2 of SRS-010 (`LO ≤ T < LT`, or `UT < T ≤ UO`), and
+  "this module" to the Determine H/C Mode process (SRS-010). Both are defined in the same
+  section the sentence was excerpted from — the vagueness is an artefact of excerpting, not a
+  defect in the original document.
+- The corruption was measured across the whole committed XML subset on 2026-08-14: THEMAS is
+  the only affected file of 18. ERTMS-derived fixtures are unaffected.
+
 ## Ground truth
 
 - D → `VAGUE_PRONOUN` ("these limits") and/or `INCOMPLETE` (no actor).
