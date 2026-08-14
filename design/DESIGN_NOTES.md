@@ -459,12 +459,74 @@ harmless redundancy -- this is left as a documented limitation rather than solve
 an unvalidated heuristic. Revisit once there's a de-duplication approach that doesn't
 risk false-positive merges.
 
+*Deferred alternatives (2026-08-14) — recorded, not adopted.* Reviewing this limitation
+surfaced two directions that avoid de-duplication's central risk entirely, because
+neither deletes anything. Both left unimplemented; noted here so the option set doesn't
+have to be rediscovered.
+
+- **Prevent instead of delete: show the generator what already exists.** `run_document`
+  walks `requirement_set.requirements` in document order, sequentially
+  (`orchestrator/pipeline.py`), and each `run_requirement` call receives nothing from the
+  others — but by the time a dependent requirement is generated, its dependency's
+  `TestPlan` is already in the accumulated records. Passing those already-generated cases
+  into `stage_fns.generate_tests` as context ("these exist, don't restate them") is the
+  same shape as the targeted `relevant_dependencies` context the generator already gets.
+  No new LLM call, no similarity threshold, no precision/recall evaluation, and nothing
+  is destroyed, so the wrong-merge failure mode that rules out de-duplication cannot
+  occur. Real costs: it only helps when the dependency appears *earlier* in document
+  order (processing in dependency order instead is a genuine pipeline change, and is
+  undefined for the cyclic subsets `find_cycles()` exists to detect); it *reduces*
+  duplication rather than eliminating it, since the model may restate anyway; and it
+  grows the generator prompt, which is also another surface for untrusted requirement
+  text.
+Both are premature for a reason found later and recorded under Known Limitation 6: the
+duplication this limitation describes requires two plans to each emit a test case spanning
+the same requirement pair, and **no real run has produced a multi-requirement test case at
+all** (13 cases, all single-requirement). There may be nothing here to prevent. Settle that
+with behaviour scenario S1 before implementing either option below.
+
+- **Measure it instead of removing it.** Emit suspected duplicate pairs as an advisory
+  finding and never act on them. Costs one comparison pass and no API calls, converts a
+  documented limitation into a reported number, and keeps every generated case. Weak as a
+  fix, useful as evaluation evidence.
+
+**Suite result 2026-08-13 — the premise is now live.** S1 produced
+`TC-13-PURE-ERTMS-R7-2`, citing both `PURE-ERTMS-R7` and `PURE-ERTMS-R8` — the first
+multi-requirement test case this project has produced. So spanning cases *do* occur when a
+dependency link exists, and the duplication this limitation describes is reachable rather
+than hypothetical. It was not observed here because only one plan in the suite had a
+dependency to span. Revisit with a fixture where *both* ends of a link reach test
+generation.
+
 **2. The system verifies testability-structure, not domain truth.** Covered in the
 Refiner section above: the pipeline can confirm a refined requirement no longer fails
 the same objective checks that originally flagged it, but it has no way to verify the
 human's answer is factually correct for the actual system being specified. Only the
 human has that authority; no design closes this gap without an independent domain
 oracle.
+
+*Two clarifications added 2026-08-14 — this stays unfixed, but it is not unmitigated.*
+
+**The record already isolates every domain claim for audit, which is the only useful
+thing available here.** `RefinedRequirement.answers_used` stores the human's answers
+verbatim, and `RefinementRound` records the whole trajectory
+(`text_checked`/`turn`/`answers`/`rewrite` per round), so any factual claim that entered
+a refined requirement is traceable to the specific answer that introduced it. That is not
+verification and must not be presented as it: it is the difference between "unverified"
+and "unverified *and* untraceable". State it as the mitigation in the threat-to-validity
+discussion rather than implying the gap is narrower than it is. Attempting actual
+verification — asking a model whether "3 seconds" is plausible for this system — is
+rejected: it manufactures domain authority the model does not have, and its errors are
+confident, silent, and indistinguishable from correct output on inspection.
+
+**One weak automated check on domain claims does exist, and Known Limitation 7 is
+currently blocking it: internal contradiction.** If a human answer supplies 3°F and a
+sibling requirement already says 5°F, at least one of them is factually wrong about the
+system, and the Consistency Checker is precisely the stage that would surface it. It
+cannot today, because document-level analysis ran before the answer existed (see
+Known Limitation 7). This does not verify domain truth — both requirements can agree and
+both be wrong — but it is the only mechanical check on human-supplied facts within reach,
+and it raises the value of addressing 7 above what that entry alone suggests.
 
 **3. `PERFORMANCE` doesn't distinguish hard real-time from soft performance targets.**
 A missed deadline in an embedded control system (potentially a safety-relevant
@@ -473,6 +535,41 @@ same `TestTechnique.PERFORMANCE` label -- see the `TestTechnique` section above.
 Left unresolved because there's no existing criticality/severity concept anywhere
 else in the schema, and nothing in the current reference documents establishes that
 safety-critical embedded testing needs to be in scope. Revisit only if that changes.
+
+*Correction to the reason, 2026-08-14.* The scope half of that justification is false and
+should not be repeated. Embedded control requirements are already in this project's data:
+`datasets/requirements_dataset.json`'s `themas-fischbach2022` is a thermostat control
+system and has run end-to-end against real APIs
+(`docs/superpowers/results/2026-08-10-gemini-paid-tier-run/`), and
+`pure-ertms-2007` — reserved in `datasets/EVALUATION_DATASETS.md` — is rail signalling,
+which is both safety-critical and hard real-time. "Out of scope" was never checked
+against the corpus and does not hold.
+
+The limitation stays open, on two different and verifiable grounds:
+
+1. **No observed consequence.** `TestTechnique.PERFORMANCE` was selected zero times
+   across every real run recorded under `docs/superpowers/results/`. A distinction the
+   Strategy Selector has never once drawn cannot yet be shown to matter.
+2. **Nowhere to put it, and nothing gained by adding one.** `SystemType` has no embedded
+   member, and `ELIGIBLE_TECHNIQUES` maps `WEB`, `MOBILE` and `OTHER` to the *identical*
+   `_NON_AI_TECHNIQUES` pool. Adding an `EMBEDDED` member would change nothing at the
+   eligibility layer unless it also received a different pool — and there is no citation
+   establishing what that pool should contain. Adding an unsourced one is the same
+   overreach rejected in Known Limitation 5.
+
+Revisit when `PERFORMANCE` actually gets selected on a hard-real-time requirement
+(ERTMS is the likely trigger) — at that point the need is demonstrated rather than
+assumed, and a grounded technique pool can be argued for. See also Known Limitation 9,
+which is the more consequential half of what this review turned up.
+
+**Suite result 2026-08-13 — now a measured negative, not an open question.**
+`TestTechnique.PERFORMANCE` was selected **zero** times across 34 requirements, including on
+`LUITEL-R1` ("shall reach a steady state within 5s"), the one requirement S12's ground truth
+expected to select it. Techniques actually chosen: `equivalence_partitioning` 8,
+`state_based` 7, `use_case` 6, `boundary_value_analysis` 3, `decision_table` 3,
+`exploratory` 2. The hard-vs-soft distinction remains unreachable because the technique it
+would qualify is never picked — and the Strategy Selector missing an explicit numeric latency
+target is a finding about *selection*, not about this taxonomy gap.
 
 **4. `VAGUE_PRONOUN` is expected to be noisy to detect.** Per the sourcing paper's own
 detection results (see the Quality Checker section above), this is one of the two
@@ -522,6 +619,77 @@ for the post-implementation evaluation phase, deliberately not pulled from durin
 schema design to avoid tuning the schema against the same data it'll later be
 evaluated on.
 
+*Reframed 2026-08-14: this is probably an input problem, not a taxonomy problem.* Both
+rejected fixes above argue about **which category** `T_LT` belongs to. That framing misses
+the more basic issue, which is that no category can be applied correctly because the stage
+doing the categorising cannot see the evidence.
+
+**The Quality Checker never sees the document.** `CheckQualityFn`
+(`orchestrator/stage_fns.py`) takes `(requirement, classification, relevant_conflicts,
+relevant_dependencies, suppressed_issue_ids)`, and `orchestrator/example_prompts/
+quality_checker.txt` passes only the requirement text, its system type, the filtered
+conflicts/dependencies and the suppression list. No document text, no glossary. So the
+checker is permanently in the isolated-excerpt condition — and `T_LT` has two opposite
+readings it has no way to separate: a genuine defect (defined nowhere, untestable) or
+ordinary jargon defined in a glossary or a sibling requirement. Flag it and well-defined
+notation produces false positives; stay silent and real defects pass. Either behaviour is
+a guess.
+
+This matters because `datasets/EVALUATION_DATASETS.md`'s PURE spot-check log (2026-08-04)
+found that exactly these terms — `"DMI"`, `"this file"` — usually *do* resolve once the
+surrounding document is read, and concluded the gap is milder at full-document level than
+the isolated-excerpt audits suggested. That conclusion does not transfer to the pipeline
+as built: the pipeline never puts the checker in the full-document condition where the
+terms resolve.
+
+**Asymmetry worth noting:** the Classifier *does* get document context — `ClassifyFn`
+takes `(requirement, requirement_set)` and `classifier.txt` passes `requirements_json` —
+and uses it to produce one `SystemType`. The Consistency Checker and Dependency Mapper
+also read the whole set. So the document is available inside the pipeline at three points,
+just never at the one stage whose job is finding defects. No reason for that split is
+recorded anywhere; it appears to be incidental rather than decided.
+
+**Rejected fix (added here so it isn't revisited): pass the whole `RequirementSet` to the
+Quality Checker.** It is the obvious symmetric change and the wrong one. The checker runs
+once per requirement *per refinement round*, so this attaches a document copy to roughly
+N x rounds calls — quadratic in tokens, spent against tokens-per-minute on the free tier,
+which is the exact constraint that already required `Throttle`'s TPM pacing and
+`RotatingKeyAdapter`. Highest cost in the scarcest resource, for the smallest documented
+defect class.
+
+**Candidate fix if the measurements support it: one deterministic pre-pass, no LLM call,
+no new stage.** Scan the document once for terms it *defines* (`X = Y`, `X means Y`,
+`Full Name (ABC)`, glossary lines) and, per requirement, for notation-shaped tokens it
+*uses* (all-caps, underscores, mixed alphanumerics). Used-but-never-defined tokens are
+candidates, passed to the Quality Checker as a short constant-size list rather than a
+document. Properties that make this the cheap option: deterministic and unit-testable,
+cannot hallucinate, zero API cost, no change to the eight-stage story, no change to
+`StageFns`' shape or resume semantics. It produces *candidates* — the model or the human
+still judges.
+
+It also repairs the grounding objection that killed both earlier options. "Which of the
+eight categories does this fit?" had no citation behind any answer. "This term is used and
+defined nowhere in the document" is an objective, mechanically checkable property, which
+IEEE 29148's completeness principle supports far better than stretching `VAGUE_PRONOUN`
+(S7, pronouns specifically) to cover tokens that are not pronouns. A dedicated
+`IssueCategory` becomes arguable once the thing it names is precise.
+
+**Do not build it before two measurements, in this order.** Both are cheap and neither is
+wasted:
+
+1. **Run behaviour scenario S9** (`docs/superpowers/plans/2026-08-11-behavior-scenarios.md`;
+   fixtures and configs exist under
+   `docs/superpowers/results/2026-08-11-behavior-scenarios/`, nothing has been run). It
+   probes `LO = T_LT` directly, and the three possible outcomes point at three different
+   responses: flagged correctly -> the limitation is milder than documented, build nothing;
+   missed silently -> the missing-input diagnosis holds and the pre-pass is the fix;
+   mis-tagged as `VAGUE_PRONOUN`/`AMBIGUOUS_TERM` -> this is a prompt/taxonomy problem and
+   the pre-pass would be the wrong fix. Only one of the three leads to the code above.
+2. **Run the token scan as a throwaway script over THEMAS and ERTMS**, both already marked
+   spent for design purposes in `EVALUATION_DATASETS.md`, so no evaluation contamination.
+   This produces the recurring-frequency evidence this entry already demands before any new
+   category. Same code as the candidate fix, run as a measurement first.
+
 **6. `TestPlan` requires *every* case to cover the plan's own requirement — revisit if
 it rejects real generator output.** A plan for REQ-1 holds test cases, each listing the
 requirements it covers. The rule chosen is strict: every case must list REQ-1, though it
@@ -537,6 +705,695 @@ covers only a dependency (say REQ-2 as a precondition), this rejects it. Watch f
 once the generator is running against real requirements. Loosening is a one-line change
 to `TestPlan._cases_cover_this_requirement` — swap the "every case" check for "any
 case". Decide from observed generator behaviour rather than in advance.
+
+*Measured 2026-08-14 — keep the strict rule; the risk has not been approached.* Across
+all three recorded real runs (`docs/superpowers/results/2026-08-10-first-real-run/`,
+`2026-08-10-gemini-paid-tier-run/`, `2026-08-10-tpm-throttle-validation/`): 4 `TestPlan`s,
+13 `TestCase`s, **zero** cases citing more than one requirement, and no
+`VALIDATION_FAILURE` at `test_generator` in any run — the only `test_generator` failures
+recorded are transport. Nothing has pushed against this rule, so there is no reason to
+loosen it.
+
+**But the sample is much weaker than those counts suggest, and this is the important
+part.** Cross-referencing each run's `dependency_report` against which requirements
+actually produced a plan: run 1's links were A->C, B->D, E->C, F->C while the only plan
+produced was for **G**, which appears in no link; run 2's links were D->B and F->C with
+plans for A, C and G, of which only **C** appears in a link (`dependencies_for` matches
+either side, so F->C counts); run 3 produced no plans at all. So the Test Generator has
+received a non-empty `relevant_dependencies` **exactly once** in the project's history —
+one link, on THEMAS-REQ-C — and that plan's 4 cases cite only C and mention no sibling
+requirement anywhere, including in preconditions. That is n=1, which is not evidence.
+
+The cause is mundane rather than interesting: most requirements never reached test
+generation, dying at `cap_stopped` or transport errors, and the survivors happened to be
+the ones with no dependency links.
+
+Consequence worth carrying: **Known Limitations 1, 6 and 7 are all blocked on the same
+single unmeasured behaviour** — whether the Test Generator uses dependency context at all.
+1 needs both plans to emit a spanning case for duplicates to exist; 6's risk case *is* a
+spanning case; 7's argument that stale dependencies corrupt the deliverable assumes
+dependencies influence output. None of the three can be settled without that measurement.
+Behaviour scenario S1 (`scn-01-dep-pair`, two ERTMS requirements, one real link) already
+exists to produce it and lists the threading into Strategy Selector/Test Generator as a
+hard criterion — and being two requirements, it cannot get lost in the cap/transport noise
+that swallowed THEMAS. The specific post-run check is recorded in
+`docs/superpowers/plans/2026-08-11-behavior-scenarios-RUN-PROMPT.md`.
+
+**Suite result 2026-08-13 — measurement obtained; keep the strict rule.** S1's
+`TC-13-PURE-ERTMS-R7-2` lists both `R7` and `R8` and sits in `R7`'s plan, so it *includes*
+the plan's own requirement and the strict rule was satisfied, not challenged. Across the
+whole suite the rule again never fired. The risk case (a case covering *only* the
+dependency) is now demonstrably closer than "never approached" — the generator will write
+spanning cases — but it has still not occurred.
+
+**7. Document-level analysis (Consistency Checker, Dependency Mapper) never re-runs
+after refinement changes a requirement's text — a rewrite can silently introduce a new
+conflict or a new dependency that nothing in the pipeline ever checks for.**
+`run_document_stages` (`orchestrator/pipeline.py`) runs both document-level stages
+exactly once, on the original `RequirementSet`'s text, before any requirement enters its
+refine loop. `run_requirement` then computes `relevant_conflicts`/`relevant_dependencies`
+once from that same original-text report and holds them constant across every
+refinement round and into the Strategy Selector/Test Generator calls
+(`_run_refine_loop`'s own docstring: "the document-level analysis doesn't change
+between rounds"). If a Refiner Rewriter pass changes a requirement's wording enough to
+create a genuine new dependency on a sibling requirement, or to contradict one, neither
+the mapper nor the checker that would have caught it ever runs again — they already
+finished before the rewrite existed.
+
+Mechanism that makes this a real risk, not just a theoretical one: the Refiner Rewriter
+is called with only `(current, answers, revision_number)` — no `RequirementSet`, no
+visibility into any other requirement's text at all. Its prompt
+(`orchestrator/example_prompts/refiner_rewriter.txt`) explicitly forbids inventing new
+behavior, restricting it to folding the human's answer into the existing wording — but
+the human's answer itself is exactly where a concrete number, actor, or condition gets
+introduced (that's what a `VAGUE_PRONOUN`/`INCOMPLETE` fix requires), and nothing checks
+whether that concrete detail collides with what a sibling requirement already says.
+Structurally the same shape as the numeric conflict deliberately planted in behavior
+scenario S4 (3°F vs. 5°F, same subject, different requirement,
+`docs/superpowers/plans/2026-08-11-behavior-scenarios.md`) — except here the model, not
+a fixture author, would be the one introducing it, during a stage the design never
+re-checks.
+
+The two halves are not equally damaging, and the note above understates the dependency
+half. `relevant_conflicts` is only ever passed to the Quality Checker inside
+`_run_refine_loop`, so a missed *conflict* is a reporting loss: the final consistency
+picture is wrong, and — separately — rounds 2..n are still being told about round 1's
+conflicts, because the filtered list is computed once before the loop starts.
+`relevant_dependencies` is passed further: into `stage_fns.select_strategy`
+(`(current, record.classification, relevant_dependencies)`) and into
+`stage_fns.generate_tests` (`(current, strategy, relevant_dependencies)`). A missed
+*dependency* therefore corrupts the deliverable itself — strategy selection and test
+generation run on an incomplete dependency picture for the very text the human just
+approved. Concretely: `R5` = "the report is generated" is flagged `INCOMPLETE`, the
+human answers "after the nightly sync completes", and the rewrite now depends on the
+sync requirement `R2` — a `DependencyLink` that did not exist when the mapper ran, so
+no integration test spanning the pair is ever considered.
+
+*Qualification added 2026-08-14, after the check recorded under Known Limitation 6.* The
+claim above that a missed dependency "corrupts the deliverable" is structurally true but
+empirically unproven, and should be stated that way. The Test Generator has received a
+non-empty `relevant_dependencies` exactly once across every real run (n=1), and that plan's
+cases showed no sign of using it. If the generator turns out to ignore dependency context,
+the practical damage from a stale dependency list is much smaller than the wiring suggests
+— the conflict half would then be the more consequential one after all. Behaviour scenario
+S1 settles this; do not weight the dependency half of this limitation above the conflict
+half until it has run.
+
+**S1 has now run (2026-08-13), and this qualification is withdrawn.** The Test Generator does
+use dependency context: `TC-13-PURE-ERTMS-R7-2` cites both ends of the `R8 -> R7` link. So the
+dependency half of this limitation is the damaging one after all, as originally written — a
+stale or missing link changes generated output. The qualification above was correct to demand
+evidence and wrong in its guess.
+
+Cycles are a third case, and the sharpest one: `DependencyGraph.find_cycles()`
+(`design/schemas.py`) is a one-shot DFS over the edges the mapper produced from the
+original text, and `IssueCategory.CIRCULAR_DEPENDENCY` routes a cycle back to the
+Refiner. A new edge added by a rewrite can *close* a cycle that `find_cycles()` never
+sees — and there is no mechanism by which a rewrite-created cycle could route anywhere,
+since the routing decision was already made and consumed.
+
+Not fixed because the obvious fix — re-run `run_document_stages` after every rewrite, or
+after every requirement finishes — has real costs of its own: it multiplies
+document-level API calls (potentially once per revision round, not once per document),
+it re-opens documents that already reached `DocumentOutcome.COMPLETED`/`DEGRADED` (no
+state currently models "document-level analysis is now stale, redo it"), and it
+interacts awkwardly with resumability — `resume_document` currently treats a completed
+document-level stage as permanently settled, and has no equivalent of
+ORCHESTRATOR_CONTRACT.md item 18's prompt-provenance check for "the input text itself
+changed after this stage ran." No design has been chosen; this is recorded as an open
+gap, not a rejected fix.
+
+Worth more than it looks: re-checking consistency after a rewrite is also the *only*
+mechanical check on human-supplied domain facts anywhere in the design (see Known
+Limitation 2). Two requirements can agree and both be wrong, so this is weak — but a
+human answer that contradicts a sibling requirement is the one case where the pipeline
+can catch a domain error rather than only a structural one.
+
+### Limitation 7 — the order to attack it in (decided 2026-08-14)
+
+Constraint that shapes every option: the Quality Checker needs conflict context *during*
+refinement, so document-level analysis cannot simply be moved later. Anything that gives
+refinement's output a fresh document view is an *addition*, not a reordering.
+
+**Step 0 first, and it is not about staleness at all: make the Test Generator actually use
+dependency context.** The `relevant_dependencies` wiring exists (contract item 16), but
+`orchestrator/example_prompts/test_generator.txt` only mentions it as a closing aside
+inside the untrusted block — "a real precondition named here *can* inform a test case's
+`preconditions`" — with no rule in the Rules section requiring anything. Contrast the
+technique rule, which is emphatic, repeated, and enforced by
+`_test_generator_extra_check`. The multi-requirement rule is permissive too ("*may* also
+name other requirement ids"). If S1 shows dependency context has no visible effect, the
+most likely cause is that the prompt asks for nothing — a version-1 prompt defect, not a
+model limitation, and not a reason to design around the behaviour. The design's own claim
+is that dependencies inform test generation; a generator that ignores them contradicts the
+design and is a bug to fix.
+
+The ladder, in order, each step cheap and each one informing the next:
+
+1. **Run S1** and answer the three questions recorded in
+   `docs/superpowers/plans/2026-08-11-behavior-scenarios-RUN-PROMPT.md`.
+2. **If no effect: promote dependencies from aside to rule** in the Test Generator prompt —
+   if a dependency names a real precondition, state it in `preconditions` or say why it does
+   not apply. Prompt-only: no schema change, no pipeline change, no extra API call.
+3. **Re-run S1 on the v2 prompt.** `prompt_hash` is recorded per attempt, so v1 vs v2 on an
+   identical fixture is a clean, citable comparison — this is what the prompt-provenance
+   work was for.
+4. **Only then decide on phasing.** Plumbing fresh dependency reports into a stage that
+   demonstrably ignores them is work with no observable effect. Once step 3 shows the input
+   matters, "the input must not be stale" stops being speculative.
+
+Two candidate designs for step 4, plus one rejected:
+
+- **A. Advisory post-pass.** After every requirement finishes, run the Consistency Checker
+  once more on the final texts and record the diff against the original report as a finding
+  on `DocumentRunRecord`. One extra call per document, bounded, no reordering, no change to
+  resume positions. Detects rather than prevents — tests were already generated from the
+  stale picture — but it produces the frequency number this entry asks for and is worth
+  doing regardless of step 4's outcome.
+- **B. Phase the pipeline.** Split the per-requirement loop in two: pass 1 classifies and
+  refines every requirement; document-level analysis then re-runs on the refined set; pass 2
+  does strategy selection and test generation from the fresh reports. Document stages run
+  twice per document — bounded, not per-round. This is the real fix, and it also catches
+  rewrite-created cycles. Academic argument in its favour, which is the strongest one: asked
+  "does your consistency analysis describe the refined requirements or the original ones?",
+  the honest answer today is "the original", and that is a threat to validity that has to be
+  declared. B makes the answer "the refined ones". Costs: control-flow restructure,
+  `DocumentRunRecord` must hold two generations of reports, and `resume_document`'s position
+  logic needs a second document-stage phase — that last one is the real cost, since resume
+  positions are executed by `orchestrator/test_harness.py::test_resume_positions` precisely
+  because that spec drifted once before.
+- **C. Re-run document analysis after every rewrite. Rejected** — multiplies document calls
+  by revision rounds, requires a "stale analysis" state nothing models, and re-opens
+  documents that already reached a terminal `DocumentOutcome`.
+
+Revisit once measured: none of the behavior scenarios (S1–S13,
+`docs/superpowers/results/2026-08-11-behavior-scenarios/`) combine multi-round
+refinement with a document whose requirements share overlapping domain vocabulary, so
+how often this actually happens is currently unmeasured, not just unfixed. A scenario
+built specifically to force it — two or more requirements sharing numeric/actor
+vocabulary, at least one needing 2+ refinement rounds, then hand-diffing the final
+consistency/dependency picture against the original report — would turn this from a
+reasoned risk into a measured one.
+
+**8. The Refiner is structurally one-requirement-in, one-requirement-out, but the
+correct fix for `NON_ATOMIC` is a split into N requirements — so the schema cannot
+express the right answer, and accepts two wrong ones without complaint.**
+`IssueCategory.NON_ATOMIC` ("bundles more than one testable behavior",
+`design/schemas.py`) is raised on requirements like *"The system shall generate reports
+on inventory levels, product movement, and sales history"* — three testable behaviors in
+one statement. The only place a rewrite can land is
+`RefinedRequirement.refined_text: NonEmptyStr`, and `NonEmptyStr` is
+`Annotated[str, Field(min_length=1)]` — nothing more. One id in, one string out. The
+Rewriter's prompt (`orchestrator/example_prompts/refiner_rewriter.txt`) reinforces this
+from the other side: "produce a **single** rewritten version", "Do not introduce new
+requirements."
+
+So a `NON_ATOMIC` flag has exactly two reachable outcomes, both wrong and both accepted:
+
+1. **Cram.** The model returns all three behaviors in one string (newline-joined,
+   semicolon-joined, or "and"-joined). The schema accepts it — there is no atomicity or
+   newline constraint on `refined_text`. The next round's Quality Checker sees the
+   crammed text as `text_checked` and flags `NON_ATOMIC` again, so the loop burns
+   revisions on an issue it structurally cannot fix and terminates at the cap
+   (`CAP_GENERATED`/`CAP_STOPPED`). Downstream, the orchestrator builds one
+   `Requirement(id=req.id, text=refined.refined_text, ...)` from it, so a
+   three-behaviour string is what strategy selection and test generation actually
+   receive.
+2. **Drop.** The model returns one clean atomic behavior and silently discards the other
+   two. This *passes* the next quality check, is recorded as a successful refinement, and
+   nothing anywhere states that two specified behaviors left the pipeline. Requirements
+   coverage is lost with no trace — worse than case 1, which at least fails loudly.
+
+Not fixed because the honest fix is a real design change, not a validator.
+`refined_text` becoming `refined_texts: list[str]` ripples into: which text becomes the
+next `RefinementRound.text_checked` (a round checks one text, and the whole
+round-continuity chain in `RequirementRunRecord` is built on that being singular); what
+ids the split requirements get, since they are not in the input `RequirementSet` and
+`_test_generator_extra_check`'s `known_requirement_ids` check would reject test cases
+citing them; and traceability from every `TestPlan` back to a requirement that, as
+written in the source document, no longer exists. Splitting is arguably not the Refiner's
+job at all — it changes the requirement set, which is a document-level edit performed by
+a stage that only ever sees one requirement (the same blind spot as Known Limitation 7).
+
+Two candidate directions, **neither adopted yet**:
+
+- *Declare `NON_ATOMIC` non-refinable.* The Quality Checker still flags it; refinement is
+  not expected to resolve it; the cap fires and the human splits the requirement upstream
+  of the pipeline. Zero schema change, and it makes case 2 (silent drop) the documented
+  failure mode rather than an unnoticed one. Costs: `NON_ATOMIC` requirements can never
+  reach `COMPLETED`, which will show up in the evaluation as refinement "failures" that
+  are really scope exclusions, and must be reported as such.
+- *Reject multi-line `refined_text`.* A one-line guard that catches the mechanical form of
+  case 1 (newline-joined lists) without any semantic heuristic. Deliberately *not*
+  counting "shall" occurrences or conjunctions — that misfires on legitimate compound
+  conditions ("when X and Y, the system shall Z") and would be a check whose false
+  positives are invisible. Partial by construction: it does nothing about
+  semicolon/"and"-joined cramming, and nothing at all about case 2.
+
+### Measured 2026-08-14 — the pressing problem is detector precision, not the schema
+
+Checking how often `NON_ATOMIC` actually fires changed the priority of this entry. It
+fires often — **14 flags** across the three recorded real runs, behind only `incomplete`
+(23) and `vague_pronoun` (25) — but every flag is the same mistake, so most of them should
+never have been raised, and the missing 1->N representation is not what is hurting.
+
+Every `non_atomic` flag in the real runs splits on a conjunction, and the splits are
+causal or sequential chains rather than independent behaviors:
+
+- `THEMAS-REQ-A` — "the determine heating/cooling mode process is activated **and** makes a
+  heating/cooling request". One causal step: the trigger activates the process, the process
+  emits the request. One test covers it — request a temperature change, observe a
+  heating/cooling request. There is no second test to write.
+- `THEMAS-REQ-B` — "shall identify the current temperature value as an invalid temperature
+  **and** shall output an invalid temperature status". Detect, then report. Sequential.
+- `THEMAS-REQ-H` — "identify the event type **and** format an appropriate event message".
+  Sequential again.
+- `THEMAS-REQ-C` — "maintaining the ON/OFF status of both heating **and** cooling units".
+  One behaviour applied to two objects.
+- `THEMAS-REQ-B` (round 1) — flagged as *"bundles two conditions (temperature less than
+  lower value and temperature greater than upper value)"*. Those are **conditions**, not
+  behaviours: together they are one range-validity rule. This flag is wrong by the prompt's
+  own definition, not merely by judgement.
+
+Contrast a genuine case, the one S10 uses: "generate reports on inventory levels, product
+movement, and sales history" — three independent outputs, three separate tests, no ordering
+between them.
+
+**Cause is in the prompt, not the model.** `orchestrator/example_prompts/quality_checker.txt`
+defines the category as *"the requirement bundles more than one testable behavior into one
+statement"* — no requirement that the behaviours be **independently** testable, and no
+example either way. Splitting on "and" is a reasonable reading of that text. As currently
+prompted, `non_atomic` is a conjunction detector.
+
+**Cheapest fix, and it should come before anything in this entry:** tighten the definition
+to *independently* testable, and give one positive and one negative example — the
+three-reports case as `NON_ATOMIC`, a causal chain like `THEMAS-REQ-A` as *not*
+`NON_ATOMIC`. Prompt-only, version-1 prompt, `prompt_hash` already recorded per attempt so
+a v1/v2 comparison on the same fixtures is clean.
+
+**Ripple worth measuring at the same time:** false `non_atomic` flags push requirements into
+extra refinement rounds and toward the revision cap. 10 of the 19 requirement records with
+rounds ended `cap_stopped`. How much of that is detector noise rather than genuinely
+irreducible text is unknown, and the v1/v2 comparison would show it.
+
+This does not close the structural gap above — a real `NON_ATOMIC` still has no expressible
+fix — but it reorders the work: fix the detector first, then see how many real cases remain
+to justify the `list[str]` redesign.
+
+#### Why a split is not a rewrite: it invalidates the document, not just the requirement (2026-08-14)
+
+A rewrite changes one requirement's text. A split changes the requirement **set**, and that
+difference is what actually blocks the `list[str]` redesign — not the field type.
+
+If `REQ-7` becomes `REQ-7a`/`REQ-7b`/`REQ-7c`, then in the same instant:
+
+- the set has N+2 requirements, so both document-level reports (consistency and dependency)
+  describe a document that no longer exists — not merely stale as in Known Limitation 7, but
+  *invalid*, since the membership itself changed;
+- each fragment needs its own `Classification`, `QualityReport`, `TestStrategy` and
+  `TestPlan` — a per-requirement restart, not a continuation;
+- every `DependencyLink` naming `REQ-7` is now ambiguous: which fragment does it mean?
+- every `TestCase` whose `requirement_ids` cites `REQ-7` has the same ambiguity;
+- the fragment ids do not exist in the source document, so `_test_generator_extra_check`'s
+  `known_requirement_ids` rejects them, and SRS traceability breaks at the same time.
+
+So splitting inside the refine loop is a **restart with a modified document**, dressed up as a
+stage output. That is the honest reason it is not a one-field change.
+
+**Consequence, and it points at the cheap option.** If a split forces a document-level
+re-analysis anyway, the cheapest correct place to split is *before the pipeline runs*. That
+makes the "declare `NON_ATOMIC` non-refinable" direction listed above the principled choice
+rather than a concession: the pipeline **detects and reports**, the requirement terminates
+with a reason recorded (reuse `CAP_STOPPED` with an explicit `cap_reason` rather than adding
+an outcome member), the rest of the document completes normally, and the human splits the
+requirement in the SRS and re-runs. No id invention, no partial re-analysis, no traceability
+loss — the split happens where the document is authored.
+
+**Do not build any of this yet.** All 14 real `non_atomic` flags measured above are false
+positives, so a split workflow built today would be machinery serving wrong flags. Fix the
+category definition first, then count what genuine cases remain.
+
+**Suite result 2026-08-13 — the detector is better than the 2026-08-10 data implied.** 5
+`non_atomic` flags across 34 requirements, not the near-universal over-flagging predicted:
+
+- `LUITEL-R7` — "inventory levels, product movement, and sales history" — **correct catch**,
+  the genuine three-behaviour case.
+- `AUTOGEN-US2` — "reliable and efficient" — defensible either way (two unmeasurable
+  qualities).
+- `THEMAS-REQ-B` ("identify ... and output ...") and `PURE-ERTMS-R2` ("train and shunting
+  movements") — the conjunction-split shape, still wrong.
+
+So roughly 2 of 5 are wrong rather than 14 of 14. Generalising from a single document
+(THEMAS) overstated this; the definition fix is still worth making, but it is polish, not a
+rescue. The `list[str]` redesign remains unjustified: exactly one genuine case appeared, and
+it was handled by a no-op rewrite plus a `COMPLETED` outcome (see Known Limitation 10).
+
+Decide from data, not in advance: how common `NON_ATOMIC` actually is in the reserved
+corpora (`datasets/EVALUATION_DATASETS.md`) determines whether the `list[str]` redesign
+is worth its cost. Currently unmeasured. Behaviour scenario S10
+(`docs/superpowers/plans/2026-08-11-behavior-scenarios.md`) is the only thing looking at
+this, and it looks by hand — it has no automatic assertion, because the schema it would
+assert against is exactly what is missing.
+
+**9. Three of `SystemType`'s four members are behaviorally identical, so the Classifier —
+a full LLM call per requirement — may be contributing almost nothing to technique
+selection.** Found while checking Known Limitation 3's justification (2026-08-14).
+
+`ELIGIBLE_TECHNIQUES` (`design/schemas.py`) maps `SystemType.WEB`, `SystemType.MOBILE`
+and `SystemType.OTHER` to the *same* `_NON_AI_TECHNIQUES` frozenset; only
+`SystemType.AI_SYSTEM` gets a different pool (`_AI_TECHNIQUES`). At the eligibility layer
+the four-way classification is therefore a binary: AI or not-AI. Whether a requirement is
+web, mobile or "other" constrains nothing.
+
+That alone might be acceptable — layer 1 is described in "How techniques get selected" as
+a hard *constraint*, not as the whole selection, and `system_type` also feeds
+`IssueCategory.INFEASIBLE_FOR_TYPE` in the Quality Checker, which is a genuinely
+per-type judgement. What sharpens it into a limitation is the observed data: **every
+classification in every recorded real run returned `other`**
+(`docs/superpowers/results/2026-08-10-first-real-run/`,
+`2026-08-10-gemini-paid-tier-run/`, `2026-08-10-tpm-throttle-validation/`). So on the only
+document run so far, the Classifier spent one LLM call per requirement to select the
+default pool.
+
+Do not overstate this — the sample is one document (`themas-fischbach2022`, 8
+requirements) run three times, not 23 independent observations, and the wider corpus does
+contain requirements that should classify as `AI_SYSTEM` (`autogen-wu2024`,
+`metagpt-hong2024`), which would exercise the one pool that differs. The durable claim is
+the structural one (three members, one pool); the empirical claim is provisional.
+
+Two questions to answer with data before changing anything, both cheap:
+
+- **Does the Classifier ever return anything but `other`?** Run the AI-system documents
+  through and look. If `AI_SYSTEM` fires correctly there, the stage is doing real work and
+  this limitation is about the WEB/MOBILE/OTHER redundancy only.
+- **Does `system_type` change the Quality Checker's output at all?** `INFEASIBLE_FOR_TYPE`
+  is the only place the distinction between web, mobile and other could still matter.
+  If that category never fires either, the Classifier's cost/benefit is genuinely in
+  question and collapsing `SystemType` to `{AI_SYSTEM, OTHER}` — or deriving it without an
+  LLM call — becomes the simpler design.
+
+Not fixed now because both fixes are premature without those two measurements: merging
+enum members is a schema change that invalidates recorded runs' `system_type` values, and
+removing the Classifier stage entirely would drop `INFEASIBLE_FOR_TYPE` and change the
+pipeline's eight-stage story, which is described in the thesis prose. Measure first.
+
+#### Third part, found while trying to answer the second (2026-08-14): the one observed use of `system_type` was a false positive, and the cause is an undefined label
+
+`INFEASIBLE_FOR_TYPE` has fired exactly once in the project's history — `THEMAS-REQ-C`,
+classified `other`, on the requirement *"The THEMAS system shall maintain the ON/OFF status
+of each heating and cooling unit"*, with this explanation:
+
+> "The classified system type is 'other', but the requirement seems to imply a level of
+> automation or control typically associated with more specific system types, which might not
+> be feasible for a system classified as 'other'."
+
+Nothing is wrong with that requirement. The model inferred a *capability limitation* from a
+label that only means *not one of the other three*. So the only observed effect of the
+Classifier's per-requirement call, across every real run, is one false flag — and a false
+flag is not free: it fails the quality check, which sends a clean requirement into the
+refinement loop, spends a human interaction and a rewrite on it, and pushes it toward the
+revision cap.
+
+**A first fix was proposed and is wrong — recorded so it is not tried again.** The proposal
+was: never raise `INFEASIBLE_FOR_TYPE` when `system_type` is `other`. It fails because the
+category's own worked example in `orchestrator/example_prompts/quality_checker.txt` is *"an
+adversarial-robustness expectation on a system that is not an AI system"* — and in this
+taxonomy "not an AI system" means `web`, `mobile` **or `other`**. The rule would delete the
+category's flagship legitimate use: an AI-specific demand (adversarial robustness,
+retraining, accuracy thresholds) sitting in a document classified `other`, which nothing else
+in the pipeline catches. Silencing a real check to remove one false positive is the wrong
+trade.
+
+**Actual root cause: the Quality Checker is never told what the labels mean.** Its prompt
+passes the bare string via `TARGET requirement's classified system type:
+<<<FIELD:system_type>>>` and defines none of `web`/`mobile`/`ai_system`/`other` anywhere. The
+model had to guess what `other` implies and guessed "unspecific, therefore possibly limited".
+This is Known Limitation 5's failure mode applied by the pipeline to itself: an undefined term
+handed to a stage that cannot resolve it.
+
+**Corrected fix — prompt-only, and needed regardless of anything else here:**
+
+1. Define the four labels in the prompt. In particular: `other` means "not web, not mobile,
+   not an AI system"; it does **not** mean unknown, limited, or unusual.
+2. State the trigger positively: raise `INFEASIBLE_FOR_TYPE` only when the requirement demands
+   a capability the classified type excludes.
+3. State the anti-trigger explicitly: never raise it because the label is broad or unspecific.
+
+The observed false positive cannot be derived from those instructions, and the AI-expectation
+catch survives.
+
+**Inherited-error caveat, to carry into threats to validity:** this category's correctness
+depends on the Classifier being right. A genuine AI system mislabelled `other` will produce a
+false `INFEASIBLE_FOR_TYPE` on a perfectly good AI requirement, with the real fault upstream.
+`INFEASIBLE_FOR_TYPE` is therefore inherently second-order evidence.
+
+#### Should the human confirm or override the system type? (discussed 2026-08-14, not adopted)
+
+Reasonable, but **document-level, not per-requirement.** THEMAS is one thermostat system and
+all 8 of its requirements share a type; asking a human N times produces one answer. The cheap
+shape is: classify once per document, human confirms or overrides, done — one question per
+document instead of N.
+
+That shape also dissolves this limitation rather than working around it: if system type is
+genuinely a document-level property, the per-requirement Classifier call is N calls buying one
+answer, and 8 LLM calls collapse to 1.
+
+Costs, stated honestly rather than glossed:
+
+- A **third** human interaction point. `HumanFns` has two; a third has to be carried by the
+  protocol, the CLI, `resume_document`'s positions and the record — including *who* set the
+  label, or the audit trail (Known Limitation 2's only real mitigation) degrades.
+- Human effort per document rises. Small (one decision), but it is a number the evaluation
+  should report, not absorb silently.
+- Mixed documents break the assumption — a system with an AI component has requirements of two
+  types, so per-requirement override for exceptions comes back, and the simplicity leaks.
+
+Benefit available either way, and worth taking on its own: **record both the model's label and
+the human's**. That yields Classifier accuracy on real data, which currently has n=0.
+
+**Order of work for this limitation:** (1) the prompt fix above — cheap, independent; (2) run
+an AI-system document plus scenario S12, to find out whether the Classifier is actually wrong
+or merely redundant; (3) only then decide document-level classification, which is a pipeline
+change and should not be made before (2) says whether it is fixing an error or just removing
+waste.
+
+#### Per-type technique pools: what the syllabi actually support, and a corpus check that reframes the whole entry (2026-08-14)
+
+**The problem is per-type test *content*, not type identification.** The Classifier's label
+looks correct — THEMAS is genuinely `other` — and nothing suggests it is bad at labelling. The
+failure is downstream: a correct answer arrives and nothing consumes it, because `WEB`,
+`MOBILE` and `OTHER` share one pool. Framing this as "the Classifier is inaccurate" would be
+wrong; it is "there is nothing type-specific to do with the answer."
+
+**Mobile: real, citable content exists.** ISTQB Certified Tester Mobile Application Testing
+(CT-MAT), Foundation Level, **version 2019 (3 May 2019)** — read from the BCS-hosted syllabus
+PDF, `https://www.bcs.org/media/6355/swt-mobile-application-testing-syllabus.pdf`. Its
+chapter 2 is mobile *test types*: device features, different displays, device temperature,
+input sensors, input methods, screen orientation change, typical interrupts, access
+permissions, power consumption and state, notifications, quick-access links, OS user
+preferences, interoperability across platforms/OS versions, co-existence with other apps,
+connectivity methods. Section 3.3, "Experience-based Testing Techniques", covers personas and
+mnemonics, heuristics, tours and session-based test management — learning objective MAT-3.3.3
+(K3) is *"Make use of a mobile specific tour (such as the Feature tour) to test a mobile
+application."*
+
+**Important distinction: CT-MAT adds test *types* and experience-based specialisations, not
+black-box design techniques.** There is no chapter introducing anything of the same kind as
+equivalence partitioning or boundary value analysis. Putting `INTERRUPT_TESTING` into
+`TestTechnique` would place a test type beside design techniques — a category mix. Note the
+existing precedent, though: `PERFORMANCE` is already a test type (from CT-PT), added
+deliberately because a real THEMAS requirement fit nothing else. Extending that precedent is
+defensible; doing it without noticing it is a precedent is not.
+
+**Web: the reasoning is sound, the grounding is thinner, and it is blocked on the corpus.**
+No ISTQB specialist syllabus for web testing was found. Cross-browser/configuration concerns
+can instead be grounded in **ISO/IEC 25010's Compatibility** characteristic, with
+configuration adaptability under what the **2023** revision renamed **Flexibility** (it was
+Portability in the 2011 edition — cite the edition explicitly, the 2023 revision reorganised
+several characteristics; see `https://iso25000.com/en/iso-25000-standards/iso-25010` and
+`https://quality.arc42.org/articles/iso-25010-update-2023`). But compatibility is **not
+web-exclusive**: CT-MAT 2.2.5 is device/OS-version interoperability, the same idea over a
+different configuration space (browsers and versions vs. devices and OS versions). So it does
+not differentiate `WEB` from `MOBILE`; if added, it belongs to both, with the configuration
+dimension named per type in the prompt.
+
+**Corpus check, and a correction.** An earlier claim in this entry — that the corpus contains
+requirements which should classify as `AI_SYSTEM`, naming `autogen-wu2024` and
+`metagpt-hong2024` — **is wrong**. Those documents are requirements *produced by* AI agent
+frameworks (a generic product, a colour picker), not requirements *for* AI systems. Scanning
+all 52 requirements across all 10 documents in `datasets/requirements_dataset.json`: **zero**
+requirements contain explicit AI/ML vocabulary (three regex hits in ERTMS were the word
+"train", the vehicle), and **zero** web requirements (no browser/page/URL/session/login/
+portal/HTTP vocabulary anywhere).
+
+*Correction to that scan, same day:* keyword scanning is the wrong instrument for the AI half.
+`ACTAPP-R2-AC1` — "Accurately identifies when the user is driving" — contains no AI vocabulary
+at all, yet scenario S12's ground-truth file classifies it as `SystemType.AI_SYSTEM` (an ML
+classifier with no single correct output, expected to route to
+`metamorphic`/`statistical_threshold`/`adversarial`). So the corpus holds **at least one**
+expected `AI_SYSTEM` requirement, identified by judgement rather than vocabulary. The claim
+that survives is narrower and still decisive for this entry: no `AI_SYSTEM` classification has
+ever occurred in a *real run*, because no document containing one has been run.
+`actapp-arora2024` *is* genuinely mobile — "The patients should receive a notification to
+stand up and move around...", "The patients should not receive notifications when busy" —
+mapping onto CT-MAT 2.2.1 (notifications), 2.2.3 (OS user preferences) and 2.1.7 (interrupts).
+
+That reframes the entry: `AI_SYSTEM` is the only label that currently changes the technique
+pool, and no document in the design corpus contains one. **So today the Classifier cannot
+change the technique pool for any document this project has.** Adding mobile content would be
+the first thing to make the stage do work, and ActApp is the document that would demonstrate
+it.
+
+**Chosen direction (2026-08-14):**
+
+1. The Quality Checker prompt fix above — independent of everything else, fixes an active
+   false positive.
+2. Give `MOBILE` real content **at the prompt level**, not in the enum: when the type is
+   `mobile`, have the Strategy Selector and Test Generator consider CT-MAT's mobile conditions
+   (interrupts, orientation change, notifications, permissions, connectivity loss, power
+   state). Citable section by section, testable immediately on ActApp, and no new pool,
+   eligibility validator, test churn or diagram regeneration.
+3. **Escalation rule, and the honest weakness of (2):** prompt guidance is not enforced —
+   nothing will check that a mobile requirement actually received an interrupt test, and "a
+   spec nobody executes drifts" applies. So: if mobile coverage only needs to *improve test
+   generation*, the prompt is enough; if it needs to be a **reported metric** ("X% of mobile
+   requirements have an interrupt test"), it must be in the schema, because an unmeasurable
+   claim cannot go in the evaluation. Decide from the thesis, not from the code.
+4. **Web pool: not now.** The citation is available but the corpus has no web requirements, so
+   building the pool repeats exactly the mistake Known Limitation 3 stays open for — a
+   category that can never fire on the available data. The first step is corpus work, not
+   schema work: PURE holds 79 documents and only two have been pulled (THEMAS, ERTMS, both
+   marked spent in `datasets/EVALUATION_DATASETS.md`), so a web SRS is very likely available
+   there.
+
+**Suite result 2026-08-13 — the empirical half of this entry is refuted; the structural half
+stands.** Classifications across 34 requirements: `other` 31, **`mobile` 2, `ai_system` 1**.
+The Classifier does discriminate, so "every real run classifies `other`" is dead — it was an
+artefact of running only THEMAS. And `INFEASIBLE_FOR_TYPE` fired **zero** times, so the
+`THEMAS-REQ-C` false positive did not recur; the prompt fix drops in priority accordingly
+(keep it recorded, it is still correct, but it is fixing something that has happened once in
+two suites).
+
+What survives unchanged is the structural point: `WEB`, `MOBILE` and `OTHER` still share one
+technique pool, so the two `mobile` labels bought nothing at the eligibility layer even
+though they were correct. That is now the whole of this limitation — and it makes the
+prompt-level mobile-conditions work (item 2 above) the only part still worth doing.
+
+**10. A rewrite that changes nothing is accepted, and a requirement can reach
+`RunOutcome.COMPLETED` with its text unchanged and a flagged issue never addressed.**
+Observed in real data 2026-08-14, not hypothesised.
+
+The trace, `THEMAS-REQ-A` in `docs/superpowers/results/2026-08-10-gemini-paid-tier-run/`:
+
+- Round 1 on the original text raises `ISSUE-1` (`non_atomic`) and `ISSUE-2` (`incomplete`
+  — "lacks the specific actor, trigger, or conditions that define how or by whom a
+  temperature change is requested"). The round fails.
+- The answers: Q1 -> "Keep this as one requirement", `user_confirms_resolved: True`.
+  Q2 -> "The missing element is not stated anywhere else in the document either; flag it as
+  a genuine gap rather than an omission this answer can fill in",
+  `user_confirms_resolved: False`.
+- The rewrite's `refined_text` is **character-identical** to `original_text` (137 chars
+  both, verified equal).
+- Round 2 checks that same text and returns `passed: true`, zero issues.
+- Record: `outcome: completed`, `final_requirement.refined_text == requirement.text`.
+
+Half of this is the design working. `ISSUE-1` appears in round 2's `suppressed_issue_ids`,
+which is exactly what `user_confirms_resolved` is for — the human overrode the flag, and the
+suppression machinery carried it. Not a bug.
+
+`ISSUE-2` is the bug. It was never suppressed (the human explicitly declined to confirm it),
+never fixed (the text did not change), and it disappeared anyway: the Quality Checker
+returned opposite verdicts on character-identical input in consecutive rounds. The correct
+behaviour was for the loop to keep failing until the revision cap fired — `CAP_STOPPED` with
+the unresolved issue on record, which is what the cap exists for. Instead the run reports a
+clean success.
+
+**Two distinct defects, and they should not be conflated:**
+
+1. **Nothing forbids a no-op rewrite.** There is no validator requiring
+   `refined_text != original_text` — checked; the phrase in the `answers_used` note above is
+   prose about *why* a rewrite happens, not an enforced rule. The 2026-08-05 fix
+   ("`COMPLETED` after refinement required no rewrite") ensured `final_requirement` is
+   *present* when refinement occurred; it never required the refinement to change anything.
+2. **The Quality Checker is not deterministic on identical text**, demonstrated here rather
+   than argued. This is a measurement problem for any per-category precision/recall work, and
+   it is also the mechanism that let defect 1 pass unnoticed.
+
+**Why the no-op is structurally invited, not just a model slip.** When every issue in a round
+is either overridden by the human or genuinely unfixable by rewording, a no-op is the only
+move the Rewriter can express: the round-continuity rule (`cur.text_checked !=
+prev.rewrite.refined_text`, `RequirementRunRecord`) requires *some* text to carry into the
+next round, and there is no representation for "nothing here can be fixed by rewriting". Same
+shape as Known Limitation 8 one level up.
+
+**Cost to the thesis, which is the reason this matters:** any reported "refinement success
+rate" counts this requirement as a success, and nothing in the record distinguishes "the
+defect was fixed" from "the checker changed its mind". That is a threat to validity on the
+project's headline metric.
+
+Two fixes, in order:
+
+- **(a) Count it — do this first.** Record whether a rewrite actually changed the text, so
+  "refined" and "refined, text unchanged" are separate numbers. Purely additive: no behaviour
+  change, no extra API call, no retry churn, and it gives the frequency immediately. Every
+  recorded run can be re-scored retrospectively, since the texts are already persisted.
+- **(b) Then consider making it a rule:** a no-op rewrite is valid only if every issue raised
+  that round was suppressed or confirmed-resolved. This is the project's own "two fields that
+  must agree need something forcing it" pattern, and it is *reachable* — it would have fired
+  on `THEMAS-REQ-A`, because `ISSUE-2` was neither. Failure is a loud `ValidationError`, which
+  is better than a silent false `completed`. Cost: real runs error more often, and a retry may
+  simply produce another no-op, so this trades a wrong success for a possible dead end. Decide
+  after (a) shows how often it happens.
+
+### Suite result 2026-08-13 — downgraded: this is a threat to validity, not a defect
+
+The suite produced **38 no-op rewrites out of 47 (81%)**, which looked alarming and is not.
+Every one traces to the scripted answer policy: 3 followed a human override
+(`user_confirms_resolved: True`), and 35 followed an answer that declines to supply
+information — the policy's own texts are refusals ("No numeric threshold is specified in the
+source document...", "This is a cross-requirement conflict, not something one requirement's
+clarifying answer can resolve in isolation", "The missing element is not stated anywhere else
+in the document either"). **No no-op followed an answer that carried real information.** The
+Rewriter is behaving correctly: told never to invent, and handed nothing, it returns the
+input.
+
+The mirror question was checked too — does the Rewriter invent facts when it *does* change
+text? No. All 9 text-changing rewrites inserted explicit placeholders
+(`[configurable duration]`, `[TBD: measurable safety parameters]`,
+`[reliability threshold, TBD]`), exactly as the policy instructed. Zero fabricated values or
+actors anywhere in the suite.
+
+So fixes (b) and (c) above are **not needed** — there is no defect for them to catch. Fix (a),
+counting no-ops, is still worth having. What replaces this limitation is a threat to validity,
+and a serious one: **refinement effectiveness cannot be measured with an answer policy that
+refuses to answer.** Every `COMPLETED` and every cap outcome in the 2026-08-10 and 2026-08-13
+runs describes the policy as much as the pipeline. Settling it needs a *second* policy that
+answers substantively, run alongside the refusing one — not an edit to the existing one, which
+is what keeps the earlier runs comparable.
+
+Two residual observations from the 9 text-changing rewrites:
+
+- `PURE-ERTMS-R2`: "shall **be able to** supervise" -> "shall supervise". A real improvement,
+  but no answer asked for it — a mild deviation from "fold in the answer and nothing else".
+- `THEMAS-REQ-D`: "these limits" -> "the specified temperature limits". Referent made explicit
+  without inventing its value. Correct behaviour for `VAGUE_PRONOUN` given a refusing answer.
+
+**11. The Rewriter can mark an already-measurable requirement as needing a measurable value.**
+Found 2026-08-13, S12. `LUITEL-R1` — "The system shall reach a steady state **within 5s** after
+reconfiguration to maximize availability" — was rewritten to "reach a steady state **[TBD:
+measurable value]** within 5s after reconfiguration to maximize availability [TBD: measurable
+value]". The `5s` threshold sits in the very sentence being annotated as unmeasurable. The
+second placeholder ("maximize availability") is defensible; the first is straightforwardly
+wrong, and it makes a good requirement worse.
+
+Not invention (no fabricated values appeared anywhere in the suite), so this is a quality
+regression rather than a hallucination. Likely cause: the Questioner/Rewriter pair acting on an
+`AMBIGUOUS_TERM`/`NON_VERIFIABLE` flag without checking whether the requirement already carries
+a threshold. Candidate fix is prompt-level and cheap — before inserting a placeholder, check for
+an existing measurable value and leave it alone if one is present. Frequency unmeasured (n=1), so
+count it in the next suite before changing anything. The same requirement also failed to select
+`PERFORMANCE` (Known Limitation 3), and the two belong together: the pipeline both ignored an
+explicit latency target and flagged it as missing.
 
 ## `RequirementSet.requirements` min_length fix (2026-08-05)
 

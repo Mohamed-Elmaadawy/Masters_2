@@ -66,7 +66,8 @@ diagrams and states, per diagram, exactly what is checked and what isn't.
 | `design/ORCHESTRATOR_CONTRACT.md` | **Start here.** The 19 things the orchestrator must do that the schema deliberately does not enforce. |
 | `design/DIAGRAMS.md` | The thirteen generated diagrams and what each one is for — including which parts are introspected from the code and which are declared-and-validated. Start with `overview.mermaid` (six boxes); it's the fastest way to see the shape of the whole project. |
 | `design/schemas.py` | The models. Comments explain *why*, not just what. |
-| `design/DESIGN_NOTES.md` | ~2,500 lines of decisions, including rejected ones. Search it before re-litigating anything. |
+| `design/DESIGN_NOTES.md` | ~3,100 lines of decisions, including rejected ones. Search it before re-litigating anything. |
+| `IMPLEMENTATION_LOG.md` | What changed, when, why, and what it measurably did. Newest first. Append after every change. |
 | `design/SCHEMA_AUDIT_CHECKLIST.md` | The eight lenses used to find schema gaps. |
 | `design/test_schemas.py` | 326 checks. Also the best worked example of how the models fit together. |
 | `orchestrator/stage_fns.py` | Typed `StageFns`/`HumanFns` Protocols — the exact signature each of the 8 stage fns (and the 2 human ones) must match. |
@@ -101,6 +102,16 @@ caught real bugs. The gap is vocabulary, not understanding.
 
 **Log rejected ideas too.** A rejected option with its reasoning prevents the same
 question being re-litigated later without remembering why.
+
+**Append to `IMPLEMENTATION_LOG.md` after every change.** Code, prompts, schema, configs,
+fixtures, or a decision recorded in `DESIGN_NOTES.md` — each gets an entry: **what**
+changed (files, concretely), **why** (the finding or decision it implements, linked to the
+`DESIGN_NOTES.md` section or Known Limitation number, not restated), and **impact** (what
+behaves or measures differently, and how that was verified — test counts, a re-run's
+numbers, or "documentation only"). The two files divide the work: `DESIGN_NOTES.md` holds
+*why a decision is what it is*, the log holds *what actually changed, when, and what it
+did*. An entry whose impact reads "improved X" records nothing — if the impact is not yet
+measured, say so and name the measurement that would settle it.
 
 ---
 
@@ -146,11 +157,38 @@ overlooked. All are in `DESIGN_NOTES.md`:
 
 - Duplicate test cases across dependent requirements (Known Limitation 1)
 - The schema verifies testability structure, not domain truth (2)
-- `PERFORMANCE` doesn't separate hard real-time from soft targets (3)
+- `PERFORMANCE` doesn't separate hard real-time from soft targets (3) — note the 2026-08-14
+  correction: embedded *is* in the corpus (THEMAS, ERTMS); the real reasons are that
+  `PERFORMANCE` has never been selected and that `WEB`/`MOBILE`/`OTHER` share one pool
 - `VAGUE_PRONOUN` is expected to be noisy to detect (4)
-- Undefined domain notation (e.g. `LO = T_LT`) isn't caught (5)
+- Undefined domain notation (e.g. `LO = T_LT`) isn't caught (5) — reframed 2026-08-14 as an
+  *input* problem, not a taxonomy one: the Quality Checker never sees the document, so it
+  can't tell an undefined term from one defined in a glossary. Run S9 before building
+  anything
 - `TestPlan` requires *every* case to cover the plan's requirement — loosen only if real
-  generator output gets rejected (6)
+  generator output gets rejected (6). Measured 2026-08-14: never fired. Note that 1, 6 and 7
+  are all blocked on one unmeasured behaviour — whether the Test Generator uses dependency
+  context at all (n=1 to date). Scenario S1 settles it
+- Document-level analysis (Consistency Checker, Dependency Mapper, `find_cycles()`) runs
+  once on the original text and never re-runs after a rewrite changes it — the dependency
+  half is the damaging one, since `relevant_dependencies` feeds strategy selection and
+  test generation (7)
+- The Refiner is 1 requirement in / 1 out, so `NON_ATOMIC` has no expressible fix — a
+  rewrite either crams N behaviors into one string or silently drops them (8). Measured
+  2026-08-14: the pressing half is detector precision — all 14 real `non_atomic` flags split
+  on "and" and are causal chains, so fix the prompt definition before the schema
+- `WEB`/`MOBILE`/`OTHER` share one technique pool and every real run so far classified
+  `other`, so the Classifier's per-requirement LLM call may be buying nothing — measure
+  before merging enum members or dropping the stage (9)
+- A no-op rewrite (`refined_text == original_text`) is accepted, so a requirement can reach
+  `COMPLETED` with unchanged text and an unaddressed issue — observed on `THEMAS-REQ-A`,
+  where the Quality Checker also passed text it had failed one round earlier (10). Downgraded
+  2026-08-13: 38/47 no-ops all trace to the refusing answer policy, and the Rewriter invents
+  nothing — so this is a threat to validity (refinement can't be measured with a human that
+  won't answer), not a code defect
+- The Rewriter can tag an already-measurable requirement as needing a measurable value —
+  `LUITEL-R1` got `[TBD: measurable value]` inserted beside its own `5s` threshold (11). n=1,
+  count it before fixing
 - Mutation after construction bypasses validation — re-validate before persisting
 - Pairwise testing deferred; needs a real combinatorial algorithm, not an LLM
 - `Throttle`'s tokens-per-minute pacing (`orchestrator/pipeline.py`) bounds a call only
