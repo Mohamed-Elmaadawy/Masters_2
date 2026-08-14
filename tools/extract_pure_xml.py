@@ -166,7 +166,7 @@ def text_of(text_body: ET.Element) -> tuple[str, int]:
     return out.strip(), bullets
 
 
-def strip_id_prefix(text: str, req_id: str) -> tuple[str, bool]:
+def strip_id_prefix(text: str, req_id: str, other_ids: frozenset[str] = frozenset()) -> tuple[str, bool]:
     """Drop a leading occurrence of the `<req id>` attribute from the text.
 
     Exact string equality against the element's own id, never a pattern for "looks like
@@ -177,12 +177,26 @@ def strip_id_prefix(text: str, req_id: str) -> tuple[str, bool]:
 
     The delimiter is optional because two of eirene_fun's 583 have the number fused to
     the first word (`"11.2.1.10It shall be possible..."`). Requiring whitespace would
-    leave those two mangled; the digit/dot guard keeps the rule mechanical either way.
+    leave those two mangled, so the digit/dot guard exists instead.
+
+    That guard is not the whole story: eirene_fun's ids also carry roman-numeral suffixes
+    (`5.2.2i`, `5.2.2ii`, `5.2.2iii`, ...), and a shorter one is a proper string-prefix of
+    a longer sibling exactly the way `11.2.1.1` is a prefix of `11.2.1.10` -- except the
+    continuation character is a letter, which the digit/dot guard does not see. `other_ids`
+    is every `<req id>` in the document; if `req_id` is a proper prefix of one of them,
+    stripping is refused even though nothing after it looks like a digit or dot, because a
+    text that fused the *sibling's* longer id would otherwise be silently truncated to the
+    wrong id's length. This does not fire on the digit-fused pair above: `11.2.1.1` is
+    refused by the digit guard first, before the sibling check ever runs.
     """
     if not req_id or not text.startswith(req_id):
         return text, False
     rest = text[len(req_id):]
-    if rest and (rest[0].isdigit() or rest[0] == "."):
+    if not rest or rest[0].isspace():
+        return rest.lstrip(), True
+    if rest[0].isdigit() or rest[0] == ".":
+        return text, False
+    if any(other_id != req_id and other_id.startswith(req_id) for other_id in other_ids):
         return text, False
     return rest.lstrip(), True
 
@@ -236,7 +250,10 @@ def extract_file(xml_path: Path) -> tuple[RequirementSet, dict]:
     entries: list[dict] = []
     skipped_empty: list[dict] = []
 
-    for position, (section_path, req) in enumerate(_iter_reqs(root, [])):
+    reqs = list(_iter_reqs(root, []))
+    all_ids = frozenset(req.get("id") or "" for _, req in reqs)
+
+    for position, (section_path, req) in enumerate(reqs):
         original_id = req.get("id") or ""
         bodies = req.findall(NS + "text_body")
         rendered_parts: list[str] = []
@@ -247,7 +264,7 @@ def extract_file(xml_path: Path) -> tuple[RequirementSet, dict]:
                 rendered_parts.append(rendered)
             bullets += n
         text = "\n".join(rendered_parts)
-        text, stripped = strip_id_prefix(text, original_id) if original_id else (text, False)
+        text, stripped = strip_id_prefix(text, original_id, all_ids) if original_id else (text, False)
 
         record = {
             "id": requirement_id_for(doc_id, position),

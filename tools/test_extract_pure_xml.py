@@ -115,15 +115,30 @@ def test_id_prefix_is_stripped_only_on_an_exact_match() -> None:
        strip_id_prefix("11.2.1.10It shall be possible", "11.2.1.10")
        == ("It shall be possible", True))
     # The guard that makes the fused case safe: without it, id="11.2.1.1" would eat the
-    # leading digit of a text that starts "11.2.1.10..." and leave "0It shall...".
+    # leading digit of a text that starts "11.2.1.10..." and leave "0It shall...". The
+    # sibling id must be in the document's id set for the precondition to be real --
+    # "11.2.1.1" is a proper prefix of "11.2.1.10" in this document too.
+    siblings = frozenset({"11.2.1.1", "11.2.1.10"})
     ok("a longer number is NOT stripped by a shorter id (digit guard)",
-       strip_id_prefix("11.2.1.10It shall be possible", "11.2.1.1")
+       strip_id_prefix("11.2.1.10It shall be possible", "11.2.1.1", siblings)
        == ("11.2.1.10It shall be possible", False))
     ok("a deeper section number is NOT stripped by its parent (dot guard)",
        strip_id_prefix("2.2.1.1 Text", "2.2.1") == ("2.2.1.1 Text", False))
     ok("an unrelated leading token is left alone",
        strip_id_prefix("The system shall", "3.1") == ("The system shall", False))
     ok("an empty id never strips", strip_id_prefix("Some text", "") == ("Some text", False))
+
+    # The roman-numeral shape: eirene_fun has ids like "5.2.2i", "5.2.2ii", "5.2.2iii" --
+    # "5.2.2i" is a proper string-prefix of "5.2.2iv" the same way "11.2.1.1" is a prefix
+    # of "11.2.1.10", except the continuation character is a letter, which the digit/dot
+    # guard does not catch. The sibling-id check is what refuses this one.
+    roman_siblings = frozenset({"5.2.2i", "5.2.2ii", "5.2.2iii", "5.2.2iv"})
+    ok("a sibling's longer roman-suffixed id is NOT stripped by a shorter one",
+       strip_id_prefix("5.2.2ivThe system shall", "5.2.2i", roman_siblings)
+       == ("5.2.2ivThe system shall", False))
+    ok("with no sibling in the set, the same fused text strips (no ambiguity to guard)",
+       strip_id_prefix("5.2.2ivThe system shall", "5.2.2i", frozenset({"5.2.2i"}))
+       == ("vThe system shall", True))
 
 
 def test_bullets_become_lines_and_surrounding_prose_survives() -> None:
