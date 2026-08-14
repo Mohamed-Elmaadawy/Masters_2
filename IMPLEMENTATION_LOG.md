@@ -136,6 +136,36 @@ echoed-message glitch, caught and not recorded) are in `SESSION.md`.
 
 ---
 
+## 2026-08-14 — Evaluation design and document-reanalysis plan written (design only)
+
+**Changed:** two new plans —
+`docs/superpowers/plans/2026-08-14-evaluation-design.md` and
+`docs/superpowers/plans/2026-08-14-document-reanalysis-plan.md`.
+
+**Why:** the behaviour work has established what the pipeline *does*; the evaluation phase has
+to establish whether it *helps*, and needed a design before any corpus extraction begins.
+Known Limitation 7's fix needed a decision recorded either way.
+
+**Impact:** none — nothing run, no code touched. Decisions recorded:
+
+- **The paper's primary claim is structural, not qualitative.** The pipeline produces test
+  artifacts that are structurally valid, traceable and technique-grounded by construction;
+  that is measurable automatically against the existing 326 schema checks, with no rubric and
+  no rater. Content quality becomes a secondary, blinded, hand-scored layer on a smaller
+  sample.
+- **Baseline fairness constraint:** the one-shot arm must be given the *same output schema*,
+  or the structural comparison is a trivial win and dismissible. Refinement trajectory and
+  document-level context are to be reported as structural differences, not scored as wins.
+- **Ablation, not cross-system comparison**, with the reasoning to be stated in the
+  methodology rather than left as an unexplained omission.
+- **Q2 (per-stage model sensitivity)** is a separate configuration-only study, scored against
+  the existing scenario suite's ground truth, hypothesis pre-registered. ~$10–15.
+- **Known Limitation 7: recommended NOT to build now.** The plan leads with that
+  recommendation and, if overridden, specifies a branch, five separately-revertible commits,
+  a config flag defaulting to off, and resume changes last with a mutation check.
+
+---
+
 ## 2026-08-14 — PURE extraction-corruption scan: confined to one document, not corpus-wide
 
 **Changed:** `design/DESIGN_NOTES.md`, Known Limitation 5 — measurement appended under the
