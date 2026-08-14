@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-10-atomicity",
+  "requirements": [
+    {
+      "id": "LUITEL-R7",
+      "text": "The system shall generate reports on inventory levels, product movement, and sales history."
+    },
+    {
+      "id": "AUTOGEN-US2",
+      "text": "As a user, I want a product that is reliable and efficient so that I can depend on it."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "doc_id": "scn-11-cap",
+  "requirements": [
+    {
+      "id": "AUTOGEN-US3",
+      "text": "As a user, I want a product that meets my needs so that I can get value for my money."
+    }
+  ]
+}

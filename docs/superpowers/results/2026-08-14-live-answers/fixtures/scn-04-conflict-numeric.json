@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-04-conflict-numeric",
+  "requirements": [
+    {
+      "id": "PURE-THEMAS-R6",
+      "text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit."
+    },
+    {
+      "id": "PURE-THEMAS-R6-P",
+      "text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error."
+    }
+  ]
+}

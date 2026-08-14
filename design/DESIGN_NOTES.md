@@ -690,6 +690,40 @@ wasted:
    This produces the recurring-frequency evidence this entry already demands before any new
    category. Same code as the candidate fix, run as a measurement first.
 
+**Live-session evidence 2026-08-14 — the input diagnosis is confirmed, and the anchor example
+is worse than "undefined".** Answering the scenarios by hand against the source document
+(`datasets/requirements-xml/XMLZIPFile/1998 - themas.xml`, quotations verified by direct
+inspection) produced three for three:
+
+| Requirement | Phrase | Resolves to | Where in the source |
+|---|---|---|---|
+| `THEMAS-REQ-D` | "these limits" | the overtemperature limits | previous sentence, SRS-009 |
+| `THEMAS-REQ-E` | "this condition" | Condition 2 (`LO <= T < LT` or `UT < T <= UO`) | same section, SRS-010 |
+| `THEMAS-REQ-E` | "this module" | Determine H/C Mode (SRS-010) | the process's own section |
+
+Every one is resolvable from context the Quality Checker never sees. The vagueness is an
+artefact of **excerpting one sentence from a structured SRS**, and it applies to
+`VAGUE_PRONOUN` generally, not only to notation.
+
+**And `LO = T_LT` is not domain notation at all — it is a corrupted inequality.** The source
+reads "...turn on the heating unit if `LO <= T <= LT` or the cooling unit if `UT <= T <= UO`".
+The `<=` signs were flattened to `=` and a space lost during PDF-to-XML extraction; the same
+damage appears throughout ("If `T = LO` or `UO = T`", "Condition 1: `LT = T = UT`"). Both `LO`
+and `LT` are defined one paragraph above the requirement that uses them. No detector could
+resolve `LO = T_LT`, because it is not a meaningful expression.
+
+**Unmeasured risk this raises, larger than this limitation:** PURE's XML is extracted from
+PDFs and mathematical notation did not survive in this document. Any requirement containing a
+comparison is suspect. Check how widespread this is before PURE carries evaluation weight — a
+corpus that silently turns `<=` into `=` corrupts far more than one example.
+
+**Third observation, from the live loop:** naming a referent is not sufficient.
+`THEMAS-REQ-E` round 1 replaced "this condition" with "Condition 2" — an improvement, and it
+silently repaired the mangled inequality — and round 2 flagged `VAGUE_PRONOUN` *again*,
+because "Condition 2" is itself defined outside the requirement. Left alone this recurses to
+the cap. The loop terminated only when the human inlined the actual criteria, which is content
+the pipeline structurally cannot fetch for itself.
+
 **6. `TestPlan` requires *every* case to cover the plan's own requirement — revisit if
 it rejects real generator output.** A plan for REQ-1 holds test cases, each listing the
 requirements it covers. The rule chosen is strict: every case must list REQ-1, though it
@@ -804,6 +838,31 @@ use dependency context: `TC-13-PURE-ERTMS-R7-2` cites both ends of the `R8 -> R7
 dependency half of this limitation is the damaging one after all, as originally written — a
 stale or missing link changes generated output. The qualification above was correct to demand
 evidence and wrong in its guess.
+
+**Observed live 2026-08-14 — predicted in advance, then confirmed.** `PURE-THEMAS-R6-P`
+(planted at 5°F) conflicts with `PURE-THEMAS-R6` (3°F, the source value).
+
+- Round 1: the human answered "3°F — this requirement has the wrong number."
+- The Rewriter **applied it**: the text became "up to 3 degrees Fahrenheit". The conflict was
+  genuinely gone.
+- Round 2: the Quality Checker flagged `inconsistent` **anyway**, from the consistency report
+  computed once on the original text before refinement began.
+
+This is stronger evidence than the reasoning recorded above: the human's answer worked, the
+pipeline fixed the document, and the pipeline then failed to notice its own fix.
+
+**The exit was manual.** The loop only terminated because the human set
+`user_confirms_resolved: True` in round 2 — the sole legitimate use of that flag in the whole
+session. So the design currently depends on a person noticing that its document-level analysis
+has gone stale; without one, a corrected requirement fails every remaining round and caps.
+That is a stronger argument for the advisory post-pass (option A) or phasing (option B) than
+the cost analysis above.
+
+**The pair isolates two different failures cleanly**, and is worth citing together:
+`PURE-THEMAS-R6` — human gave a correct, complete, actionable answer and the pipeline could
+not use it, because the fix belonged to a *different* requirement (architectural).
+`PURE-THEMAS-R6-P` — human's answer was used, and the pipeline then could not see the result
+(staleness).
 
 Cycles are a third case, and the sharpest one: `DependencyGraph.find_cycles()`
 (`design/schemas.py`) is a one-shot DFS over the edges the mapper produced from the
@@ -1047,6 +1106,33 @@ So roughly 2 of 5 are wrong rather than 14 of 14. Generalising from a single doc
 (THEMAS) overstated this; the definition fix is still worth making, but it is polish, not a
 rescue. The `list[str]` redesign remains unjustified: exactly one genuine case appeared, and
 it was handled by a no-op rewrite plus a `COMPLETED` outcome (see Known Limitation 10).
+
+**Live-session evidence 2026-08-14 — the genuine case, with a human on record.** `LUITEL-R7`
+was answered by hand: yes, three independently testable behaviours, split it, and that cannot
+be done by rewriting this requirement in place. Result: text unchanged across all three
+rounds, `CAP_STOPPED`, cap reason recorded as "three separate report behaviours plus an
+unspecified trigger — needs a document-level split, not a rewrite."
+
+Contrast the refusing policy on the identical fixture, which reached **`COMPLETED`** on the
+same requirement by asserting the bundle was "one causal step" — a claim that is false for
+this fixture — and having the checker accept it. So the same genuine defect produced a clean
+success under one answer policy and an honest cap under the other. Attribute `LUITEL-R7`'s cap
+to *both* of its issues, not the split alone: its `incomplete` flag (no trigger) is unknowable
+too, since the requirement is an isolated illustrative sentence with no source document.
+
+**Also learned: `NON_ATOMIC` flags structure, not whether splitting is worth doing.**
+`AUTOGEN-US2` ("reliable and efficient") is technically non-atomic as well, but splitting it
+yields two equally unmeasurable requirements, because its real defect is undefined terms. A
+`list[str]` split mechanism would fire on both cases identically and only one would benefit.
+
+**And the human channel has the same gap as the schema.** Answering "this flag is correct, and
+it cannot be fixed at this level" is not expressible: `user_confirms_resolved: True` means
+"resolved, stop raising it" (false here), and `False` means the issue is re-asked every round
+until the cap. So a genuinely unfixable-in-place issue is indistinguishable in the record from
+one the human simply keeps failing to resolve. The proposal above to reuse `CAP_STOPPED` with
+an explicit `cap_reason` has a human-side equivalent — a `RefinerAnswer` flag meaning
+"acknowledged, out of scope for refinement". Not designed, not adopted, recorded so it is not
+rediscovered.
 
 Decide from data, not in advance: how common `NON_ATOMIC` actually is in the reserved
 corpora (`datasets/EVALUATION_DATASETS.md`) determines whether the `list[str]` redesign
@@ -1371,6 +1457,36 @@ runs describes the policy as much as the pipeline. Settling it needs a *second* 
 answers substantively, run alongside the refusing one — not an edit to the existing one, which
 is what keeps the earlier runs comparable.
 
+**That second policy now exists and has been run (2026-08-14).** Six scenarios, nine
+requirement-slots, answered live by the operator against the source documents:
+`docs/superpowers/results/2026-08-14-live-answers/` (`SESSION.md`, frozen transcript in
+`answers.json`, replay driver verified at 0 misses / 0 drift warnings over 16 turns and 27
+questions, $0.2833).
+
+Headline: **the change *rate* is identical and the change *substance* is not.** Live-human
+4/9 substantive; refusing policy 4/9 on the same fixtures — but the refusing policy's changes
+were bracket-placeholder insertions, while the live-human run produced one genuine
+cross-requirement fix (`PURE-THEMAS-R6-P`, 5°F -> 3°F, reaching `COMPLETED`) and two real
+referent resolutions (`THEMAS-REQ-D`, `THEMAS-REQ-E`). So refinement *can* improve
+requirements, and only when the human supplies content the pipeline cannot derive.
+
+Two results that sharpen the threat to validity rather than removing it:
+
+- **A refusing answer can manufacture a false success.** On `LUITEL-R7` the scripted policy
+  asserted the requirement was "one causal step" — false for that fixture — and the checker
+  accepted it, yielding `COMPLETED`. The live human called the same requirement genuinely
+  non-atomic and it capped. The earlier runs' `COMPLETED` counts therefore include at least one
+  requirement that was not fixed, in the direction that flatters the pipeline.
+- **The corpus splits in two, and aggregates hide the effect.** Requirements from real SRS
+  documents (THEMAS, ERTMS) have a source to answer *from*, and live answers added real
+  content. Illustrative or LLM-generated sentences (`AUTOGEN-*`, `LUITEL-*`) have no document
+  behind them, so the honest live answer matches the refusing one. Report per requirement and
+  split by group; aggregate outcome counts understate the difference.
+
+Subset caveat, stated in the plan and confirmed by the numbers: these six scenarios were chosen
+where refinement was expected to help, so both policies score above the full suite's 19%
+baseline. This measures a direction, not a rate.
+
 Two residual observations from the 9 text-changing rewrites:
 
 - `PURE-ERTMS-R2`: "shall **be able to** supervise" -> "shall supervise". A real improvement,
@@ -1394,6 +1510,36 @@ an existing measurable value and leave it alone if one is present. Frequency unm
 count it in the next suite before changing anything. The same requirement also failed to select
 `PERFORMANCE` (Known Limitation 3), and the two belong together: the pipeline both ignored an
 explicit latency target and flagged it as missing.
+
+**Generalised 2026-08-14 after the live session: this is one pattern with three variants, not
+three defects.** In each, the Rewriter alters the text's *appearance* without altering its
+*testability*:
+
+1. **Placeholder where a value already exists** — `LUITEL-R1`, `[TBD: measurable value]`
+   inserted beside its own `5s` (the original observation above).
+2. **Deferral where no value exists** — `AUTOGEN-US2` became "...reliable and efficient
+   **according to performance and reliability metrics defined by the product owner**". The
+   human had supplied no threshold because none exists; the Rewriter converted that absence
+   into specification-shaped prose. Arguably the most dangerous variant: `[TBD: ...]` is
+   visibly unfinished, whereas "as defined by the product owner" reads like a deliberate
+   design decision and could survive a careless review. The Quality Checker did re-flag it
+   here, which is the good news — the failure mode only bites if it slips through.
+3. **Cosmetic edit where the human said not to change anything** — `PURE-THEMAS-R6`, where the
+   human stated the requirement was already correct at 3°F and the fix belonged to the *other*
+   requirement. The Rewriter reformatted "3 degrees Fahrenheit" to "3°F" and changed nothing
+   semantic. Harmless in itself, but it inflates any text-change metric: the live session's raw
+   rate is 5/9, and 4/9 once this is excluded.
+
+**Consequence for the evaluation, and it matters:** *text-change rate is not a proxy for
+improvement*. On the same nine requirement-slots the refusing policy also changed 4/9 — its
+"changes" being bracket-placeholder insertions. The two policies are indistinguishable on rate
+and completely different on substance. Report *what* changed, per requirement, not how often.
+
+Candidate prompt fix now covers all three variants: before altering the text, check whether the
+requirement already states a measurable value (leave it), whether the answer supplied one at
+all (do not manufacture specification-shaped deferrals), and whether the human asked for no
+change (make none). Frequency still small — n=1, n=1, n=1 — so count them in the next suite
+before changing anything.
 
 ## `RequirementSet.requirements` min_length fix (2026-08-05)
 

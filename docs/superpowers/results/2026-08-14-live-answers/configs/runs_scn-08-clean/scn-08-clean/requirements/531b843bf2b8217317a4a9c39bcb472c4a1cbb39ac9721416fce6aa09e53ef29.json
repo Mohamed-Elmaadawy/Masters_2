@@ -1,0 +1,142 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-G",
+    "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-08-clean",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "THEMAS-REQ-G",
+    "system_type": "other",
+    "rationale": "The requirement pertains to unique identification for thermostats in an IoT/embedded or general backend system (THEMAS), which does not specifically fit web, mobile, or AI system categories."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-G",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "THEMAS-REQ-G",
+    "system_type": "other",
+    "techniques": [
+      "equivalence_partitioning"
+    ],
+    "rationale": "The requirement specifies a uniqueness constraint for thermostat identifiers. Equivalence partitioning applies by dividing inputs into valid equivalence classes (unique identifiers) and invalid equivalence classes (duplicate, null, or improperly formatted identifiers) to verify that uniqueness is properly enforced."
+  },
+  "test_plan": {
+    "requirement_id": "THEMAS-REQ-G",
+    "test_cases": [
+      {
+        "id": "TC-12-THEMAS-REQ-G-1",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Register a thermostat with a unique identifier",
+        "preconditions": "THEMAS system is operational and no thermostat with identifier 'THERM-001' exists in the system.",
+        "steps": [
+          "Submit a registration request for a new thermostat with identifier 'THERM-001'."
+        ],
+        "expected_result": "The registration is successful, and the thermostat is stored in the system under the unique identifier 'THERM-001'."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-G-2",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Attempt to register a thermostat with a duplicate identifier",
+        "preconditions": "A thermostat with identifier 'THERM-001' is already registered in the THEMAS system.",
+        "steps": [
+          "Submit a registration request for a second thermostat using the existing identifier 'THERM-001'."
+        ],
+        "expected_result": "The system rejects the registration attempt with a duplicate identifier error and maintains unique identification for the existing thermostat."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-G-3",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Attempt to register a thermostat with a null or missing identifier",
+        "preconditions": "THEMAS system is operational.",
+        "steps": [
+          "Submit a registration request for a thermostat with a null or omitted identifier field."
+        ],
+        "expected_result": "The system rejects the registration request, indicating that a unique identifier is required."
+      },
+      {
+        "id": "TC-12-THEMAS-REQ-G-4",
+        "requirement_ids": [
+          "THEMAS-REQ-G"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Retrieve specific thermostat using its unique identifier",
+        "preconditions": "Thermostats 'THERM-101' and 'THERM-102' are both registered in THEMAS.",
+        "steps": [
+          "Query the system for thermostat information using identifier 'THERM-101'."
+        ],
+        "expected_result": "THEMAS returns the unique data record for 'THERM-101' without ambiguity or data leakage from 'THERM-102'."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "b7e813287f5f4197ab98b7c1fc368e02",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 777,
+      "completion_tokens": 57
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "23f06149462a4e42ba7836ac3cdc9741",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1625,
+      "completion_tokens": 19
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "377baebc62574f828c0a9bc8deb00f46",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1109,
+      "completion_tokens": 76
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "e7a3a801413844159e7e0d65a5791a00",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1439,
+      "completion_tokens": 497
+    }
+  ],
+  "final_text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 5599
+}

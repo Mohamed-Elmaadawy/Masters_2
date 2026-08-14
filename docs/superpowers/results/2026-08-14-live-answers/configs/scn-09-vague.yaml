@@ -1,0 +1,50 @@
+# Behavior scenario config -- copy of orchestrator/runs_gemini.yaml (2026-08-08 first
+# real run), only run_id and output_dir changed, per docs/superpowers/plans/
+# 2026-08-11-behavior-scenarios.md (S9 -- ambiguity that must be caught). `prompts` paths point back to
+# orchestrator/example_prompts/ (relative to THIS file's location, 5 directories deeper
+# than orchestrator/runs_gemini.yaml) -- same prompt files, unmodified; only the
+# relative-path string differs because this config lives outside orchestrator/.
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env() reads
+# GEMINI_API_KEY from the environment only. Set GEMINI_API_KEYS instead (comma-separated)
+# to rotate across several keys on quota exhaustion -- see orchestrator/providers/rotating.py.
+
+run_id: scn-09-vague
+output_dir: runs_scn-09-vague   # resolved relative to THIS file's directory, not the cwd
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v1
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+
+prompts:
+  classifier: ../../../../../orchestrator/example_prompts/classifier.txt
+  quality_checker: ../../../../../orchestrator/example_prompts/quality_checker.txt
+  refiner_questioner: ../../../../../orchestrator/example_prompts/refiner_questioner.txt
+  refiner_rewriter: ../../../../../orchestrator/example_prompts/refiner_rewriter.txt
+  strategy_selector: ../../../../../orchestrator/example_prompts/strategy_selector.txt
+  test_generator: ../../../../../orchestrator/example_prompts/test_generator.txt
+  consistency_checker: ../../../../../orchestrator/example_prompts/consistency_checker.txt
+  dependency_mapper: ../../../../../orchestrator/example_prompts/dependency_mapper.txt

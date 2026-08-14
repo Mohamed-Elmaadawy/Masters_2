@@ -1,0 +1,201 @@
+{
+  "source_runs": [
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-08-clean/scn-08-clean",
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-09-vague/scn-09-vague",
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-10-atomicity/scn-10-atomicity",
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-04-conflict-numeric/scn-04-conflict-numeric",
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-11a-cap-generate/scn-11a-cap-generate",
+    "docs/superpowers/results/2026-08-14-live-answers/configs/runs_scn-11b-cap-stop/scn-11b-cap-stop"
+  ],
+  "captured": "2026-08-14",
+  "answers": {
+    "THEMAS-REQ-D::vague_pronoun": [
+      {
+        "question_text": "What specific temperature limits or thresholds does the phrase 'these limits' refer to?",
+        "answer_text": "These limits' refers to the overtemperature limits defined in SRS-009 and established from the initialization file per SRS-005",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      }
+    ],
+    "THEMAS-REQ-D::incomplete": [
+      {
+        "question_text": "Regarding the phrase \"shall be output for subsequent processing\", which system or component is responsible for outputting the valid temperatures, and under what conditions, triggers, or frequency should they be output?",
+        "answer_text": "the Determine Temperature Status process (SRS-009) outputs the temperature status to Determine H/C Mode (SRS-010), whenever a reported temperature or changed setting falls within the overtemperature bounds LO = TSET - OD and UO = TSET + OD. No frequency is specified -- the document is event-driven, and the trigger is the arrival of a temperature value or a setting change.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "THEMAS-REQ-E::vague_pronoun": [
+      {
+        "question_text": "In requirement THEMAS-REQ-E, what specific condition does the phrase 'this condition' refer to?",
+        "answer_text": "This condition\" refers to Condition 2 in SRS-010: the current temperature has moved outside the trigger band but is still within the overtemperature bounds -- LO <= T < LT (needs heating) or UT < T <= UO (needs cooling). It is the condition indicating a unit must be turned on, as distinct from Condition 1 (LT <= T <= UT), where the setting is satisfied and both units are turned off.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement THEMAS-REQ-E, which specific module or subsystem does the phrase 'this module' refer to?",
+        "answer_text": "This module\" is the Determine H/C Mode process (SRS-010), within the Monitor Temperature component. The sentence appears in that process's own Processing section, and the request it emits is SRS-010's declared output H/C Request, consumed by Determine Status of All H/C Units (SRS-011).",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "What specific criteria or definition should be used to evaluate 'Condition 2' in requirement THEMAS-REQ-E?",
+        "answer_text": "Condition 2 holds when the current temperature T is outside the trigger band but within the overtemperature bounds: LO <= T < LT (heating needed) or UT < T <= UO (cooling needed). Where LT = TSET - TD and UT = TSET + TD (trigger deviation), and LO = TSET - OD and UO = TSET + OD (overtemperature deviation), with TSET the thermostat's temperature setting. All four values derive from the initialization file per SRS-005/SRS-006.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "AUTOGEN-US2::ambiguous_term": [
+      {
+        "question_text": "In requirement AUTOGEN-US2, what specific quantitative metric or measurable threshold (such as percentage uptime or mean time between failures) should be used to define the term \"reliable\"?",
+        "answer_text": "No number exists. This is a generated user story about an unnamed \"product\" -- there's no system, no domain, no spec behind it. Uptime and MTBF aren't interchangeable either; you'd have to define what counts as a failure first. Whoever owns the product sets this, not me.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US2, what specific measurable criteria or limits (such as maximum response time or resource utilization) should be used to define the term \"efficient\"?",
+        "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US2, what specific, measurable threshold or metric defines the term 'reliable'?",
+        "answer_text": "Still no number. \"Defined by the product owner\" just says someone else will decide later; it doesn't make the requirement testable.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US2, what specific, measurable performance or resource usage threshold defines the term 'efficient'?",
+        "answer_text": "Same as \"reliable\" -- nothing to base it on. No product, no workload, no spec. Response time and resource utilization measure different things and you'd pick between them based on what the product actually does, which nobody has said.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "AUTOGEN-US2::non_atomic": [
+      {
+        "question_text": "Requirement AUTOGEN-US2 combines two distinct quality characteristics in the phrase \"reliable and efficient\"; should this requirement be split into two separate requirements—one for reliability and one for efficiency?",
+        "answer_text": "Technically yes -- reliability and efficiency are two different quality attributes. But splitting wouldn't fix anything here: you'd get two equally unmeasurable user stories instead of one. The real problem is that neither term has a definition, not that they're bundled.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "Requirement AUTOGEN-US2 combines two distinct quality attributes ('reliable and efficient'). Should this requirement be split into two separate requirements, one for reliability and one for efficiency?",
+        "answer_text": "Technically yes -- reliability and efficiency are two different quality attributes. But splitting wouldn't fix anything here: you'd get two equally unmeasurable user stories instead of one. The real problem is that neither term has a definition, not that they're bundled.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "LUITEL-R7::non_atomic": [
+      {
+        "question_text": "Regarding the phrase \"inventory levels, product movement, and sales history\", should report generation for each of these three distinct areas be split into separate requirements?",
+        "answer_text": "Yes. These are three independently testable behaviours -- inventory levels, product movement, and sales history are separate reports with different data sources and different acceptance criteria, and none is a precondition of the others. The correct fix is to split this into three requirements. That cannot be done by rewriting this requirement in place; it is a change to the requirement set and belongs in the source document.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "The phrase 'reports on inventory levels, product movement, and sales history' bundles three report types into one requirement. Should report generation for inventory levels, product movement, and sales history be separated into three individual requirements?",
+        "answer_text": "Same as last round -- yes, three requirements. Still not fixable by rewording this one.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "LUITEL-R7::incomplete": [
+      {
+        "question_text": "In the phrase \"The system shall generate reports\", what specific trigger or condition (e.g., upon user request, on a scheduled basis, or automatically upon system events) initiates the report generation?",
+        "answer_text": "Not specified anywhere. This came from a paper as a standalone example, so there's no surrounding spec to check. On request, on a schedule, and event-driven would be three different systems -- I'm not going to pick one.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "Regarding 'The system shall generate reports', what trigger or condition specifies when the system generates these reports (e.g., on a scheduled periodic basis, or upon an explicit user request)?",
+        "answer_text": "Not specified anywhere. This came from a paper as a standalone example, so there's no surrounding spec to check. On request, on a schedule, and event-driven would be three different systems -- I'm not going to pick one.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "PURE-THEMAS-R6-P::inconsistent": [
+      {
+        "question_text": "Requirement PURE-THEMAS-R6-P permits a temperature deviation of 'up to 5 degrees Fahrenheit' before reporting a deviation error, whereas requirement PURE-THEMAS-R6 specifies that the temperature deviation shall not exceed 3 degrees Fahrenheit. What is the correct maximum permitted temperature deviation threshold before reporting an error?",
+        "answer_text": "3°F. That's what the source spec says -- this requirement has the wrong number and should be changed to match.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "Requirement PURE-THEMAS-R6-P specifies a temperature deviation threshold of 'up to 3 degrees Fahrenheit' before reporting an error, which conflicts with requirement PURE-THEMAS-R6. What is the correct allowable temperature deviation threshold, and how should PURE-THEMAS-R6-P be updated to align with PURE-THEMAS-R6?",
+        "answer_text": "Already done. It reads 3°F now, same as R6 -- the conflict is gone. The checker is still working off the original text.",
+        "user_confirms_resolved": true,
+        "revision_number": 2
+      }
+    ],
+    "PURE-THEMAS-R6::inconsistent": [
+      {
+        "question_text": "Requirement PURE-THEMAS-R6 specifies a 'maximum deviation value of 3 degrees Fahrenheit', but related requirement PURE-THEMAS-R6-P permits a temperature deviation of up to 5 degrees Fahrenheit before reporting an error. Should the maximum allowable deviation be 3 degrees Fahrenheit, 5 degrees Fahrenheit, or a different threshold?",
+        "answer_text": "3°F",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "Requirement PURE-THEMAS-R6 specifies a 'maximum deviation value of 3°F', which conflicts with requirement PURE-THEMAS-R6-P that permits a temperature deviation of up to 5°F before reporting an error. What is the correct maximum allowable temperature deviation threshold that should be specified?",
+        "answer_text": "3°F",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "AUTOGEN-US3::ambiguous_term": [
+      {
+        "question_text": "In requirement AUTOGEN-US3, what specific functional capabilities or user goals should replace the vague phrase 'meets my needs'?",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, what measurable outcomes or criteria define what constitutes 'value for my money' for the user?",
+        "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, what specific, measurable functional criteria should replace the vague phrase 'meets my needs'?",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, what specific functional capabilities or criteria define what is meant by the phrase 'meets my needs'?",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, what measurable criteria or success metrics define the outcome intended by 'value for my money'?",
+        "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+        "user_confirms_resolved": false,
+        "revision_number": 1
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, the phrase 'meets my needs' is subjective. What specific features, functional criteria, or capabilities should be specified to define what 'meets my needs' means?",
+        "answer_text": "Nothing to replace it with. There's no product, no user, no context behind this sentence -- it came from a generated set. \"Meets my needs\" could mean anything, and I'd be inventing whatever I put there.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      },
+      {
+        "question_text": "In requirement AUTOGEN-US3, the phrase 'value for my money' lacks an objective threshold. What specific, measurable benefit or criteria should be used to represent this value?",
+        "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ],
+    "AUTOGEN-US3::incomplete": [
+      {
+        "question_text": "In requirement AUTOGEN-US3, what concrete functionality, trigger, or action should be specified to describe what feature the product must perform?",
+        "answer_text": "Generated placeholder text with no product or context behind it -- nothing here can be made measurable.",
+        "user_confirms_resolved": false,
+        "revision_number": 2
+      }
+    ]
+  },
+  "fallback": {
+    "answer_text": "Not covered by the recorded transcript for this requirement and issue category.",
+    "user_confirms_resolved": false
+  }
+}

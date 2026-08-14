@@ -1,0 +1,9 @@
+{
+  "doc_id": "scn-08-clean",
+  "requirements": [
+    {
+      "id": "THEMAS-REQ-G",
+      "text": "Each thermostat shall have a unique identifier by which that thermostat is identified in the THEMAS system."
+    }
+  ]
+}

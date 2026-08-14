@@ -26,6 +26,75 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-14 — Live answer policy run: six scenarios, nine requirements, real human
+
+**Changed:** new `docs/superpowers/results/2026-08-14-live-answers/` — `live_bridge_driver.py`
+(file-bridge `HumanFns` calling `orchestrator/human_cli.py`'s real
+`answer_questions_cli`/`decide_at_cap_cli` unchanged, with injected `input_fn`/`output_fn`
+instead of a terminal), byte-identical copies of the six scenarios' configs/fixtures,
+`extract_answers.py` (builds `answers.json` from the run records), `answers.json` itself,
+`answering_policy_driver.py` (the replay driver, with `--self-test`), and `SESSION.md`.
+
+**Why:** executes `docs/superpowers/plans/2026-08-14-live-answer-policy.md` — the measurement
+that entry's "Impact" left open: what refinement does when a real human, not
+`answer_policy_driver.py`'s refusal policy, answers. See Known Limitation 10 (downgraded
+2026-08-13) and Known Limitation 11.
+
+**Impact:** measured, not estimated. 9 requirement-slots: 4 `COMPLETED`, 4 `CAP_STOPPED`, 1
+`CAP_GENERATED`. Text-change rate 5/9 (55.6%; 4/9 substantive, one is unit-format-only) vs.
+the refusing-policy baseline on the identical fixtures, 4/9 (44.4%) — both well above the
+full 47-item suite's 19%, confirming the plan's own "favorable ground" threat to validity.
+One clean case where the live-human answer fixed a cross-requirement conflict the refusing
+policy structurally cannot (`PURE-THEMAS-R6-P`, 5°F → 3°F, reached `COMPLETED`) and one case
+where the refusing policy's "text changed" was bracket-placeholder insertion, not content
+(`AUTOGEN-US3`, `AUTOGEN-US2` — Known Limitation 11's pattern, both directions now observed).
+Cost: $0.2833 measured from real `prompt_tokens`/`completion_tokens` at $1.50/1M in +
+$7.50/1M out, within the plan's $0.20–0.35 estimate. `answering_policy_driver.py --self-test`
+replayed all 16 turns / 27 questions from this session's own records: 0 misses, 0 drift
+warnings. Full breakdown, original/final text for every requirement, and two methodology
+incidents (one briefly non-verbatim answer, caught and the affected run restarted; one
+echoed-message glitch, caught and not recorded) are in `SESSION.md`.
+
+---
+
+## 2026-08-14 — Live-answer session results folded into the design notes
+
+**Changed:** `design/DESIGN_NOTES.md` — Known Limitations 5, 7, 8, 10 and 11 extended with
+live-session evidence (11 generalised from one defect into a three-variant pattern);
+`docs/superpowers/results/2026-08-14-live-answers/SESSION.md` (provenance of
+`OBSERVATIONS-DURING-SESSION.md` corrected — it was written by the assisting session at the
+operator's request, not by an unknown background process).
+
+**Why:** the live-answering run (same file, previous entry) settled several questions the
+notes had recorded as open or reasoned-only.
+
+**Impact:** documentation only; numbers verified directly against the run records rather than
+taken from the run's own write-up (4 `COMPLETED` / 4 `CAP_STOPPED` / 1 `CAP_GENERATED`, 88
+calls, $0.2833 — all confirmed). What changed in the record:
+
+- **7** — now has a live demonstration instead of an argument: `PURE-THEMAS-R6-P` was fixed by
+  the human's answer (5°F -> 3°F) and re-flagged `inconsistent` anyway from the pre-refinement
+  consistency report. The loop exited only because the human set `user_confirms_resolved: True`,
+  so the design currently depends on a person noticing its analysis has gone stale.
+- **11** — generalised to one pattern with three variants: placeholder where a value exists
+  (`LUITEL-R1`), deferral where none exists (`AUTOGEN-US2`), cosmetic edit where the human asked
+  for none (`PURE-THEMAS-R6`). Each alters appearance without altering testability.
+- **10** — the threat-to-validity note can now cite a run where the human *did* answer.
+  Substantive change rate 4/9 for both policies; the difference is in substance, not rate. Also
+  records that a refusing answer produced a **false** `COMPLETED` on `LUITEL-R7`, so earlier
+  runs' success counts are inflated in the pipeline's favour.
+- **8** — the one genuine `NON_ATOMIC` case now has a human on record confirming the split is
+  correct and the pipeline unable to perform it; plus the observation that `NON_ATOMIC` flags
+  structure rather than whether splitting is worth doing.
+- **5** — three vague references all resolved from the source document, and `LO = T_LT` shown to
+  be a corrupted `LO <= T <= LT` from PDF-to-XML extraction. Raises an unmeasured corpus risk:
+  every inequality in that document is damaged.
+
+**Named next measurement:** count the three limitation-11 variants and the PURE extraction
+damage in the next suite; all are n=1 today.
+
+---
+
 ## 2026-08-14 — Live answer policy planned (not yet run)
 
 **Changed:** new `docs/superpowers/plans/2026-08-14-live-answer-policy.md`.

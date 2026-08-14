@@ -1,0 +1,362 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R6-P",
+    "text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-04-conflict-numeric",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "system_type": "other",
+    "rationale": "The requirement specifies temperature deviation thresholds and error reporting for thermostats in the THEMAS system. This is characteristic of an embedded, IoT, or backend control system, with no signals indicating a web, mobile, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "up to 5 degrees Fahrenheit",
+            "explanation": "This requirement permits a temperature deviation of up to 5 degrees Fahrenheit before reporting a deviation error, which conflicts with PURE-THEMAS-R6 requiring that temperature deviation shall not exceed 3 degrees Fahrenheit.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6-P permits a temperature deviation of 'up to 5 degrees Fahrenheit' before reporting a deviation error, whereas requirement PURE-THEMAS-R6 specifies that the temperature deviation shall not exceed 3 degrees Fahrenheit. What is the correct maximum permitted temperature deviation threshold before reporting an error?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "3°F. That's what the source spec says -- this requirement has the wrong number and should be changed to match.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "original_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "refined_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "3°F. That's what the source spec says -- this requirement has the wrong number and should be changed to match.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R6-P-ISSUE-1",
+            "category": "inconsistent",
+            "span": "up to 3 degrees Fahrenheit",
+            "explanation": "PURE-THEMAS-R6-P conflicts with PURE-THEMAS-R6 regarding the allowable temperature deviation threshold before reporting an error.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-THEMAS-R6-P-ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6-P specifies a temperature deviation threshold of 'up to 3 degrees Fahrenheit' before reporting an error, which conflicts with requirement PURE-THEMAS-R6. What is the correct allowable temperature deviation threshold, and how should PURE-THEMAS-R6-P be updated to align with PURE-THEMAS-R6?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Already done. It reads 3°F now, same as R6 -- the conflict is gone. The checker is still working off the original text.",
+          "user_confirms_resolved": true
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "original_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "refined_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Already done. It reads 3°F now, same as R6 -- the conflict is gone. The checker is still working off the original text.",
+            "user_confirms_resolved": true
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "PURE-THEMAS-R6-P-ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "system_type": "other",
+    "techniques": [
+      "boundary_value_analysis",
+      "equivalence_partitioning"
+    ],
+    "rationale": "The requirement defines a numeric threshold for temperature deviation ('up to 3 degrees Fahrenheit') before reporting a deviation error. Per the design strategy guidance, numeric ranges and thresholds map directly to equivalence partitioning (partitioning deviations into non-error values <= 3°F and error values > 3°F) and boundary value analysis (testing exact boundary limits such as 3.0°F, 3.1°F, -3.0°F, and -3.1°F)."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "test_cases": [
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-1",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value - Positive Deviation at Upper Limit (3.0°F)",
+        "preconditions": "THEMAS system is powered on and actively monitoring a connected thermostat with target setpoint at 70.0°F.",
+        "steps": [
+          "Set thermostat target setpoint to 70.0°F.",
+          "Simulate temperature sensor reading of 73.0°F (deviation of +3.0°F).",
+          "Observe system alerts and logs for 60 seconds."
+        ],
+        "expected_result": "The system permits the +3.0°F deviation and does not report a deviation error."
+      },
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-2",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value - Positive Deviation Exceeding Upper Limit (3.1°F)",
+        "preconditions": "THEMAS system is powered on and actively monitoring a connected thermostat with target setpoint at 70.0°F.",
+        "steps": [
+          "Set thermostat target setpoint to 70.0°F.",
+          "Simulate temperature sensor reading of 73.1°F (deviation of +3.1°F).",
+          "Observe system alerts and logs."
+        ],
+        "expected_result": "The system detects that deviation exceeds 3 degrees Fahrenheit and reports a temperature deviation error."
+      },
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-3",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value - Negative Deviation at Lower Limit (-3.0°F)",
+        "preconditions": "THEMAS system is powered on and actively monitoring a connected thermostat with target setpoint at 70.0°F.",
+        "steps": [
+          "Set thermostat target setpoint to 70.0°F.",
+          "Simulate temperature sensor reading of 67.0°F (deviation of -3.0°F).",
+          "Observe system alerts and logs for 60 seconds."
+        ],
+        "expected_result": "The system permits the -3.0°F deviation and does not report a deviation error."
+      },
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-4",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Boundary Value - Negative Deviation Exceeding Lower Limit (-3.1°F)",
+        "preconditions": "THEMAS system is powered on and actively monitoring a connected thermostat with target setpoint at 70.0°F.",
+        "steps": [
+          "Set thermostat target setpoint to 70.0°F.",
+          "Simulate temperature sensor reading of 66.9°F (deviation of -3.1°F).",
+          "Observe system alerts and logs."
+        ],
+        "expected_result": "The system detects that deviation exceeds 3 degrees Fahrenheit in the negative direction and reports a temperature deviation error."
+      },
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-5",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Equivalence Partitioning - Permitted Deviation Class (1.5°F)",
+        "preconditions": "THEMAS system is active and monitoring thermostat with target setpoint at 72.0°F.",
+        "steps": [
+          "Set thermostat setpoint to 72.0°F.",
+          "Simulate thermostat reading of 70.5°F (1.5°F deviation).",
+          "Check system error reporting state."
+        ],
+        "expected_result": "No deviation error is reported because 1.5°F is within the permitted range of up to 3 degrees Fahrenheit."
+      },
+      {
+        "id": "TC-16-PURE-THEMAS-R6-P-6",
+        "requirement_ids": [
+          "PURE-THEMAS-R6-P"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Equivalence Partitioning - Error Deviation Class (5.0°F)",
+        "preconditions": "THEMAS system is active and monitoring thermostat with target setpoint at 72.0°F.",
+        "steps": [
+          "Set thermostat setpoint to 72.0°F.",
+          "Simulate thermostat reading of 77.0°F (5.0°F deviation).",
+          "Check system error reporting state."
+        ],
+        "expected_result": "A temperature deviation error is reported because 5.0°F exceeds the permitted threshold of 3 degrees Fahrenheit."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "fecc43ace0d5419aa62ed547f8516557",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 837,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e3aa7f1b65984ec1951d1ecca11f220e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1710,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "f3a5789ea8d3473a8d1c1ca77bacb90f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1183,
+      "completion_tokens": 128
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "c876ea86f4464a2a857b60bdd52a0d7e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1207,
+      "completion_tokens": 132
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "3484e9668c64405da6155aa09395eb8a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1710,
+      "completion_tokens": 90
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "562acc2967134a99a45ef85489cf58e3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1181,
+      "completion_tokens": 176
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b714a81ab2ca4dddb14ec1ad780f7540",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1212,
+      "completion_tokens": 142
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "96afd0c793f248e8bb9896a96fa6623c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1725,
+      "completion_tokens": 26
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "748c145f2ff246abb8b6faf9067594bb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1118,
+      "completion_tokens": 165
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "65af95b821c241cbab55d74794202d81",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1553,
+      "completion_tokens": 1299
+    }
+  ],
+  "final_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "original_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "refined_text": "The THEMAS system shall permit a temperature deviation of up to 3 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Already done. It reads 3°F now, same as R6 -- the conflict is gone. The checker is still working off the original text.",
+        "user_confirms_resolved": true
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    1,
+    1,
+    0
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "PURE-THEMAS-R6-P-ISSUE-1": [
+      2
+    ]
+  },
+  "total_tokens": 15767
+}
