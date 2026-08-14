@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "THEMAS-REQ-E",
+    "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-09-vague",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "THEMAS-REQ-E",
+    "system_type": "other",
+    "rationale": "The requirement describes rule-based control logic for a temperature/heating management module, which falls under embedded/control systems ('other') rather than web, mobile, or AI systems."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "this condition",
+            "explanation": "The phrase 'this condition' relies on an unresolved demonstrative referent without defining which condition is being referenced.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "vague_pronoun",
+            "span": "this module",
+            "explanation": "The phrase 'this module' uses an unresolved demonstrative referent, leaving the specific component or module unidentified.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-E",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "In requirement THEMAS-REQ-E, what specific condition does the phrase 'this condition' refer to?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "vague_pronoun",
+            "question_text": "In requirement THEMAS-REQ-E, which specific component or module does the phrase 'this module' refer to?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-E",
+        "original_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "refined_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "this condition",
+            "explanation": "The phrase 'this condition' relies on an unresolved referent, leaving it unspecified what condition must be met.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "vague_pronoun",
+            "span": "this module",
+            "explanation": "The phrase 'this module' relies on an unresolved referent, making it unclear which specific module or system component is performing the action.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "THEMAS-REQ-E",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "vague_pronoun",
+            "question_text": "In requirement THEMAS-REQ-E, what specific condition does the phrase \"this condition\" refer to?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "vague_pronoun",
+            "question_text": "In requirement THEMAS-REQ-E, which specific module or system component does the phrase \"this module\" refer to?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "THEMAS-REQ-E",
+        "original_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "refined_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+      "quality_report": {
+        "requirement_id": "THEMAS-REQ-E",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "vague_pronoun",
+            "span": "this condition",
+            "explanation": "The phrase 'this condition' is an unresolved referent because the specific condition is not defined within the text of this requirement.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "vague_pronoun",
+            "span": "this module",
+            "explanation": "The phrase 'this module' is an unresolved referent because the specific module is not specified within the text of this requirement.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "4ea9be5b695f41a58e30726d7a3aeaec",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 823,
+      "completion_tokens": 63
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "4f89a07b2daf4b94b48ff9ed74538d32",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1633,
+      "completion_tokens": 108
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "c2555c8b041148c4ac8dc7a60881687b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1214,
+      "completion_tokens": 144
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "973033dc4369429482fb4ce2a0387467",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1292,
+      "completion_tokens": 234
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5784b81a013a42eea67baed7c1cc1c5d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1633,
+      "completion_tokens": 191
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "765649eca7a84278a5a1629a8221fc6a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1219,
+      "completion_tokens": 184
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "ed98ffc107b04ae1bfe13600b4b5c140",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1292,
+      "completion_tokens": 273
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8dc3988bdbe44a54adff67840025b8b3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1633,
+      "completion_tokens": 132
+    }
+  ],
+  "final_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+  "final_requirement": {
+    "requirement_id": "THEMAS-REQ-E",
+    "original_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+    "refined_text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12068
+}

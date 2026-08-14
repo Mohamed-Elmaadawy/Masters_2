@@ -1,0 +1,307 @@
+{
+  "requirement": {
+    "id": "AUTOGEN-US3",
+    "text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-11b-cap-stop",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "AUTOGEN-US3",
+    "system_type": "other",
+    "rationale": "The requirement is a generic user story without specific signals for web, mobile, or AI features, and there is no additional context in the document to specify a type."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "As a user, I want a product that meets my needs so that I can get value for my money.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "meets my needs",
+            "explanation": "The phrase 'meets my needs' is vague and subjective, lacking any specific or measurable criteria to verify whether the requirement is fulfilled.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "value for my money",
+            "explanation": "The expression 'value for my money' is subjective and does not provide a defined, testable metric or threshold.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "incomplete",
+            "span": "As a user, I want a product that meets my needs so that I can get value for my money.",
+            "explanation": "The requirement describes a high-level user desire but fails to specify any trigger, condition, or concrete functional capability required to test or implement the product.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US3",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "The phrase 'meets my needs' is vague. What specific user needs, features, or measurable acceptance criteria must the product fulfill?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "The phrase 'value for my money' is subjective. What concrete metrics, benefits, or performance thresholds should be used to measure or verify that value is provided?"
+          },
+          {
+            "id": "Q3",
+            "issue_id": "ISSUE-3",
+            "issue_category": "incomplete",
+            "question_text": "The overall statement 'As a user, I want a product that meets my needs so that I can get value for my money.' is high-level and incomplete. What specific functional capabilities, triggers, or operational conditions should be defined for implementation and testing?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q3",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US3",
+        "original_text": "As a user, I want a product that meets my needs so that I can get value for my money.",
+        "refined_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q3",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "AUTOGEN-US3-ISSUE-1",
+            "category": "incomplete",
+            "span": "[specified user needs]",
+            "explanation": "The requirement contains template placeholders ('[specified user needs]' and '[measurable value/return on investment]') rather than concrete conditions, behaviors, and outcomes needed to test it.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US3",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "AUTOGEN-US3-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "What specific user needs and measurable value or return on investment should replace the placeholders '[specified user needs]' and '[measurable value/return on investment]' in this user story?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US3",
+        "original_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+        "refined_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US3",
+        "passed": false,
+        "issues": [
+          {
+            "id": "AUTOGEN-US3-ISSUE-1",
+            "category": "incomplete",
+            "span": "[specified user needs]",
+            "explanation": "The requirement contains unfulfilled template placeholder text '[specified user needs]' rather than defining the specific capabilities, conditions, or features required to test the functionality.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "AUTOGEN-US3-ISSUE-2",
+            "category": "non_verifiable",
+            "span": "[measurable value/return on investment]",
+            "explanation": "The requirement uses placeholder text '[measurable value/return on investment]', providing no concrete pass/fail acceptance criteria that can be objectively tested.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "4e42453971f04924a1c85458a0c8441d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 781,
+      "completion_tokens": 59
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "0147a5fb9cff4d8894d8eccfee6b028e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1627,
+      "completion_tokens": 260
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "276224e091cc41e88a22291d6fe5b639",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1298,
+      "completion_tokens": 209
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "42839225c3ce41b391a54ecf800d74d5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1381,
+      "completion_tokens": 375
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8ad2059c61134a8c845f1998164e4ad4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1633,
+      "completion_tokens": 73
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "ad82ad2e682e4f62877405b8ec9433f5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1168,
+      "completion_tokens": 121
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "de4629c726614c4598de2175dff8cc9c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1223,
+      "completion_tokens": 168
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d543afba84f742adb4a6b75fa5b1b99c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1633,
+      "completion_tokens": 178
+    }
+  ],
+  "final_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+  "final_requirement": {
+    "requirement_id": "AUTOGEN-US3",
+    "original_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+    "refined_text": "As a user, I want a product that meets [specified user needs] so that I can receive [measurable value/return on investment].",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    3,
+    1,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "ISSUE-3": [
+      1
+    ],
+    "AUTOGEN-US3-ISSUE-1": [
+      2,
+      3
+    ],
+    "AUTOGEN-US3-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 12187
+}

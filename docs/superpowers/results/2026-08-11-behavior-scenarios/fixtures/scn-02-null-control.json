@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-02-null-control",
+  "requirements": [
+    {
+      "id": "METAGPT-US1",
+      "text": "As a user, I want to select any color on the screen, so that I can get its RGB values."
+    },
+    {
+      "id": "HEY-REQ2",
+      "text": "The audit report shall include the total number of recycled parts used in the estimate."
+    }
+  ]
+}

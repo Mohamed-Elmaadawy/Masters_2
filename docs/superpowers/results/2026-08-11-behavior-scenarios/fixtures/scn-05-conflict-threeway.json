@@ -1,0 +1,17 @@
+{
+  "doc_id": "scn-05-conflict-threeway",
+  "requirements": [
+    {
+      "id": "PURE-THEMAS-R4",
+      "text": "There shall be a maximum number of heating or cooling units that can be on at any given time."
+    },
+    {
+      "id": "PURE-THEMAS-R4-P1",
+      "text": "The maximum number of heating or cooling units that may be on simultaneously shall be three."
+    },
+    {
+      "id": "PURE-THEMAS-R4-P2",
+      "text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time."
+    }
+  ]
+}

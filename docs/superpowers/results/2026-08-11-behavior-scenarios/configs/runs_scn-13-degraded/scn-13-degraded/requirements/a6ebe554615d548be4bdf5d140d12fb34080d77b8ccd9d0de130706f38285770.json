@@ -1,0 +1,121 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R7",
+    "text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-13-degraded",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R7",
+    "system_type": "other",
+    "rationale": "The requirement refers to on-board equipment performing a self-test within ERTMS (European Rail Traffic Management System), which is an embedded railway control system rather than a web, mobile, or AI application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "At Start Up, the on board equipment shall perform an automatic self-test.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R7",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-ERTMS-R7",
+    "system_type": "other",
+    "techniques": [
+      "state_based",
+      "use_case"
+    ],
+    "rationale": "State-based testing applies because 'Start Up' represents a specific system state transition that triggers the automatic self-test. Use case testing applies because starting up the on-board equipment represents a multi-step operational scenario with a documented dependency involving requirement PURE-ERTMS-R8."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-ERTMS-R7",
+    "test_cases": [
+      {
+        "id": "TC-13-PURE-ERTMS-R7-1",
+        "requirement_ids": [
+          "PURE-ERTMS-R7"
+        ],
+        "technique_used": "state_based",
+        "title": "Automatic Self-Test Triggered on Start Up Transition",
+        "preconditions": "The ERTMS on-board equipment is powered OFF.",
+        "steps": [
+          "Supply power to the ERTMS on-board equipment to trigger the Start Up state transition.",
+          "Monitor system diagnostic logs and hardware indicators during initialization."
+        ],
+        "expected_result": "The on-board equipment automatically initiates and executes its internal self-test routine upon entering the Start Up state without manual intervention."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R7-2",
+        "requirement_ids": [
+          "PURE-ERTMS-R7",
+          "PURE-ERTMS-R8"
+        ],
+        "technique_used": "use_case",
+        "title": "Start Up Operational Flow with Self-Test Result Indication",
+        "preconditions": "The ERTMS on-board equipment is powered off and connected to the Driver Machine Interface (DMI).",
+        "steps": [
+          "Perform the standard Start Up operational workflow.",
+          "Observe the automated execution of the on-board self-test during power-on.",
+          "Verify that the self-test produces a result to be indicated on the DMI."
+        ],
+        "expected_result": "The automatic self-test completes successfully as part of the Start Up sequence and yields a self-test result for the DMI."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "afbfaf27a431469d8841885c22f281be",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 802,
+      "completion_tokens": 69
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "1e5a4280766b4cb1a38f0742753606a2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1714,
+      "completion_tokens": 20
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "0199380009bc4112b12254ad8fc3a4f0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1183,
+      "completion_tokens": 117
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "3b7214f584544c7a8c6fa1070b242077",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1529,
+      "completion_tokens": 335
+    }
+  ],
+  "final_text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 5769
+}

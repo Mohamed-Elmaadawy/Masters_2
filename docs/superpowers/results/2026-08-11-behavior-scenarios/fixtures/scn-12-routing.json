@@ -1,0 +1,17 @@
+{
+  "doc_id": "scn-12-routing",
+  "requirements": [
+    {
+      "id": "LUITEL-R1",
+      "text": "The system shall reach a steady state within 5s after reconfiguration to maximize availability."
+    },
+    {
+      "id": "THEMAS-REQ-B",
+      "text": "If the current temperature value is strictly less than the lower value of the valid temperature range or if the received temperature value is strictly greater than the upper value of the valid temperature range, then the THEMAS system shall identify the current temperature value as an invalid temperature and shall output an invalid temperature status."
+    },
+    {
+      "id": "ACTAPP-R2-AC1",
+      "text": "Accurately identifies when the user is driving."
+    }
+  ]
+}

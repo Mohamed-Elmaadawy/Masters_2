@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-09-vague",
+  "requirements": [
+    {
+      "id": "THEMAS-REQ-D",
+      "text": "Temperatures that do not exceed these limits shall be output for subsequent processing."
+    },
+    {
+      "id": "THEMAS-REQ-E",
+      "text": "If this condition is true, then this module shall output a request to turn on the heating unit in case LO = T_LT."
+    }
+  ]
+}

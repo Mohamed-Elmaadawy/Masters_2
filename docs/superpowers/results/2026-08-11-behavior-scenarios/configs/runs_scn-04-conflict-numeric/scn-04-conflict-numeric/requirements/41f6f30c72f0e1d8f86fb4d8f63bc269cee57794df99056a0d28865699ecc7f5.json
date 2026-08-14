@@ -1,0 +1,251 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R6",
+    "text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-04-conflict-numeric",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R6",
+    "system_type": "other",
+    "rationale": "The requirement describes temperature tracking and deviation limits for thermostats, which pertains to an embedded, IoT, or physical control system rather than a web, mobile, or AI application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "maximum deviation value of 3 degrees Fahrenheit",
+            "explanation": "PURE-THEMAS-R6 requires that the reported temperature deviation not exceed 3 degrees Fahrenheit, which conflicts with PURE-THEMAS-R6-P which permits a deviation of up to 5 degrees Fahrenheit.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6-P"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6 specifies a 'maximum deviation value of 3 degrees Fahrenheit', which conflicts with requirement PURE-THEMAS-R6-P permitting a deviation of up to 5 degrees Fahrenheit. Which maximum temperature deviation value should be used?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "original_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "refined_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "maximum deviation value of 3 degrees Fahrenheit",
+            "explanation": "PURE-THEMAS-R6 requires that temperature deviation not exceed 3 degrees Fahrenheit, which conflicts with PURE-THEMAS-R6-P permitting a deviation of up to 5 degrees Fahrenheit before reporting an error.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6-P"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6 specifies a 'maximum deviation value of 3 degrees Fahrenheit', which conflicts with requirement PURE-THEMAS-R6-P permitting a deviation of up to 5 degrees Fahrenheit before reporting an error. Which maximum deviation limit should the system enforce?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "original_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "refined_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R6-ISSUE-1",
+            "category": "inconsistent",
+            "span": "a maximum deviation value of 3 degrees Fahrenheit",
+            "explanation": "PURE-THEMAS-R6 specifies that the reported temperature deviation shall not exceed 3 degrees Fahrenheit, which directly conflicts with PURE-THEMAS-R6-P that permits a temperature deviation of up to 5 degrees Fahrenheit before reporting an error.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6-P"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "7f1194f48f1a4587a83a628d06897bb8",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 836,
+      "completion_tokens": 61
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e1919f1a76ca4fc4853e990f288491aa",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1714,
+      "completion_tokens": 119
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "24dfadbeb848441c8c9f28270fd81e7a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1189,
+      "completion_tokens": 114
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "47a14f3fbdd84ae0a936cdd32900117c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1212,
+      "completion_tokens": 181
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "4a98cf4e6d1641ad9a756a1b57493c5d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1714,
+      "completion_tokens": 120
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "e02ce1588eb64abc9629eaa804b7e644",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1190,
+      "completion_tokens": 144
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "6e32e22d8aac4e91a47452f167a213fa",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1212,
+      "completion_tokens": 181
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5cf59e386e414ba992d656847026298c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1714,
+      "completion_tokens": 161
+    }
+  ],
+  "final_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R6",
+    "original_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+    "refined_text": "The THEMAS system shall ensure the temperature reported by a given thermostat shall not exceed a maximum deviation value of 3 degrees Fahrenheit.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2
+    ],
+    "PURE-THEMAS-R6-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 11862
+}

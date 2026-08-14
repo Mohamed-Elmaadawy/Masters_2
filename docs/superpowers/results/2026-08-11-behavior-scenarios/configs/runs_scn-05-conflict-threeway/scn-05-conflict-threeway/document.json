@@ -1,0 +1,152 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-05-conflict-threeway",
+    "requirements": [
+      {
+        "id": "PURE-THEMAS-R4",
+        "text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-THEMAS-R4-P1",
+        "text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-THEMAS-R4-P2",
+        "text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-05-conflict-threeway",
+    "started_at": "2026-08-13T13:32:55.217099Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "ceb5292b0bc1",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "5a1d82aa9cc4",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-05-conflict-threeway",
+    "conflicts": [
+      {
+        "requirement_ids": [
+          "PURE-THEMAS-R4",
+          "PURE-THEMAS-R4-P1",
+          "PURE-THEMAS-R4-P2"
+        ],
+        "explanation": "PURE-THEMAS-R4 mandates a maximum limit on active units, PURE-THEMAS-R4-P1 sets this maximum to three units, and PURE-THEMAS-R4-P2 requires turning on four heating units simultaneously during a system-wide cold start. These requirements jointly contradict each other because activating four units simultaneously exceeds the specified maximum limit of three."
+      }
+    ]
+  },
+  "dependency_report": {
+    "doc_id": "scn-05-conflict-threeway",
+    "dependencies": [
+      {
+        "from_requirement_id": "PURE-THEMAS-R4",
+        "to_requirement_id": "PURE-THEMAS-R4-P1",
+        "explanation": "Testing whether the system enforces a maximum limit on active units depends on knowing the concrete numerical limit specified in PURE-THEMAS-R4-P1."
+      },
+      {
+        "from_requirement_id": "PURE-THEMAS-R4-P1",
+        "to_requirement_id": "PURE-THEMAS-R4",
+        "explanation": "PURE-THEMAS-R4-P1 defines the concrete value for the general maximum active units policy established in PURE-THEMAS-R4."
+      },
+      {
+        "from_requirement_id": "PURE-THEMAS-R4-P2",
+        "to_requirement_id": "PURE-THEMAS-R4-P1",
+        "explanation": "Testing the cold-start behavior of activating four units simultaneously depends on the maximum limit of three units established in PURE-THEMAS-R4-P1."
+      },
+      {
+        "from_requirement_id": "PURE-THEMAS-R4-P2",
+        "to_requirement_id": "PURE-THEMAS-R4",
+        "explanation": "Verifying whether four units can be powered on during cold start depends on the overarching policy governing maximum concurrent active units defined in PURE-THEMAS-R4."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "308251ad13f64e07bb2bc9e53a2d703e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 868,
+      "completion_tokens": 142
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "b878c74c2e6a4837b2870f93af60810b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1027,
+      "completion_tokens": 367
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-THEMAS-R4",
+    "PURE-THEMAS-R4-P1",
+    "PURE-THEMAS-R4-P2"
+  ],
+  "document_stage_tokens": 2404
+}

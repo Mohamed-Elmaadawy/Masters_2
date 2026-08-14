@@ -1,0 +1,147 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-06-cycle",
+    "requirements": [
+      {
+        "id": "SCN6-A-P",
+        "text": "The scheduler shall not dispatch a job until the resource monitor has reported the current load.",
+        "source_doc_id": null
+      },
+      {
+        "id": "SCN6-B-P",
+        "text": "The resource monitor shall compute the current load only after the audit logger has recorded the previous dispatch decision.",
+        "source_doc_id": null
+      },
+      {
+        "id": "SCN6-C-P",
+        "text": "The audit logger shall record a dispatch decision only once the scheduler has dispatched the corresponding job.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-06-cycle",
+    "started_at": "2026-08-13T13:37:30.194090Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "ceb5292b0bc1",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "5a1d82aa9cc4",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-06-cycle",
+    "conflicts": [
+      {
+        "requirement_ids": [
+          "SCN6-A-P",
+          "SCN6-B-P",
+          "SCN6-C-P"
+        ],
+        "explanation": "The three requirements form a circular dependency deadlock: SCN6-A-P requires resource load reporting before job dispatch, SCN6-B-P requires audit logging before load computation, and SCN6-C-P requires job dispatch before audit logging. Together, these dependencies create an impossible execution sequence where no operation can start."
+      }
+    ]
+  },
+  "dependency_report": {
+    "doc_id": "scn-06-cycle",
+    "dependencies": [
+      {
+        "from_requirement_id": "SCN6-A-P",
+        "to_requirement_id": "SCN6-B-P",
+        "explanation": "SCN6-A-P requires the resource monitor to report current load (governed by SCN6-B-P) as a precondition before dispatching a job."
+      },
+      {
+        "from_requirement_id": "SCN6-B-P",
+        "to_requirement_id": "SCN6-C-P",
+        "explanation": "SCN6-B-P requires the audit logger to record the previous dispatch decision (governed by SCN6-C-P) as a precondition before computing load."
+      },
+      {
+        "from_requirement_id": "SCN6-C-P",
+        "to_requirement_id": "SCN6-A-P",
+        "explanation": "SCN6-C-P requires the scheduler to dispatch the corresponding job (governed by SCN6-A-P) as a precondition before recording the decision."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "24f0c6b91b92452086aeeec7593c861a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 847,
+      "completion_tokens": 122
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "b1674a68e3de4bcaa7dc25faa0358122",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1006,
+      "completion_tokens": 231
+    }
+  ],
+  "pending_requirement_ids": [
+    "SCN6-A-P",
+    "SCN6-B-P",
+    "SCN6-C-P"
+  ],
+  "document_stage_tokens": 2206
+}

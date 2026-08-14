@@ -1,0 +1,122 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-01-dep-pair",
+    "requirements": [
+      {
+        "id": "PURE-ERTMS-R7",
+        "text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R8",
+        "text": "The DMI shall indicate the result of the self-test.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-01-dep-pair",
+    "started_at": "2026-08-13T13:10:29.364362Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "ceb5292b0bc1",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "5a1d82aa9cc4",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "scn-01-dep-pair",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "scn-01-dep-pair",
+    "dependencies": [
+      {
+        "from_requirement_id": "PURE-ERTMS-R8",
+        "to_requirement_id": "PURE-ERTMS-R7",
+        "explanation": "The DMI requirement to indicate the self-test result depends on the on-board equipment performing the self-test defined in PURE-ERTMS-R7."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "6cafdf857285443e8420d65d594d2e3f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 807,
+      "completion_tokens": 21
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "67e3a32355e64e96a3746929f9794a39",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 966,
+      "completion_tokens": 89
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-ERTMS-R7",
+    "PURE-ERTMS-R8"
+  ],
+  "document_stage_tokens": 1883
+}

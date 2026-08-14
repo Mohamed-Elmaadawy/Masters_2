@@ -1,0 +1,348 @@
+{
+  "requirement": {
+    "id": "ACTAPP-R1",
+    "text": "The patients should receive a notification to stand up and move around if they have been sitting for long.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-03-conflict-native",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "ACTAPP-R1",
+    "system_type": "mobile",
+    "rationale": "The requirement describes sending inactivity notifications to patients to stand up and move around, which is a characteristic feature of a mobile activity-tracking application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The patients should receive a notification to stand up and move around if they have been sitting for long.",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "for long",
+            "explanation": "The phrase 'for long' is vague and does not define a specific, measurable time threshold for sitting duration.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "inconsistent",
+            "span": null,
+            "explanation": "ACTAPP-R1 requires sending a notification after prolonged sitting, which conflicts with ACTAPP-R2's rule suppressing notifications when a patient is busy if both conditions occur simultaneously.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "ACTAPP-R1 depends on ACTAPP-R2 to determine whether notification delivery is allowed based on busy status, while ACTAPP-R2 depends on ACTAPP-R1 to define the notification trigger behavior, forming a circular dependency.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific duration or time threshold should replace the phrase \"for long\" to determine when a sitting patient receives a notification?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "inconsistent",
+            "question_text": "How should the system resolve the conflict between ACTAPP-R1 (sending a notification after prolonged sitting) and ACTAPP-R2 (suppressing notifications when the patient is busy) when a patient meets the sitting threshold while marked as busy?"
+          },
+          {
+            "id": "Q3",
+            "issue_id": "ISSUE-3",
+            "issue_category": "circular_dependency",
+            "question_text": "How should the rules in ACTAPP-R1 and ACTAPP-R2 be restructured to break the circular dependency between triggering notification delivery and evaluating patient busy status?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q3",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R1",
+        "original_text": "The patients should receive a notification to stand up and move around if they have been sitting for long.",
+        "refined_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q3",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ACTAPP-R1-ISSUE-1",
+            "category": "inconsistent",
+            "span": "receive a notification to stand up and move around if they have been sitting for [configurable duration]",
+            "explanation": "ACTAPP-R1 directly conflicts with ACTAPP-R2 when a patient has been sitting for the configured duration while being marked as busy: ACTAPP-R1 requires sending a notification, whereas ACTAPP-R2 states notifications should not be sent when busy.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "A circular dependency exists between ACTAPP-R1 and ACTAPP-R2: notification delivery in ACTAPP-R1 depends on the busy status evaluated in ACTAPP-R2, while notification suppression verification in ACTAPP-R2 depends on the trigger condition defined in ACTAPP-R1.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ACTAPP-R1-ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement ACTAPP-R1 specifies that patients shall \"receive a notification to stand up and move around if they have been sitting for [configurable duration]\", which conflicts with ACTAPP-R2 stating notifications should not be sent when a patient is marked as busy. Should notifications be suppressed, queued, or delivered when a patient reaches the inactivity duration while marked as busy?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-3",
+            "issue_category": "circular_dependency",
+            "question_text": "There is a circular dependency between ACTAPP-R1 and ACTAPP-R2 because notification delivery in ACTAPP-R1 depends on busy status in ACTAPP-R2, while suppression logic in ACTAPP-R2 depends on the trigger condition in ACTAPP-R1. How should the logical flow and evaluation sequence between ACTAPP-R1 and ACTAPP-R2 be structured to break this cycle?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R1",
+        "original_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+        "refined_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ACTAPP-R1-ISSUE-2",
+            "category": "inconsistent",
+            "span": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+            "explanation": "ACTAPP-R1 directly conflicts with ACTAPP-R2: ACTAPP-R1 mandates sending a movement notification when a patient has been sitting for a configurable duration, whereas ACTAPP-R2 states that patients should not receive notifications when busy. This creates a contradiction when a patient is busy and reaches the sitting duration threshold.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "ACTAPP-R1 and ACTAPP-R2 form a circular dependency cycle: ACTAPP-R1 depends on ACTAPP-R2 for busy-status notification delivery constraints, while ACTAPP-R2 depends on ACTAPP-R1 to define the notification trigger behavior.",
+            "related_requirement_ids": [
+              "ACTAPP-R2"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "338e295d23d6483884dd26672eb4a4cd",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 800,
+      "completion_tokens": 49
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "03a3438ed04043c2964dab0313b7051c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1837,
+      "completion_tokens": 211
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "b8492e9784514d74837841f9d8acfc7e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1310,
+      "completion_tokens": 206
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "14236f306eaa402795ca3a0eff0feb5f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1346,
+      "completion_tokens": 334
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5bdd8263db1642dd8e3b58d6ea5f3f9f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1839,
+      "completion_tokens": 289
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "59ab561ba5034e75aeaa04de8f3cf7bc",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1305,
+      "completion_tokens": 296
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "8421c193be7f481c9fa29a7d43d991b6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1266,
+      "completion_tokens": 189
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "6d3009a282274ea0a49f2aee776b6388",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1839,
+      "completion_tokens": 302
+    }
+  ],
+  "final_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+  "final_requirement": {
+    "requirement_id": "ACTAPP-R1",
+    "original_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+    "refined_text": "The patients shall receive a notification to stand up and move around if they have been sitting for [configurable duration].",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    3,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "ISSUE-3": [
+      1,
+      2,
+      3
+    ],
+    "ACTAPP-R1-ISSUE-1": [
+      2
+    ],
+    "ACTAPP-R1-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 13418
+}

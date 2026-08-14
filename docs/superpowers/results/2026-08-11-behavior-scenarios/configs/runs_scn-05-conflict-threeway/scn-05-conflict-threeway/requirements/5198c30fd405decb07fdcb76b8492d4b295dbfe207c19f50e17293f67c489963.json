@@ -1,0 +1,319 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R4-P1",
+    "text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-05-conflict-threeway",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R4-P1",
+    "system_type": "other",
+    "rationale": "The requirement describes a constraint on controlling physical heating and cooling units in a thermal management system (THEMAS), which is an embedded or physical control system rather than a web, mobile, or AI application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "three",
+            "explanation": "Requirement PURE-THEMAS-R4-P1 restricts the maximum number of active units to three, which directly contradicts PURE-THEMAS-R4-P2 requiring four heating units to be turned on simultaneously during a cold start.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4-P1 depends on PURE-THEMAS-R4, and PURE-THEMAS-R4 depends on PURE-THEMAS-R4-P1, creating a circular dependency cycle.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R4-P1 limits the maximum number of simultaneous active units to 'three', which conflicts with PURE-THEMAS-R4-P2 requiring four heating units during a cold start. Should cold start be an exception to this rule, or should the maximum limit in PURE-THEMAS-R4-P1 be updated?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "circular_dependency",
+            "question_text": "Requirement PURE-THEMAS-R4-P1 and PURE-THEMAS-R4 currently depend on each other, creating a circular dependency. How should the relationship between PURE-THEMAS-R4-P1 and PURE-THEMAS-R4 be restructured to resolve this cycle?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "original_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+        "refined_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "three",
+            "explanation": "PURE-THEMAS-R4-P1 restricts the maximum number of active heating or cooling units to three, which conflicts with PURE-THEMAS-R4-P2 requiring four heating units to be activated simultaneously during a system-wide cold start.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4-P1 depends on PURE-THEMAS-R4 to establish the policy context, while PURE-THEMAS-R4 depends on PURE-THEMAS-R4-P1 for the concrete numerical threshold, creating a circular dependency.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R4-P1 limits active heating/cooling units to 'three', which conflicts with PURE-THEMAS-R4-P2 requiring four units during a system-wide cold start. Should PURE-THEMAS-R4-P1 include an explicit exception for cold start conditions, or should the maximum unit limit be adjusted?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "circular_dependency",
+            "question_text": "Requirement PURE-THEMAS-R4-P1 has a circular dependency with PURE-THEMAS-R4, where PURE-THEMAS-R4 relies on PURE-THEMAS-R4-P1 for the numerical limit and PURE-THEMAS-R4-P1 relies on PURE-THEMAS-R4 for policy context. How should these requirements be restructured to remove the mutual dependency?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "original_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+        "refined_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "three",
+            "explanation": "PURE-THEMAS-R4-P1 specifies that at most three units may be on simultaneously, which conflicts with PURE-THEMAS-R4-P2 requiring four heating units to be turned on simultaneously during a system-wide cold start.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4",
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "Requirement PURE-THEMAS-R4-P1 depends on PURE-THEMAS-R4, which in turn depends on PURE-THEMAS-R4-P1, forming a dependency cycle.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "e1f91d9770114a5eaf736ab349a198af",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 866,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f2a4cc8859084d59ab926d6b55e74a31",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1967,
+      "completion_tokens": 269
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "1bf82a05ac0b4a138df4edd1becaf5ef",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1274,
+      "completion_tokens": 238
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "29451bc188184caaad5759af8d53b831",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1266,
+      "completion_tokens": 237
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "fa27d701795b4d26b05b8968a22bc15d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1967,
+      "completion_tokens": 281
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "b9a80729f8764d9ca201e44c431438eb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1286,
+      "completion_tokens": 264
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "78b27ca877a742a4a596306180cd94f0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1266,
+      "completion_tokens": 237
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7c01b9fe4165440a824e0f8fba61d89c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1967,
+      "completion_tokens": 219
+    }
+  ],
+  "final_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R4-P1",
+    "original_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+    "refined_text": "The maximum number of heating or cooling units that may be on simultaneously shall be three.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13675
+}

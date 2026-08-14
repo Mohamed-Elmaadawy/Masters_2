@@ -1,0 +1,280 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R2",
+    "text": "ETCS shall be able to supervise train and shunting movements.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R2",
+    "system_type": "other",
+    "rationale": "ETCS (European Train Control System) is an embedded railway control and safety system supervising train operations, which does not represent a web application, mobile application, or AI/ML-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "ETCS shall be able to supervise train and shunting movements.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "non_atomic",
+            "span": "train and shunting movements",
+            "explanation": "The requirement combines the supervision of regular train movements and shunting movements into a single requirement statement. These represent distinct operational modes and testable behaviors.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "ETCS shall be able to supervise train and shunting movements.",
+            "explanation": "The requirement lacks the specific operational conditions, modes, or triggers required to define when and under what circumstances movement supervision is performed.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R2",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "The phrase 'train and shunting movements' in requirement PURE-ERTMS-R2 combines two distinct operational behaviors; should supervision of train movements and shunting movements be split into separate requirements?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In requirement PURE-ERTMS-R2 ('ETCS shall be able to supervise train and shunting movements.'), what specific operational conditions, modes, or triggers define when ETCS performs this supervision?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R2",
+        "original_text": "ETCS shall be able to supervise train and shunting movements.",
+        "refined_text": "ETCS shall supervise train and shunting movements.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "ETCS shall supervise train and shunting movements.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R2",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-ERTMS-R2",
+    "system_type": "other",
+    "techniques": [
+      "state_based",
+      "equivalence_partitioning"
+    ],
+    "rationale": "State-based testing applies because supervising train movements versus shunting movements involves distinct ETCS operational modes and state transitions (e.g., transition between Full Supervision mode and Shunting mode). Equivalence partitioning applies because the inputs/operational conditions are partitioned into distinct equivalence classes (train movements, shunting movements, and invalid/unsupervised movements) to ensure appropriate supervision rules are applied to each class."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-ERTMS-R2",
+    "test_cases": [
+      {
+        "id": "TC-13-PURE-ERTMS-R2-1",
+        "requirement_ids": [
+          "PURE-ERTMS-R2"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition from Full Supervision to Shunting Mode",
+        "preconditions": "ETCS On-board unit is powered on and in Full Supervision (FS) mode at standstill.",
+        "steps": [
+          "Driver selects Shunting mode request on DMI.",
+          "Verify ETCS checks conditions for transition into Shunting mode.",
+          "Confirm transition approval from RBC or local rules.",
+          "Observe ETCS mode display change to Shunting (SH) mode.",
+          "Initiate train movement in Shunting mode."
+        ],
+        "expected_result": "ETCS transitions state from FS to SH mode and enforces shunting supervision rules (e.g., maximum shunting speed limit)."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R2-2",
+        "requirement_ids": [
+          "PURE-ERTMS-R2"
+        ],
+        "technique_used": "state_based",
+        "title": "State transition exiting Shunting mode to Standstill",
+        "preconditions": "ETCS On-board unit is active in Shunting (SH) mode and the train is at standstill.",
+        "steps": [
+          "Driver inputs request to exit Shunting mode via DMI.",
+          "Verify ETCS validates standstill state.",
+          "Observe state transition from SH mode to Standstill (SB) mode."
+        ],
+        "expected_result": "ETCS successfully exits Shunting mode and enters Standstill mode, terminating shunting supervision rules and awaiting new operational selection."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R2-3",
+        "requirement_ids": [
+          "PURE-ERTMS-R2"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Supervision of standard train movement within Movement Authority limits",
+        "preconditions": "ETCS is in Full Supervision (FS) mode with a valid Movement Authority (MA) and speed profile.",
+        "steps": [
+          "Accelerate the train to run along the designated track within MA boundaries.",
+          "Maintain speed within permissible speed profile limits.",
+          "Observe ETCS DMI displays and speed supervision curves."
+        ],
+        "expected_result": "ETCS supervises the train movement continuously against MA limits without triggering warnings or automatic brake intervention while within permitted parameters."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R2-4",
+        "requirement_ids": [
+          "PURE-ERTMS-R2"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Supervision and intervention during speed exceedance in Shunting mode",
+        "preconditions": "ETCS is active in Shunting (SH) mode with a defined maximum permitted shunting speed limit.",
+        "steps": [
+          "Initiate shunting movement.",
+          "Accelerate train speed past the maximum permitted shunting speed ceiling.",
+          "Monitor ETCS response and DMI indicators."
+        ],
+        "expected_result": "ETCS detects speed exceedance during shunting movement, issues a speed warning, and commands brake application to bring speed back within shunting limits."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "b77d203b153443148dd50edf71111f90",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1010,
+      "completion_tokens": 62
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5e0330b71fc34afeb18fbfdb7fc37c96",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1620,
+      "completion_tokens": 184
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "bbde1a8ab95b4fc09bf88a13008e504d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1218,
+      "completion_tokens": 213
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "1e9e9c94b3df432f9c88186d5786e2e7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1276,
+      "completion_tokens": 201
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d4224d29f0894bdd8057916ce7edf6aa",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1622,
+      "completion_tokens": 24
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "6d43e9b2ed454a10b3ce2b5dc52a230d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1101,
+      "completion_tokens": 139
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "38065f6e0e1a4b1b8bcadef70fa89873",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1469,
+      "completion_tokens": 821
+    }
+  ],
+  "final_text": "ETCS shall supervise train and shunting movements.",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R2",
+    "original_text": "ETCS shall be able to supervise train and shunting movements.",
+    "refined_text": "ETCS shall supervise train and shunting movements.",
+    "revision_number": 1,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+        "user_confirms_resolved": true
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    2,
+    0
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ]
+  },
+  "total_tokens": 10960
+}

@@ -1,0 +1,127 @@
+{
+  "requirement_set": {
+    "doc_id": "scn-01-dep-pair",
+    "requirements": [
+      {
+        "id": "PURE-ERTMS-R7",
+        "text": "At Start Up, the on board equipment shall perform an automatic self-test.",
+        "source_doc_id": null
+      },
+      {
+        "id": "PURE-ERTMS-R8",
+        "text": "The DMI shall indicate the result of the self-test.",
+        "source_doc_id": null
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "scn-13-degraded",
+    "started_at": "2026-08-13T13:57:59.710450Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-nonexistent-model-x9",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "ceb5292b0bc1",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "5a1d82aa9cc4",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v1",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "degraded",
+  "errors": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "1a95081aac244cd4b7b1281b6dc172e3",
+      "kind": "fatal",
+      "message": "gemini returned HTTP 404: {'error': {'code': 404, 'message': 'models/gemini-nonexistent-model-x9 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+      "retry_count": 0
+    }
+  ],
+  "consistency_report": null,
+  "dependency_report": {
+    "doc_id": "scn-01-dep-pair",
+    "dependencies": [
+      {
+        "from_requirement_id": "PURE-ERTMS-R8",
+        "to_requirement_id": "PURE-ERTMS-R7",
+        "explanation": "The DMI can only indicate the result of the self-test if the automatic self-test defined in PURE-ERTMS-R7 is performed at Start Up to produce a result."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "1a95081aac244cd4b7b1281b6dc172e3",
+      "attempt_number": 1,
+      "result": "fatal_failure",
+      "error_message": "gemini returned HTTP 404: {'error': {'code': 404, 'message': 'models/gemini-nonexistent-model-x9 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.', 'status': 'NOT_FOUND'}}",
+      "prompt_tokens": null,
+      "completion_tokens": null
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "20fd52d16787469a82e73f509b7bb40c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 966,
+      "completion_tokens": 94
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-ERTMS-R7",
+    "PURE-ERTMS-R8"
+  ],
+  "document_stage_tokens": 1060
+}

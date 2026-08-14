@@ -1,0 +1,318 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R1",
+    "text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R1",
+    "system_type": "other",
+    "rationale": "The target requirement refers to the European Train Control System (ETCS), an onboard railway safety and control system. It is an embedded/specialized domain application, not a web application, mobile application, or machine-learning driven AI system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The term 'safely' is a vague adverb without a measurable threshold or defined criteria for evaluation.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "information",
+            "explanation": "The requirement does not specify what specific information ETCS must provide to the driver, nor the triggers or conditions under which it must be provided.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable criteria or operational safety parameters should replace the term 'safely' to allow verification?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What specific types of 'information' (e.g., speed limits, movement authority, system status) must ETCS provide to the driver, and under what triggers or conditions should this information be presented?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "original_text": "ETCS shall provide the driver with information to allow him to drive the train safely.",
+        "refined_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-ERTMS-R1-ISSUE-1",
+            "category": "incomplete",
+            "span": "[TBD: specific information types]",
+            "explanation": "The requirement contains TBD placeholders for information types and measurable safety parameters, making it incomplete and unable to be tested until filled.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The term 'safely' is a vague adverb without a defined, measurable threshold.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-ERTMS-R1-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "What specific information types and measurable safety parameters should replace the placeholders '[TBD: specific information types]' and '[TBD: measurable safety parameters]' in requirement PURE-ERTMS-R1?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific, measurable criteria or operational thresholds should be used to define driving the train 'safely' in requirement PURE-ERTMS-R1?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "original_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+        "refined_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-ERTMS-R1-ISSUE-1",
+            "category": "incomplete",
+            "span": "[TBD: specific information types]",
+            "explanation": "The requirement contains a TBD placeholder for the information types to be provided to the driver, rendering it incomplete.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "safely",
+            "explanation": "The term 'safely' is a vague quality attribute that lacks specific, measurable criteria.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-ERTMS-R1-ISSUE-2",
+            "category": "incomplete",
+            "span": "[TBD: measurable safety parameters]",
+            "explanation": "The specific safety parameters needed to evaluate compliance are marked as TBD, making the requirement incomplete.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "09a59a563c384f8cb570a685fba8e908",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1014,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "929fb7f0ae18480385bc1640248f5f59",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1624,
+      "completion_tokens": 165
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "bcf4aeb047c54bcab73078ae871ff645",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1203,
+      "completion_tokens": 135
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "0df9a6a6fe0844c9b17eb5c1e21255c5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1296,
+      "completion_tokens": 284
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e8d8ff5564794aa69a6f3cdc0114477f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1640,
+      "completion_tokens": 108
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "73c4b741cbb04be1b300c11e879f3268",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1226,
+      "completion_tokens": 153
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "393f2d87e1a74312a4d4c0abac318d33",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1312,
+      "completion_tokens": 301
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8f925e32d1ac4e0aba2770b9aaf41a7d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1640,
+      "completion_tokens": 225
+    }
+  ],
+  "final_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R1",
+    "original_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+    "refined_text": "ETCS shall provide the driver with information [TBD: specific information types] to allow the driver to drive the train safely [TBD: measurable safety parameters].",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    3
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "PURE-ERTMS-R1-ISSUE-1": [
+      2,
+      3
+    ],
+    "PURE-ERTMS-R1-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 12397
+}

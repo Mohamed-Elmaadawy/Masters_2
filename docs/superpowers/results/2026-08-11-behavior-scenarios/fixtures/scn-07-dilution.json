@@ -1,0 +1,37 @@
+{
+  "doc_id": "scn-07-dilution",
+  "requirements": [
+    {
+      "id": "PURE-ERTMS-R1",
+      "text": "ETCS shall provide the driver with information to allow him to drive the train safely."
+    },
+    {
+      "id": "PURE-ERTMS-R2",
+      "text": "ETCS shall be able to supervise train and shunting movements."
+    },
+    {
+      "id": "PURE-ERTMS-R3",
+      "text": "The current application level shall be indicated on the DMI."
+    },
+    {
+      "id": "PURE-ERTMS-R4",
+      "text": "The driver shall acknowledge the level transitions, if requested from trackside."
+    },
+    {
+      "id": "PURE-ERTMS-R5",
+      "text": "If the driver does not acknowledge after the transition the brake shall be applied."
+    },
+    {
+      "id": "PURE-ERTMS-R6",
+      "text": "If an ETCS equipped train passes a level transition to a line fitted with more than one level, the onboard shall switch to the highest level, according to the priority given by trackside, for which it is equipped."
+    },
+    {
+      "id": "PURE-ERTMS-R7",
+      "text": "At Start Up, the on board equipment shall perform an automatic self-test."
+    },
+    {
+      "id": "PURE-ERTMS-R8",
+      "text": "The DMI shall indicate the result of the self-test."
+    }
+  ]
+}

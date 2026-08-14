@@ -1,0 +1,17 @@
+{
+  "doc_id": "scn-06-cycle",
+  "requirements": [
+    {
+      "id": "SCN6-A-P",
+      "text": "The scheduler shall not dispatch a job until the resource monitor has reported the current load."
+    },
+    {
+      "id": "SCN6-B-P",
+      "text": "The resource monitor shall compute the current load only after the audit logger has recorded the previous dispatch decision."
+    },
+    {
+      "id": "SCN6-C-P",
+      "text": "The audit logger shall record a dispatch decision only once the scheduler has dispatched the corresponding job."
+    }
+  ]
+}

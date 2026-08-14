@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-03-conflict-native",
+  "requirements": [
+    {
+      "id": "ACTAPP-R1",
+      "text": "The patients should receive a notification to stand up and move around if they have been sitting for long."
+    },
+    {
+      "id": "ACTAPP-R2",
+      "text": "The patients should not receive notifications when busy."
+    }
+  ]
+}

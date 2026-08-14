@@ -1,0 +1,271 @@
+{
+  "requirement": {
+    "id": "ACTAPP-R2-AC1",
+    "text": "Accurately identifies when the user is driving.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-12-routing",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "ACTAPP-R2-AC1",
+    "system_type": "ai_system",
+    "rationale": "Identifying complex user activities such as driving from sensor data is a human activity recognition classification task where the system behavior relies on a machine-learning model to make accurate predictions."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Accurately identifies when the user is driving.",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Accurately",
+            "explanation": "The adverb 'Accurately' is vague and lacks a measurable performance threshold, such as a target accuracy percentage or precision/recall metric.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": null,
+            "explanation": "The requirement is missing an explicit actor (e.g., 'The system shall...') and the specific conditions or inputs under which driving activity must be detected.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement ACTAPP-R2-AC1, the term 'Accurately' is vague. What specific measurable performance threshold or metric (such as a target accuracy percentage or precision/recall metric) should be specified?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "Requirement ACTAPP-R2-AC1 ('Accurately identifies when the user is driving.') is missing an actor and operational context. What specific system component is responsible for this detection, and under what conditions or inputs should driving activity be detected?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "original_text": "Accurately identifies when the user is driving.",
+        "refined_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ACTAPP-R2-AC1-ISSUE-1",
+            "category": "non_verifiable",
+            "span": "[measurable accuracy threshold TBD]",
+            "explanation": "The requirement uses a placeholder '[measurable accuracy threshold TBD]' instead of a specific metric, leaving it without a defined pass/fail criterion.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ACTAPP-R2-AC1-ISSUE-1",
+            "issue_category": "non_verifiable",
+            "question_text": "What specific, measurable accuracy threshold or metric should replace the placeholder '[measurable accuracy threshold TBD]' in requirement ACTAPP-R2-AC1 to establish a verifiable pass/fail criterion for identifying when the user is driving?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "original_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+        "refined_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+      "quality_report": {
+        "requirement_id": "ACTAPP-R2-AC1",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ACTAPP-R2-AC1-ISSUE-1",
+            "category": "non_verifiable",
+            "span": "[measurable accuracy threshold TBD]",
+            "explanation": "The requirement contains a placeholder '[measurable accuracy threshold TBD]' instead of a defined numerical value, leaving the requirement without a concrete pass/fail criterion for testing.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "8a4b26bad4e740718786a2db65371d90",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 869,
+      "completion_tokens": 64
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "194a1ebc440b48fc811e42fe86b949ee",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1620,
+      "completion_tokens": 137
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "ae4c3f632c764eb484fc6df2a72fa9d1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1208,
+      "completion_tokens": 229
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "3456a2b68cb045d29b2ad88f55f26553",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1290,
+      "completion_tokens": 261
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "048f3b0fbe404836bf52c3515259a3a6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1626,
+      "completion_tokens": 110
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "311fe02a5b5143208f488b64099a74fb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1161,
+      "completion_tokens": 104
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "e7abeecf5b704200810ad49d4e7f8bb7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1210,
+      "completion_tokens": 171
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "9ff578363acd46c9b832acf72a646a86",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1626,
+      "completion_tokens": 114
+    }
+  ],
+  "final_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+  "final_requirement": {
+    "requirement_id": "ACTAPP-R2-AC1",
+    "original_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+    "refined_text": "The system identifies when the user is driving within [measurable accuracy threshold TBD].",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "ACTAPP-R2-AC1-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 11800
+}

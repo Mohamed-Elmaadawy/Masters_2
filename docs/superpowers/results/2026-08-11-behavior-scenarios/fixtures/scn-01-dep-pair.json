@@ -1,0 +1,13 @@
+{
+  "doc_id": "scn-01-dep-pair",
+  "requirements": [
+    {
+      "id": "PURE-ERTMS-R7",
+      "text": "At Start Up, the on board equipment shall perform an automatic self-test."
+    },
+    {
+      "id": "PURE-ERTMS-R8",
+      "text": "The DMI shall indicate the result of the self-test."
+    }
+  ]
+}

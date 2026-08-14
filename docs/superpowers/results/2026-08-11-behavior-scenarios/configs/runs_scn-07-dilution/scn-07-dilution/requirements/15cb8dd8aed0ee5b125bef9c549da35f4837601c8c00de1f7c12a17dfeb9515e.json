@@ -1,0 +1,151 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R3",
+    "text": "The current application level shall be indicated on the DMI.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R3",
+    "system_type": "other",
+    "rationale": "The target requirement refers to indicating application levels on a Driver Machine Interface (DMI) within the European Train Control System (ETCS/ERTMS). This is a specialized train control/embedded system rather than a web application, mobile app, or AI system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The current application level shall be indicated on the DMI.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R3",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-ERTMS-R3",
+    "system_type": "other",
+    "techniques": [
+      "state_based",
+      "equivalence_partitioning"
+    ],
+    "rationale": "State-based testing applies because ERTMS application levels represent distinct system operational states (e.g., Level 0, Level 1, Level 2, Level 3, Level NTC) whose transitions drive the indication on the Driver Machine Interface (DMI). Equivalence partitioning applies to test the discrete sets of valid application levels versus invalid or undefined level values."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-ERTMS-R3",
+    "test_cases": [
+      {
+        "id": "TC-13-PURE-ERTMS-R3-1",
+        "requirement_ids": [
+          "PURE-ERTMS-R3"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Verify DMI indication for all standard valid ERTMS application levels",
+        "preconditions": "System powered on, DMI connected and operational in static test mode.",
+        "steps": [
+          "Set the ERTMS on-board unit application level to Level 0.",
+          "Observe the level indication area on the DMI.",
+          "Sequentially change the system application level to Level 1, Level 2, Level 3, and Level NTC.",
+          "Observe the DMI display after each level selection."
+        ],
+        "expected_result": "The DMI accurately displays the corresponding symbol or text for Level 0, Level 1, Level 2, Level 3, and Level NTC as each level becomes active."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R3-2",
+        "requirement_ids": [
+          "PURE-ERTMS-R3"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Verify DMI behavior when receiving an invalid or unconfigured application level code",
+        "preconditions": "System powered on, test bench connected to feed custom level status messages to DMI.",
+        "steps": [
+          "Inject an invalid/undefined application level identifier (e.g., non-standard binary code 0xFF) into the DMI communication bus.",
+          "Observe the DMI display and level indicator field."
+        ],
+        "expected_result": "The DMI does not display a valid level icon/text and indicates a fault or invalid state display in accordance with safety display standards."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R3-3",
+        "requirement_ids": [
+          "PURE-ERTMS-R3"
+        ],
+        "technique_used": "state_based",
+        "title": "Verify DMI display updates dynamically during state transition from Level 1 to Level 2",
+        "preconditions": "Train is operating in ERTMS Level 1 state and DMI displays Level 1.",
+        "steps": [
+          "Cross a trackside balise group triggering a transition request from ERTMS Level 1 to Level 2.",
+          "Confirm and complete the level transition procedure.",
+          "Observe the DMI application level indicator during and after transition."
+        ],
+        "expected_result": "The DMI display dynamically updates the application level indication from Level 1 to Level 2 upon transition completion."
+      },
+      {
+        "id": "TC-13-PURE-ERTMS-R3-4",
+        "requirement_ids": [
+          "PURE-ERTMS-R3"
+        ],
+        "technique_used": "state_based",
+        "title": "Verify DMI display updates during level transition from Level 2 to Level NTC",
+        "preconditions": "Train is operating in ERTMS Level 2 state and DMI displays Level 2.",
+        "steps": [
+          "Initiate transition from Level 2 to Level NTC (National Train Control).",
+          "Acknowledge the level change request on the DMI if required.",
+          "Observe the level indicator on the DMI."
+        ],
+        "expected_result": "The DMI updates the indicated application level from Level 2 to Level NTC immediately upon successful transition."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "adcd26212fdd4a40805da369b0566124",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1009,
+      "completion_tokens": 75
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e4922ee3b1dc409eb81442f48953da1f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1619,
+      "completion_tokens": 24
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "8e6775e5bcba4803af0e137bd15ebb88",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1103,
+      "completion_tokens": 108
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "ffc79da4ec574547b5a3602a0e034f5b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1466,
+      "completion_tokens": 652
+    }
+  ],
+  "final_text": "The current application level shall be indicated on the DMI.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 6056
+}

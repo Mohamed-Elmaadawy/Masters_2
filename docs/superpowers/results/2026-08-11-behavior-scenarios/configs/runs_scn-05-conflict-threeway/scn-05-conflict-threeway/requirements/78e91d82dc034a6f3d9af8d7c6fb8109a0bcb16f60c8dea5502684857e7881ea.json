@@ -1,0 +1,388 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R4",
+    "text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-05-conflict-threeway",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R4",
+    "system_type": "other",
+    "rationale": "The requirement describes a physical HVAC/thermostat control system constraint regulating heating and cooling units, which is an embedded/cyber-physical system rather than a web, mobile, or AI application."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "a maximum number of heating or cooling units that can be on at any given time",
+            "explanation": "PURE-THEMAS-R4 mandates a maximum limit on active heating/cooling units, which (in conjunction with PURE-THEMAS-R4-P1 setting this limit to 3) conflicts with PURE-THEMAS-R4-P2 requiring four heating units to be powered on simultaneously during a cold start.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1",
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4 and PURE-THEMAS-R4-P1 have a circular dependency: testing enforcement of the maximum active unit limit in PURE-THEMAS-R4 depends on the concrete numerical value in PURE-THEMAS-R4-P1, which in turn depends on PURE-THEMAS-R4 to define the overarching policy.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "incomplete",
+            "span": "a maximum number",
+            "explanation": "The requirement specifies that a maximum limit must exist, but fails to specify the numerical value of that limit or the system component responsible for enforcing it.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "The phrase 'a maximum number of heating or cooling units that can be on at any given time' (set to 3 via PURE-THEMAS-R4-P1) conflicts with requirement PURE-THEMAS-R4-P2, which requires four heating units to be powered on simultaneously during a cold start. How should this contradiction between PURE-THEMAS-R4, PURE-THEMAS-R4-P1, and PURE-THEMAS-R4-P2 be resolved?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "circular_dependency",
+            "question_text": "There is a circular dependency between PURE-THEMAS-R4 (which sets the general limit policy) and PURE-THEMAS-R4-P1 (which defines the limit's value needed to test PURE-THEMAS-R4). How should PURE-THEMAS-R4 and PURE-THEMAS-R4-P1 be restructured or combined to decouple them?"
+          },
+          {
+            "id": "Q3",
+            "issue_id": "ISSUE-3",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the phrase 'a maximum number', what is the exact numerical limit of units allowed to be on simultaneously, and which system component is responsible for enforcing this limit?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q3",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "original_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "refined_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q3",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R4-ISSUE-1",
+            "category": "inconsistent",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4 mandates a maximum limit on active units, which conflicts with PURE-THEMAS-R4-P2 requiring four heating units to be turned on simultaneously during a cold start when PURE-THEMAS-R4-P1 limits active units to three.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1",
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4 depends on PURE-THEMAS-R4-P1 to define the concrete active unit limit, while PURE-THEMAS-R4-P1 depends on PURE-THEMAS-R4 as its governing policy requirement, creating a circular dependency.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "incomplete",
+            "span": "a maximum number",
+            "explanation": "The requirement states there shall be a maximum number of units that can be active, but fails to define the concrete value or threshold for this maximum limit.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-THEMAS-R4-ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "How should the maximum limit on active units be defined to resolve the conflict between requirement PURE-THEMAS-R4-P1 (which limits active units to three) and requirement PURE-THEMAS-R4-P2 (which requires four heating units to be on during a cold start)?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "circular_dependency",
+            "question_text": "How should PURE-THEMAS-R4 and related requirement PURE-THEMAS-R4-P1 be defined or structured to resolve the circular dependency between the governing policy and the active unit limit specification?"
+          },
+          {
+            "id": "Q3",
+            "issue_id": "ISSUE-3",
+            "issue_category": "incomplete",
+            "question_text": "What is the concrete numerical limit or threshold that should replace 'a maximum number' of heating or cooling units that can be on at any given time?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q3",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "original_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "refined_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q3",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R4-ISSUE-2",
+            "category": "inconsistent",
+            "span": "a maximum number of heating or cooling units that can be on at any given time",
+            "explanation": "PURE-THEMAS-R4 mandates a maximum limit on active units, which conflicts with PURE-THEMAS-R4-P2 requiring four heating units to be turned on simultaneously during a cold start when PURE-THEMAS-R4-P1 limits active units to three.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1",
+              "PURE-THEMAS-R4-P2"
+            ]
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "circular_dependency",
+            "span": null,
+            "explanation": "PURE-THEMAS-R4 depends on PURE-THEMAS-R4-P1 to determine the concrete numerical limit for testing, while PURE-THEMAS-R4-P1 depends on PURE-THEMAS-R4 as the base active units policy, creating a dependency cycle.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4-P1"
+            ]
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "incomplete",
+            "span": "a maximum number",
+            "explanation": "The requirement states that a maximum limit shall exist but lacks the specific limit value, actor, or conditions needed to test compliance directly.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c2e588a263d14e3b9afca20a03912b1b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 866,
+      "completion_tokens": 66
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "02db05ced2a94433b51de08703b5c1ad",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1964,
+      "completion_tokens": 425
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "cd5d256c5dd54deba76d2967acc711d9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1415,
+      "completion_tokens": 405
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "d5177ca9f9ce4b8296910a2163d86fa7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1339,
+      "completion_tokens": 274
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5d27f6f83ad643f1bf6dee3cf22c7771",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1964,
+      "completion_tokens": 374
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "505b33d0e09d418786f198606b41459e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1382,
+      "completion_tokens": 272
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "7894a78182534bd7be9bcd8009955be1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1339,
+      "completion_tokens": 256
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7155eeaff9be4e589e74531be7c93247",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1964,
+      "completion_tokens": 398
+    }
+  ],
+  "final_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R4",
+    "original_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+    "refined_text": "There shall be a maximum number of heating or cooling units that can be on at any given time.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "This is a structural dependency-graph issue spanning multiple requirements; it needs resolving at the document level (breaking the cycle), not by rewriting one requirement's wording in isolation.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q3",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    3,
+    3,
+    3
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-3": [
+      1,
+      2,
+      3
+    ],
+    "PURE-THEMAS-R4-ISSUE-1": [
+      2
+    ],
+    "PURE-THEMAS-R4-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 14703
+}

@@ -1,0 +1,343 @@
+{
+  "requirement": {
+    "id": "AUTOGEN-US2",
+    "text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-10-atomicity",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "AUTOGEN-US2",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding document context mentions web, mobile, or AI-specific features or environments, so the system type defaults to 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "reliable",
+            "explanation": "The term 'reliable' is a vague quality descriptor lacking a specific, measurable threshold (e.g., target uptime percentage, failure rate, or MTBF).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "efficient",
+            "explanation": "The term 'efficient' is a vague adjective without explicit quantitative criteria (e.g., maximum memory usage, execution time, or throughput limits).",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-3",
+            "category": "non_atomic",
+            "span": "reliable and efficient",
+            "explanation": "The requirement combines two separate quality attributes ('reliable' and 'efficient') into a single statement rather than defining them as independent testable requirements.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the requirement, what specific, measurable threshold (such as target uptime percentage, MTBF, or maximum failure rate) should be used to define the term 'reliable'?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the requirement, what specific quantitative criteria (such as execution time, memory limits, or throughput) should be used to define the term 'efficient'?"
+          },
+          {
+            "id": "Q3",
+            "issue_id": "ISSUE-3",
+            "issue_category": "non_atomic",
+            "question_text": "The phrase 'reliable and efficient' combines two separate quality attributes. Should this requirement be split into two independent requirements—one for reliability and one for efficiency?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q3",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable and efficient so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q3",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "AUTOGEN-US2-ISSUE-1",
+            "category": "non_atomic",
+            "span": "reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD])",
+            "explanation": "The requirement combines two distinct quality attributes (reliability and efficiency) into a single statement rather than specifying them as separate, atomic requirements.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "AUTOGEN-US2-ISSUE-2",
+            "category": "incomplete",
+            "span": "[reliability threshold, TBD]",
+            "explanation": "The requirement contains unresolved TBD placeholders ('[reliability threshold, TBD]' and '[efficiency threshold, TBD]'), leaving the criteria necessary for verification undefined.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "AUTOGEN-US2",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "AUTOGEN-US2-ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "The requirement combines two quality attributes in the phrase 'reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD])'. Should reliability and efficiency be split into two separate requirements?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "AUTOGEN-US2-ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "The phrase '[reliability threshold, TBD]' (along with '[efficiency threshold, TBD]') contains unresolved placeholders. What specific measurable thresholds or criteria should be defined for reliability and efficiency?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "AUTOGEN-US2",
+        "original_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+        "refined_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": [
+        "ISSUE-3"
+      ]
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+      "quality_report": {
+        "requirement_id": "AUTOGEN-US2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "AUTOGEN-US2-ISSUE-2",
+            "category": "incomplete",
+            "span": "[reliability threshold, TBD]",
+            "explanation": "The reliability criteria contains an unresolved TBD placeholder, making the condition incomplete and untestable.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "AUTOGEN-US2-ISSUE-3",
+            "category": "incomplete",
+            "span": "[efficiency threshold, TBD]",
+            "explanation": "The efficiency criteria contains an unresolved TBD placeholder, making the condition incomplete and untestable.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "AUTOGEN-US2-ISSUE-1",
+        "ISSUE-3"
+      ]
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "53d84d9a90cb4f16910de8021a7a97eb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 810,
+      "completion_tokens": 52
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "6273e96cf67d434da98732e504512ee7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1626,
+      "completion_tokens": 249
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "7adaee570c9f447dbcbafcd2df56a7f4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1288,
+      "completion_tokens": 279
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "791d552c62db43ddb7db72fbce2b83fe",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1373,
+      "completion_tokens": 377
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "aeebe9cf7dcb4e938617e9031022436c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1649,
+      "completion_tokens": 195
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "faad72b7881244c49a4d9f47016d5268",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1267,
+      "completion_tokens": 183
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "12552c1550c546c0ad58401e6df3bce3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1300,
+      "completion_tokens": 293
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7440b620789449009dd9bf220560947b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1661,
+      "completion_tokens": 236
+    }
+  ],
+  "final_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+  "final_requirement": {
+    "requirement_id": "AUTOGEN-US2",
+    "original_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+    "refined_text": "As a user, I want a product that is reliable (meeting [reliability threshold, TBD]) and efficient (meeting [efficiency threshold, TBD]) so that I can depend on it.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+        "user_confirms_resolved": true
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    3,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "ISSUE-3": [
+      1
+    ],
+    "AUTOGEN-US2-ISSUE-1": [
+      2
+    ],
+    "AUTOGEN-US2-ISSUE-2": [
+      2,
+      3
+    ],
+    "AUTOGEN-US2-ISSUE-3": [
+      3
+    ]
+  },
+  "total_tokens": 12838
+}

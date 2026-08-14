@@ -1,0 +1,253 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R6-P",
+    "text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-04-conflict-numeric",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "system_type": "other",
+    "rationale": "The requirement specifies temperature deviation tolerance logic for a thermostat system (THEMAS). There are no web, mobile, or machine learning indicators in the target requirement or surrounding context, making it an embedded/hardware or general backend system classification."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "permit a temperature deviation of up to 5 degrees Fahrenheit",
+            "explanation": "This requirement permits a temperature deviation of up to 5 degrees Fahrenheit before reporting a deviation error, which directly conflicts with PURE-THEMAS-R6 which specifies a maximum deviation threshold of 3 degrees Fahrenheit.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6-P states to 'permit a temperature deviation of up to 5 degrees Fahrenheit', which conflicts with PURE-THEMAS-R6 specifying a threshold of 3 degrees Fahrenheit. Should the maximum temperature deviation threshold before reporting an error be 3 degrees Fahrenheit or 5 degrees Fahrenheit?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "original_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "refined_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R6-P-ISSUE-1",
+            "category": "inconsistent",
+            "span": "up to 5 degrees Fahrenheit",
+            "explanation": "This requirement conflicts with PURE-THEMAS-R6, which states that the maximum allowed temperature deviation is 3 degrees Fahrenheit before an error is reported.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-THEMAS-R6-P-ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "Requirement PURE-THEMAS-R6-P specifies a permitted deviation of 'up to 5 degrees Fahrenheit', which conflicts with requirement PURE-THEMAS-R6 specifying a limit of 3 degrees Fahrenheit before reporting an error. Which temperature deviation threshold should be used?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "original_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "refined_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R6-P",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-THEMAS-R6-P-ISSUE-2",
+            "category": "inconsistent",
+            "span": "permit a temperature deviation of up to 5 degrees Fahrenheit",
+            "explanation": "This requirement allows a temperature deviation of up to 5 degrees Fahrenheit before reporting a deviation error, which conflicts with requirement PURE-THEMAS-R6 that limits the maximum allowed deviation to 3 degrees Fahrenheit.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R6"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "5b9ace6729d9410b93448cd2adb4895c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 837,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e9e1ff55264a4a23a8b4223a6b7dd968",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1715,
+      "completion_tokens": 154
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "88d3180b27e04612b6c4fa8f46696cf8",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1189,
+      "completion_tokens": 154
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "5b09e65472c045ea8b4eed3125ea8791",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1213,
+      "completion_tokens": 181
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "88cdc0c7c8ac4a04a89ded9e942e1b8f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1715,
+      "completion_tokens": 104
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "8cf81fc6ed2642e08533cd5204fb3e2a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1183,
+      "completion_tokens": 128
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "317b7209f9e14eed97c6d1c9554c2344",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1213,
+      "completion_tokens": 153
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "5e55b9897958453fbab10e9c70240318",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1715,
+      "completion_tokens": 120
+    }
+  ],
+  "final_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R6-P",
+    "original_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "refined_text": "The THEMAS system shall permit a temperature deviation of up to 5 degrees Fahrenheit for any thermostat before reporting a deviation error.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "PURE-THEMAS-R6-P-ISSUE-1": [
+      2
+    ],
+    "PURE-THEMAS-R6-P-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 11845
+}

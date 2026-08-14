@@ -1,0 +1,252 @@
+{
+  "requirement": {
+    "id": "PURE-THEMAS-R4-P2",
+    "text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-05-conflict-threeway",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-THEMAS-R4-P2",
+    "system_type": "other",
+    "rationale": "The requirement describes hardware/physical control behavior for heating units and zones during a system cold start within a thermal management system (THEMAS), which represents an embedded or physical control system rather than a web application, mobile app, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "turn on the heating unit in every one of the four zones at the same time",
+            "explanation": "Activating four heating units simultaneously during a system-wide cold start violates PURE-THEMAS-R4-P1, which sets the maximum limit of concurrently active units to three, as well as PURE-THEMAS-R4, which defines the maximum active units policy.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4",
+              "PURE-THEMAS-R4-P1"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "The requirement specifies to 'turn on the heating unit in every one of the four zones at the same time', which conflicts with PURE-THEMAS-R4 and PURE-THEMAS-R4-P1 that restrict the maximum number of concurrently active units to three. How should the cold start behavior be reconciled with PURE-THEMAS-R4 and PURE-THEMAS-R4-P1?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "original_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+        "refined_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "turn on the heating unit in every one of the four zones at the same time",
+            "explanation": "Activating four heating units simultaneously during a cold start contradicts PURE-THEMAS-R4 and PURE-THEMAS-R4-P1, which restrict the system to a maximum of three active heating units.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4",
+              "PURE-THEMAS-R4-P1"
+            ]
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "inconsistent",
+            "question_text": "The requirement states that the system shall 'turn on the heating unit in every one of the four zones at the same time', which contradicts PURE-THEMAS-R4 and PURE-THEMAS-R4-P1 limiting the system to a maximum of three active heating units. How should this conflict be resolved for cold starts?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "original_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+        "refined_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+      "quality_report": {
+        "requirement_id": "PURE-THEMAS-R4-P2",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "inconsistent",
+            "span": "turn on the heating unit in every one of the four zones at the same time",
+            "explanation": "Activating four heating units simultaneously during a cold start conflicts with PURE-THEMAS-R4 and PURE-THEMAS-R4-P1, which impose a maximum limit of three active units.",
+            "related_requirement_ids": [
+              "PURE-THEMAS-R4",
+              "PURE-THEMAS-R4-P1"
+            ]
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "1cf0b10f796a4375aa0de07c5d5b7a2c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 879,
+      "completion_tokens": 76
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "b0dcccc3cde14d5499e529cf4c921dce",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1910,
+      "completion_tokens": 140
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "ffffc909ac9645cebb145670579f0375",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1227,
+      "completion_tokens": 137
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f1b0f5fdef5047b6b3d62fd7fb834d10",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1219,
+      "completion_tokens": 164
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "57398f454d0c4249b21d85f418c92129",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1910,
+      "completion_tokens": 176
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "98a46c9e8c1a4fcc9ba6bf2620bfb9df",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1214,
+      "completion_tokens": 131
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "d5603efc212b4bae9dbe334cd5bed099",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1219,
+      "completion_tokens": 154
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ef4375fa497a4661ba15de6e1e157e89",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1910,
+      "completion_tokens": 125
+    }
+  ],
+  "final_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+  "final_requirement": {
+    "requirement_id": "PURE-THEMAS-R4-P2",
+    "original_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+    "refined_text": "During a system-wide cold start, the THEMAS system shall turn on the heating unit in every one of the four zones at the same time.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "This is a cross-requirement conflict, not something one requirement's clarifying answer can resolve in isolation; record the conflict as-is rather than have this answer silently pick a side.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12591
+}

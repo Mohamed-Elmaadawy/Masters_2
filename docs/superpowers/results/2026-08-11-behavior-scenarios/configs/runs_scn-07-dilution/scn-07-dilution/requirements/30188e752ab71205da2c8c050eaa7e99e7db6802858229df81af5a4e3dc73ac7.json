@@ -1,0 +1,269 @@
+{
+  "requirement": {
+    "id": "PURE-ERTMS-R5",
+    "text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-07-dilution",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-ERTMS-R5",
+    "system_type": "other",
+    "rationale": "The requirement specifies automated braking behavior for the European Train Control System (ETCS), an embedded railway control and safety system, which does not correspond to a web application, mobile app, or AI/ML-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "does not acknowledge after the transition",
+            "explanation": "The requirement does not specify a time limit or timeout period within which the driver must acknowledge after the transition, making the condition incomplete and untestable.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "vague_pronoun",
+            "span": "the transition",
+            "explanation": "The phrase 'the transition' uses a definite reference to a transition whose identity or type is not defined within the requirement's own text.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In the phrase \"does not acknowledge after the transition\", what is the specific time limit or timeout period within which the driver must provide acknowledgement before the brake is applied?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "vague_pronoun",
+            "question_text": "To what specific transition or type of transition does the phrase \"the transition\" refer?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The referent is not named explicitly nearby in the document; treat the pronoun as needing an explicit noun substituted once the correct referent is confirmed by whoever owns the requirement -- guessing the referent here risks silently attributing the wrong meaning.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "does not acknowledge after the transition",
+            "explanation": "The requirement does not specify a time limit or response window (e.g., within a specific number of seconds) for the driver to acknowledge the transition before the brake is applied.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the phrase \"does not acknowledge after the transition\", what is the specific time limit or response window within which the driver must acknowledge the transition before the brake is applied?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "If the driver does not acknowledge after the transition the brake shall be applied.",
+      "quality_report": {
+        "requirement_id": "PURE-ERTMS-R5",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "does not acknowledge after the transition",
+            "explanation": "The requirement lacks a defined time limit or timeout condition (e.g., 'within X seconds') for the driver's acknowledgment, making the condition incomplete and untestable.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c9f3fee772e44c829d87afed6a1668cb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1012,
+      "completion_tokens": 67
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "461b5584f9094fb4b5cb2ce5a261824e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1705,
+      "completion_tokens": 122
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "88fdbdacc2e64a088c1a1e4149a73e78",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1216,
+      "completion_tokens": 184
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "7721d266f6cf40b892a29e9d5b52a043",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1283,
+      "completion_tokens": 252
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "399a6f6db781437299e135c10b8fa104",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1705,
+      "completion_tokens": 78
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "eb58fb6ddcde4b82be7e3375dcc982ee",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1156,
+      "completion_tokens": 80
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "6ea148cac68340feb3aee03f75120e3d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1212,
+      "completion_tokens": 170
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "b2592bb91ee84dab977715d1300d3984",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1705,
+      "completion_tokens": 85
+    }
+  ],
+  "final_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+  "final_requirement": {
+    "requirement_id": "PURE-ERTMS-R5",
+    "original_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "refined_text": "If the driver does not acknowledge after the transition the brake shall be applied.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ]
+  },
+  "total_tokens": 12032
+}

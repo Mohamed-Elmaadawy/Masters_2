@@ -1,0 +1,134 @@
+{
+  "requirement": {
+    "id": "HEY-REQ2",
+    "text": "The audit report shall include the total number of recycled parts used in the estimate.",
+    "source_doc_id": null
+  },
+  "run_id": "scn-02-null-control",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "HEY-REQ2",
+    "system_type": "other",
+    "rationale": "The requirement specifies generating an audit report containing recycled parts data, which describes a standard reporting/data feature without specific web, mobile, or machine-learning signals in either the requirement or surrounding context."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The audit report shall include the total number of recycled parts used in the estimate.",
+      "quality_report": {
+        "requirement_id": "HEY-REQ2",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "HEY-REQ2",
+    "system_type": "other",
+    "techniques": [
+      "equivalence_partitioning",
+      "boundary_value_analysis"
+    ],
+    "rationale": "The requirement involves outputting a numeric count ('total number of recycled parts used in the estimate'). Following the guidance for numeric ranges and thresholds, equivalence partitioning and boundary value analysis apply to test valid and invalid numeric partitions, such as zero recycled parts (boundary), a positive integer count, and upper limits."
+  },
+  "test_plan": {
+    "requirement_id": "HEY-REQ2",
+    "test_cases": [
+      {
+        "id": "TC-8-HEY-REQ2-1",
+        "requirement_ids": [
+          "HEY-REQ2"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Audit report displays zero recycled parts count when no recycled parts are used",
+        "preconditions": "An estimate exists containing 0 recycled parts (only new/OEM parts are included).",
+        "steps": [
+          "Generate the audit report for the estimate with zero recycled parts.",
+          "Review the audit report section detailing part counts."
+        ],
+        "expected_result": "The audit report displays a total recycled parts count of 0."
+      },
+      {
+        "id": "TC-8-HEY-REQ2-2",
+        "requirement_ids": [
+          "HEY-REQ2"
+        ],
+        "technique_used": "boundary_value_analysis",
+        "title": "Audit report displays correct count for single recycled part boundary",
+        "preconditions": "An estimate exists containing exactly 1 recycled part.",
+        "steps": [
+          "Generate the audit report for the estimate.",
+          "Verify the total number of recycled parts reported."
+        ],
+        "expected_result": "The audit report displays a total recycled parts count of 1."
+      },
+      {
+        "id": "TC-8-HEY-REQ2-3",
+        "requirement_ids": [
+          "HEY-REQ2"
+        ],
+        "technique_used": "equivalence_partitioning",
+        "title": "Audit report includes accurate count for a typical positive number of recycled parts",
+        "preconditions": "An estimate exists containing a representative selection of 7 recycled parts and 5 OEM parts.",
+        "steps": [
+          "Generate the audit report for the multi-part estimate.",
+          "Locate the recycled parts summary metric in the audit report.",
+          "Compare the reported total count against the 7 recycled line items in the estimate."
+        ],
+        "expected_result": "The audit report accurately displays a total recycled parts count of 7."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "bbe126d0bf7043d195bec6e516babdc9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 805,
+      "completion_tokens": 59
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "98d5ca479d874235823a01c110b7736d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1620,
+      "completion_tokens": 17
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "608cf502175741dd85a735fea0a91fdc",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1104,
+      "completion_tokens": 93
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "0269bf8cdf87445fa170ecfe7c96ede9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1451,
+      "completion_tokens": 360
+    }
+  ],
+  "final_text": "The audit report shall include the total number of recycled parts used in the estimate.",
+  "final_requirement": null,
+  "used_human_override": false,
+  "issues_per_round": [
+    0
+  ],
+  "issue_history": {},
+  "total_tokens": 5509
+}
