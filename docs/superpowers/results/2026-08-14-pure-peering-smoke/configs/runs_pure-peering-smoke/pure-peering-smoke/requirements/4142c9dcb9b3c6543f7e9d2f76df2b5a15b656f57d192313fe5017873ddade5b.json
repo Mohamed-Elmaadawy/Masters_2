@@ -1,0 +1,279 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0021",
+    "text": "Effective content delivery is ensured through SLA satisfaction.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0021",
+    "system_type": "web",
+    "rationale": "The requirement refers to content delivery within a CDN and Web server context, as established by surrounding requirements mentioning Web servers and CDN peers, making this part of a web-based system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Effective content delivery is ensured through SLA satisfaction.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0021",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Effective",
+            "explanation": "The adjective 'Effective' is vague and lacks a measurable threshold or quantitative metric for testing.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Effective content delivery is ensured through SLA satisfaction.",
+            "explanation": "The requirement is passive and incomplete, lacking a defined actor, trigger, and specific SLA metrics or conditions necessary to test compliance.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0021",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-PEERING-0021, the term \"Effective\" in \"Effective content delivery is ensured through SLA satisfaction\" is vague. What specific measurable metrics or performance thresholds should be used to define effective content delivery?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In requirement PURE-PEERING-0021 (\"Effective content delivery is ensured through SLA satisfaction.\"), which actor or system component is responsible for ensuring delivery, and what specific SLA metrics, conditions, or triggers must be met to test compliance?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0021",
+        "original_text": "Effective content delivery is ensured through SLA satisfaction.",
+        "refined_text": "Effective content delivery is ensured through SLA satisfaction.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Effective content delivery is ensured through SLA satisfaction.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0021",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Effective",
+            "explanation": "The term 'Effective' is a vague adjective with no measurable threshold or metric defining what constitutes effective content delivery.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0021",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-PEERING-0021, the term 'Effective' in 'Effective content delivery' is vague. What specific measurable metrics or criteria should be used to define 'Effective' content delivery?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0021",
+        "original_text": "Effective content delivery is ensured through SLA satisfaction.",
+        "refined_text": "Effective content delivery is ensured through SLA satisfaction.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Effective content delivery is ensured through SLA satisfaction.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0021",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Effective",
+            "explanation": "The term 'Effective' is a vague adjective with no measurable quantitative threshold.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0021-ISSUE-1",
+            "category": "incomplete",
+            "span": "SLA satisfaction",
+            "explanation": "The requirement fails to specify which SLA, specific performance metrics, actors, or conditions define SLA satisfaction.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "48c675d6fe2645aebe7e9ebd9176698d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1422,
+      "completion_tokens": 66
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "98863ad231354316bd2cef572ffc86ba",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 111
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "44a58f102e9f4f20a212ef8d9413b9a6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1198,
+      "completion_tokens": 195
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "ae4b10e6a1e641ffbaa2ac094be41c75",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 214
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "30aaa1f74c204cfab600985603070368",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 75
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "6aad91aed6a149ae8f224e8bf2926407",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1136,
+      "completion_tokens": 107
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "c98ecfecc1f141fda2ba7ddb8a19a203",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1383,
+      "completion_tokens": 141
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f38491fc08634f8c997ff1c9284e8e7b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 132
+    }
+  ],
+  "final_text": "Effective content delivery is ensured through SLA satisfaction.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0021",
+    "original_text": "Effective content delivery is ensured through SLA satisfaction.",
+    "refined_text": "Effective content delivery is ensured through SLA satisfaction.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    1,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1
+    ],
+    "PURE-PEERING-0021-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 12877
+}

@@ -1,0 +1,282 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0006",
+    "text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0006",
+    "system_type": "web",
+    "rationale": "The requirement explicitly specifies interaction protocols involving a Web Server ('Web Server-SR') as part of a web-based content delivery and peering system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0006",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+            "explanation": "The requirement states that the interaction protocol is defined, but fails to specify the actor, trigger, conditions, or behavioral protocol details necessary to test the interaction between Web Server-SR and SR-mediator.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0006",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the requirement 'The interaction protocol between Web Server-SR, SR-mediator is defined.', what specific protocol, triggers, conditions, and behavioral sequence should govern the interaction between Web Server-SR and SR-mediator?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0006",
+        "original_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "refined_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0006",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-PEERING-0006-ISSUE-1",
+            "category": "non_verifiable",
+            "span": "is defined",
+            "explanation": "The statement 'is defined' provides no specific protocol rules, parameters, or pass/fail criteria to objectively test or verify whether the interaction protocol meets compliance.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+            "explanation": "The requirement lacks essential context, such as the actor responsible, triggers, operational conditions, or functional details of the interaction protocol required to design test cases.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0006",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-PEERING-0006-ISSUE-1",
+            "issue_category": "non_verifiable",
+            "question_text": "What specific protocol standards, message parameters, or pass/fail criteria should be specified instead of 'is defined' to allow objective verification?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "What specific functional details, responsible actors, triggers, and operational conditions define the interaction protocol between Web Server-SR and SR-mediator in 'The interaction protocol between Web Server-SR, SR-mediator is defined.'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0006",
+        "original_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "refined_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0006",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+            "explanation": "The requirement is missing an explicit actor, trigger, and specific protocol details or conditions required to implement and test the interaction.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0006-ISSUE-1",
+            "category": "non_verifiable",
+            "span": "is defined",
+            "explanation": "Stating that the interaction protocol 'is defined' provides no measurable behaviors or concrete pass/fail criteria to verify system compliance.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "a005ccc8be574605bf4ab0e4311f9a8a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1429,
+      "completion_tokens": 54
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8e3a21ea833e4876a21bf609db051a48",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1754,
+      "completion_tokens": 131
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "f8d5f4a4e1664e85b6adf63d5a2f5372",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1173,
+      "completion_tokens": 106
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f69c559631ab47b5b687b51b2e0bd124",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1381,
+      "completion_tokens": 136
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "cf67a8be50364a7d96b7e5a72f5a37ae",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1754,
+      "completion_tokens": 194
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "934d1a8d34b64e479a76d7338f42e1b5",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1241,
+      "completion_tokens": 218
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "9dd45c9edc7a462e969f45bdc703329d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1450,
+      "completion_tokens": 201
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "9d97f43783c74a3fa6d1d4ea5d264b94",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1754,
+      "completion_tokens": 182
+    }
+  ],
+  "final_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0006",
+    "original_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+    "refined_text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No pass/fail criterion exists for this in the source document; without a measurable acceptance threshold this cannot be made verifiable by answering a clarifying question -- it needs a threshold added by whoever owns the requirement, not invented here.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "PURE-PEERING-0006-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13158
+}

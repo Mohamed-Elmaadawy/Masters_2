@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0017",
+    "text": "There is procedure to perform short-term negotiation.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0017",
+    "system_type": "other",
+    "rationale": "The requirement describes a short-term negotiation procedure within a CDN peering and resource provisioning architecture (plain backend/networking infrastructure), which does not constitute a web application, mobile app, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "There is procedure to perform short-term negotiation.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0017",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "short-term",
+            "explanation": "The term 'short-term' is a vague qualifier without a specific, measurable time frame or duration threshold.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "There is procedure to perform short-term negotiation.",
+            "explanation": "The requirement is stated declaratively and lacks an explicit actor (e.g., system component) as well as the trigger, conditions, or input/output criteria necessary to test the procedure.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0017",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-PEERING-0017, what specific time frame or maximum duration threshold defines 'short-term' for the negotiation procedure?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In requirement PURE-PEERING-0017 ('There is procedure to perform short-term negotiation.'), what actor or system component is responsible for executing this procedure, and what are the specific triggers, operational conditions, and expected inputs/outputs?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0017",
+        "original_text": "There is procedure to perform short-term negotiation.",
+        "refined_text": "There is procedure to perform short-term negotiation.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "There is procedure to perform short-term negotiation.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0017",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "short-term",
+            "explanation": "The qualifier 'short-term' is vague and lacks a measurable duration or timeframe threshold.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "There is procedure to perform short-term negotiation.",
+            "explanation": "The requirement fails to specify the actor responsible for executing the procedure, as well as the triggers, inputs, and operational conditions necessary to perform and test the negotiation.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0017",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-PEERING-0017, what specific duration, timeframe, or measurable threshold defines 'short-term' for the negotiation procedure?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "In requirement PURE-PEERING-0017 ('There is procedure to perform short-term negotiation.'), who is the actor responsible for executing the procedure, and what are the specific triggers, inputs, and operational conditions required?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0017",
+        "original_text": "There is procedure to perform short-term negotiation.",
+        "refined_text": "There is procedure to perform short-term negotiation.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "There is procedure to perform short-term negotiation.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0017",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "short-term",
+            "explanation": "The term 'short-term' is vague and lacks a measurable duration or specific threshold.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "There is procedure to perform short-term negotiation.",
+            "explanation": "The requirement lacks a clear actor responsible for executing the procedure, as well as specific triggers and inputs/outputs necessary to test it.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "932d2c6402d34d1faa8a65a57cce7634",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1423,
+      "completion_tokens": 66
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "3b3cb0c902c34165be923d66f47eb7e7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1807,
+      "completion_tokens": 188
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "f6a422b73e7543e8a9e040d585506ed9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1219,
+      "completion_tokens": 218
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "1495c9b40c0c4db3afad2e7f427861b3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1457,
+      "completion_tokens": 202
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d78b54c53f2f44e88c9bdb59f6b798be",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1807,
+      "completion_tokens": 178
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "50bbf1db76264bd59da2914fac6afc02",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1209,
+      "completion_tokens": 156
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "14df122939cd48d8997e745d8b7e7d6b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1457,
+      "completion_tokens": 202
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "632fc54d96e64498a9bc69e2429dc705",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1807,
+      "completion_tokens": 115
+    }
+  ],
+  "final_text": "There is procedure to perform short-term negotiation.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0017",
+    "original_text": "There is procedure to perform short-term negotiation.",
+    "refined_text": "There is procedure to perform short-term negotiation.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13511
+}

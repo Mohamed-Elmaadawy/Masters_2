@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0015",
+    "text": "Malicious requests are identified and acted upon.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0015",
+    "system_type": "web",
+    "rationale": "The requirement specifies identifying and acting upon malicious requests within a web-based content delivery network (CDN) and web server peering architecture, as indicated by references to web servers, content replication, and CDN peer negotiation in the document."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Malicious requests are identified and acted upon.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0015",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The adjective 'Malicious' is vague and lacks measurable criteria or rules defining what qualifies a request as malicious.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "acted upon",
+            "explanation": "The requirement is missing an actor and does not specify what specific action (e.g., blocking, logging, or alerting) must be taken when a request is identified.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0015",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "The requirement uses the term 'Malicious'; what specific criteria, rules, or conditions should be used to define and identify a request as malicious?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "The requirement states that requests are 'acted upon'; which system or component is responsible for taking action, and what specific actions (e.g., blocking, logging, alerting) must be taken when a malicious request is identified?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0015",
+        "original_text": "Malicious requests are identified and acted upon.",
+        "refined_text": "Malicious requests are identified and acted upon.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Malicious requests are identified and acted upon.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0015",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The term \"Malicious\" is vague and lacks a precise, measurable definition or clear threshold for what constitutes a malicious request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "acted upon",
+            "explanation": "The requirement fails to specify what action the system must take when a request is identified (e.g., blocking, dropping, alerting, or logging), making the expected response incomplete and untestable.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0015",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should 'Malicious' requests be precisely defined or detected (e.g., specific attack signatures, malformed headers, or rate limit violations) in requirement PURE-PEERING-0015?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "What specific action or set of actions (e.g., blocking, dropping, alerting, or logging) must the system perform when a request is identified, rather than the general phrase 'acted upon' in requirement PURE-PEERING-0015?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0015",
+        "original_text": "Malicious requests are identified and acted upon.",
+        "refined_text": "Malicious requests are identified and acted upon.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Malicious requests are identified and acted upon.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0015",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The adjective 'Malicious' is vague and lacks a measurable threshold or precise criteria defining what constitutes a malicious request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "acted upon",
+            "explanation": "The requirement is incomplete as it does not specify the specific action to be taken when a malicious request is detected (e.g., blocking, logging, or dropping the request) or the responsible actor.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "c787ec443c414c8fb869849ccdd3821d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1422,
+      "completion_tokens": 75
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f35d61e420be44b18b5ab1d332074aa4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 176
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "20b69493b9b8445c8b2c51eb9bbb378a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1206,
+      "completion_tokens": 150
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "d5b67e3a233c4165b3b95d2d1dbcc8fc",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 200
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "6b8c1b8b2ced4ab5af2a4daa341a224c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 142
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "b095fe2634074ec781535ee709e4f1b4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1214,
+      "completion_tokens": 192
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "bd2facfbfe7f4a5b91f494833d9d43d9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 214
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "e8bf7c13bf66419ba7da12d1a8b6aa01",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 124
+    }
+  ],
+  "final_text": "Malicious requests are identified and acted upon.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0015",
+    "original_text": "Malicious requests are identified and acted upon.",
+    "refined_text": "Malicious requests are identified and acted upon.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13268
+}

@@ -26,6 +26,57 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-14 — Smoke test: pure-peering (24 reqs) through the full pipeline, clean
+
+**Changed:** new `docs/superpowers/results/2026-08-14-pure-peering-smoke/` —
+`configs/pure-peering-smoke.yaml` (copy of `scn-04-conflict-numeric-v2.yaml`'s shape,
+only `run_id`/`output_dir` changed), `PREDICTIONS.md` (written and committed before the
+run, commit `6a16957`), `RESULTS.md`, and the run directory itself
+(`configs/runs_pure-peering-smoke/pure-peering-smoke/`, `document.json` +
+24 `requirements/*.json`). No code, prompt, schema or config-shape change — this is a
+run, not a modification.
+
+**Why:** confirm a freshly extracted PURE document flows through the pipeline at all
+before any Q1/Q2 evaluation work touches it (the task that requested this). This is a
+smoke test, not an evaluation result — n=1, no ground truth, not blinded, and not part
+of `docs/superpowers/plans/2026-08-14-evaluation-design.md`'s design. Ran
+`datasets/pure-extracted/pure-peering.json` (24 requirements, ~700 tokens of
+consistency-checker payload) — 3x the requirement count and ~2.75x the document-level
+payload of the largest document run through this pipeline before today
+(`themas-fischbach2022`, 8 requirements). PAID Gemini key, `gemini-3.6-flash`,
+temperature 1.0, v2 prompts as currently committed, scripted reasoned-decline answer
+policy, via `paid_gemini_driver.py` unchanged (same driver, same policy, as every
+comparable real run to date).
+
+**Impact:** ran clean end to end. Exit code 0. **Zero schema-validation failures,
+zero transport failures, zero id-mismatches** across 192 real API calls (24
+classifier, 70 quality_checker, 46 refiner_questioner, 46 refiner_rewriter, 2
+strategy_selector, 2 test_generator, 2 document-level) and 310,542 tokens — every call
+succeeded on its first attempt. Outcome mix: 22/24 `cap_stopped`, 2/24 `completed`, 0
+`error`. Full prediction-vs-actual comparison in `RESULTS.md`: 2 of 6 pre-registered
+predictions held (duplicate texts never flagged `inconsistent`; id agreement clean
+across all 24), 1 held loosely (outcome mix), 3 refuted (first-pass Quality Checker
+clean rate 0/24, not the predicted 2-5/24; token/attempt cost above the predicted
+range on both counts; Classifier gave `web` to 7/24, not the predicted near-total
+`other`).
+
+**Two findings that reach beyond this smoke test, both flagged in `RESULTS.md` rather
+than acted on here:** (1) the Classifier's 7/24 `web` result is new evidence against
+Known Limitation 9's premise ("every real run classified `other`") — that premise as
+currently worded in CLAUDE.md/`DESIGN_NOTES.md` is now measurably wrong and needs
+correcting, separately from this run. (2) `PURE-PEERING-0012`'s `TestPlan` has a test
+case citing dependency `PURE-PEERING-0013` (`dependency_report` independently reports
+`0013 -> 0012`), with the test_strategy's own rationale naming the dependency by id —
+direct evidence the Test Generator uses dependency context, making n=2 (was n=1) on
+the open question Known Limitations 1/6/7 attach to. Neither finding is resolved here;
+both are handed off as leads, not conclusions.
+
+**Not scaled up.** Per instructions, this smoke test stops here rather than
+progressing to `cctns` (115 reqs) or `eirene_fun` (583 reqs, ~88x anything run) without
+first discussing the results above.
+
+---
+
 ## 2026-08-14 — Extractor hardening: sibling-id guard, newline stability, corpus unchanged
 
 **Changed:** `tools/extract_pure_xml.py` -- `strip_id_prefix` takes a third argument,

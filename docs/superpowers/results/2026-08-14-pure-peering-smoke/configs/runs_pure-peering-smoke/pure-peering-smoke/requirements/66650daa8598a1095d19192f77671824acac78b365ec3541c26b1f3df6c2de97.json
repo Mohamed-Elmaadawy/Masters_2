@@ -1,0 +1,282 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0019",
+    "text": "Primary CDN has already acquired sufficient external resources.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0019",
+    "system_type": "other",
+    "rationale": "The requirement specifies condition criteria for a Content Delivery Network (CDN) peering infrastructure and backend resource allocation. It does not describe a user-facing web application, mobile application, or ML-driven AI system, fitting into backend network infrastructure ('other')."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Primary CDN has already acquired sufficient external resources.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0019",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "sufficient",
+            "explanation": "The term 'sufficient' is vague and lacks a measurable or quantifiable threshold defining what constitutes adequate external resources.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0019",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In requirement PURE-PEERING-0019, 'Primary CDN has already acquired sufficient external resources.', what specific, quantifiable criteria or threshold defines what constitutes 'sufficient' external resources?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0019",
+        "original_text": "Primary CDN has already acquired sufficient external resources.",
+        "refined_text": "Primary CDN has already acquired sufficient external resources.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Primary CDN has already acquired sufficient external resources.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0019",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "sufficient",
+            "explanation": "The term 'sufficient' is a vague adjective without a measurable threshold or defined quantity.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0019-ISSUE-1",
+            "category": "incomplete",
+            "span": "Primary CDN has already acquired sufficient external resources.",
+            "explanation": "The statement reads as an assumption or descriptive state rather than a verifiable requirement, missing an actor, trigger, or action specifying required system behavior.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0019",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the requirement 'Primary CDN has already acquired sufficient external resources.', what specific measurable metric, threshold, or quantity defines 'sufficient' external resources?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "PURE-PEERING-0019-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "The requirement text 'Primary CDN has already acquired sufficient external resources.' reads as a descriptive statement rather than an active requirement. What specific action, actor, condition, or trigger should be defined to specify the expected system behavior?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0019",
+        "original_text": "Primary CDN has already acquired sufficient external resources.",
+        "refined_text": "Primary CDN has already acquired sufficient external resources.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Primary CDN has already acquired sufficient external resources.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0019",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "sufficient",
+            "explanation": "The word 'sufficient' is a vague adjective that lacks a specific, measurable threshold or quantity.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0019-ISSUE-1",
+            "category": "incomplete",
+            "span": "Primary CDN has already acquired sufficient external resources.",
+            "explanation": "The requirement is missing a trigger, clear action, or normative statement ('shall') defining what system behavior is required or under what conditions it occurs.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "2feaa602f9cc442b8260a3d3ccbc9f9f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1422,
+      "completion_tokens": 79
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "97fe9e097c8c4a86a6b2f34c6102a50a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 82
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "6dd5e871cde94e45a594006d92261996",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1135,
+      "completion_tokens": 90
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "b9558e7f008d4d05926a595f1f1a2a57",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1383,
+      "completion_tokens": 141
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "dab3eba933ef46a1be040f95f31c8bf4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 170
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "faaf0c9ead1b4c909eb53685327fde25",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1210,
+      "completion_tokens": 218
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "199dfaf59a9b4c99b82229d807a8c956",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 200
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "c5eced9dd73846f6b123ea1807bd1846",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 132
+    }
+  ],
+  "final_text": "Primary CDN has already acquired sufficient external resources.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0019",
+    "original_text": "Primary CDN has already acquired sufficient external resources.",
+    "refined_text": "Primary CDN has already acquired sufficient external resources.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "PURE-PEERING-0019-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12959
+}
