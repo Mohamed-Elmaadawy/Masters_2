@@ -185,6 +185,67 @@ These block extraction and should be settled first:
 5. **Re-run the extraction-corruption scan** on whatever the extractor emits. The 2026-08-14
    scan covered the committed XML subset only; the 79-document corpus is unmeasured.
 
+### The annotated XML subset makes extraction easy — checked 2026-08-14
+
+`datasets/requirements-xml/XMLZIPFile/` is not raw prose. Six of its 18 documents carry explicit
+`<req id="...">` elements — **1,018 requirements** — in this shape:
+
+```xml
+<req id="3.1.1.1a">
+  <text_body>ETCS shall provide the driver with information to allow him to drive the train safely.</text_body>
+  <modifier>M</modifier>
+</req>
+```
+
+So corpus decision 1 above ("what counts as a requirement") **does not need to be invented**:
+PURE's own annotators made it, which is citable and far more defensible than a rule of this
+project's devising. Decision 2 (deterministic vs. LLM extraction) collapses too — a deterministic
+XML parse with zero inference, so no circularity and no loss rate to measure.
+
+Per document: `2007-eirene_fun_7-2` 583, `2007-ertms` 199 (**spent**), `0000 - cctns` 120,
+`0000 - gamma j` 60, `2008 - keepass` 32, `2008 - peering` 24. Excluding the spent documents
+leaves **819 requirements across five untouched documents** of different domains — roughly
+sixteen times what the evaluation needs.
+
+The 79-document full corpus (PDF/DOC/HTML) stays hard and is probably unnecessary. Start here.
+
+### Glossary data exists, but do not wire it up yet
+
+The same files carry **171 `<glossary_item>`** entries as `<term>`/`<meaning>` pairs
+(`2007-ertms` 79, `2007-eirene_fun_7-2` 37, `0000 - gamma j` 32, `1998 - themas` 23). That is
+the machine-readable definition source Known Limitation 5's proposed pre-pass would have had to
+reconstruct with heuristics.
+
+**It is nonetheless deferred, on evidence.** S9 in the 2026-08-13 suite settled the gate question
+that limitation 5 set: across three rounds on `THEMAS-REQ-E`, `LO = T_LT` was **never flagged** —
+not mis-tagged, not raised at all. The Quality Checker does not raise undefined-term issues, so
+supplying it definitions would inform a judgement it is not making; making the data useful would
+require the new `IssueCategory` rejected earlier for lack of grounding. THEMAS's 23 glossary terms
+are also data-flow names ("H/C Request", "Overtemp Values") and do not include `LO`/`LT`/`UO`/`UT`,
+which are defined in SRS-010's prose — so the glossary would not have helped that example anyway.
+What the checker actually struggles with there is pronoun referents ("these limits", "this
+condition", "this module"), which a term dictionary does not resolve.
+
+**The measurement that would justify it, and it is free.** The untouched documents are rail
+(`eirene_fun`, 583 requirements, 37 glossary terms) and telecom/records (`gamma j`, 60/32) — dense
+with domain vocabulary a general model may not recognise. The plausible benefit is not *detecting*
+undefined terms but *suppressing false flags on defined ones*. So:
+
+1. extract those documents (needed anyway);
+2. run a ~20-requirement sample with **no** glossary wired in;
+3. inspect the `ambiguous_term` / `vague_pronoun` flags: are glossary-defined terms being flagged?
+
+If yes, the schema change is justified with a count behind it. If no, it is not needed. Either way
+the runs are part of the evaluation and cost nothing extra.
+
+**Scope of the change, if it is ever justified** (recorded so it need not be re-derived): a
+`GlossaryTerm` model (`term`, `meaning`) and one optional `RequirementSet.glossary` field
+defaulting to empty, with `_require_unique` on `term`. Everything else is orchestrator and prompt
+work — `CheckQualityFn`'s signature, filtering the glossary to terms a requirement mentions, and a
+prompt field. Deliberately **no** new `IssueCategory` and **no** change to `Issue`, `QualityReport`
+or any run record: storing which entries a stage saw would duplicate state the prompt hash already
+pins.
+
 ---
 
 ## 6. Threats to validity to declare

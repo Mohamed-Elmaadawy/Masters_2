@@ -690,6 +690,24 @@ wasted:
    This produces the recurring-frequency evidence this entry already demands before any new
    category. Same code as the candidate fix, run as a measurement first.
 
+**S9 result 2026-08-14 — the gate question is answered: the checker is blind to it, not
+confused by it.** The behaviour suite's S9 ran `THEMAS-REQ-E` ("…in case `LO = T_LT`") for three
+rounds. Across all three, the Quality Checker flagged only `vague_pronoun` on "this condition"
+and "this module". **`LO = T_LT` was never flagged at all** — not raised, not mis-tagged into a
+neighbouring category. The prediction recorded above (that an LLM checker would "most likely
+either miss this defect entirely… or mis-tag it") is confirmed in its first branch.
+
+Consequence, and it cuts against the fix proposed below: there is no wrong flag to correct and
+no judgement to inform. Supplying the checker with term definitions would change nothing
+observable unless a new `IssueCategory` were added to give it something to report — the option
+rejected above for lack of grounding. The pre-pass therefore stays unbuilt, now on measured
+grounds rather than on the "not yet measured" grounds recorded above.
+
+Also measured on the same requirement: both `THEMAS-REQ-D` and `THEMAS-REQ-E` failed all three
+rounds on *pronoun referents*, and `THEMAS-REQ-D`'s rewrite ("these limits" -> "the specified
+temperature limits") was flagged again in rounds 2 and 3. The demonstrated weakness is
+referents, not terminology.
+
 **Live-session evidence 2026-08-14 — the input diagnosis is confirmed, and the anchor example
 is worse than "undefined".** Answering the scenarios by hand against the source document
 (`datasets/requirements-xml/XMLZIPFile/1998 - themas.xml`, quotations verified by direct

@@ -136,6 +136,35 @@ echoed-message glitch, caught and not recorded) are in `SESSION.md`.
 
 ---
 
+## 2026-08-14 — Annotated-corpus check; glossary fix deferred on evidence; S9 result recorded
+
+**Changed:** `docs/superpowers/plans/2026-08-14-evaluation-design.md` (two sections added on the
+annotated XML subset and the glossary decision); `design/DESIGN_NOTES.md` Known Limitation 5
+(S9 result).
+
+**Why:** before building an extractor, checked what the committed corpus actually contains; and
+before adding schema fields for the limitation-5 fix, checked whether the measurement gating it
+had already been taken.
+
+**Impact:** two findings, one of which cancelled a planned schema change.
+
+- **Extraction is far cheaper than assumed.** 6 of 18 files in
+  `datasets/requirements-xml/XMLZIPFile/` carry explicit `<req id>` elements — 1,018
+  requirements, 819 of them in five documents not yet spent. "What counts as a requirement" is
+  therefore PURE's own annotation decision, citable, with no inference and no loss rate. The
+  79-document PDF corpus is not needed to start.
+- **The glossary fix is deferred, not adopted.** 171 `<glossary_item>` term/meaning pairs exist,
+  which would have made the proposed pre-pass cheap — but S9 shows `LO = T_LT` was **never
+  flagged** across three rounds, so there is no wrong judgement for definitions to correct, and
+  THEMAS's glossary does not contain `LO`/`LT` anyway. A free measurement is named instead: run
+  ~20 requirements from `eirene_fun`/`gamma j` without a glossary and count whether
+  glossary-defined domain terms get falsely flagged. The schema change (a `GlossaryTerm` model
+  plus one optional `RequirementSet.glossary` field) is scoped in the plan but not made.
+
+No code touched; `design/schemas.py` unchanged, so no diagram regeneration required.
+
+---
+
 ## 2026-08-14 — Evaluation design and document-reanalysis plan written (design only)
 
 **Changed:** two new plans —
