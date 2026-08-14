@@ -26,6 +26,44 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-14 — Extractor hardening: sibling-id guard, newline stability, corpus unchanged
+
+**Changed:** `tools/extract_pure_xml.py` -- `strip_id_prefix` takes a third argument,
+`other_ids` (every `<req id>` in the document, computed once in `extract_file`); it now
+refuses to strip when `req_id` is a proper prefix of another id in the same document, on
+top of the existing digit/dot guard. All three `write_text` call sites (`RequirementSet`,
+manifest, summary) pass `newline="\n"` explicitly. `tools/test_extract_pure_xml.py`: the
+"longer number NOT stripped by shorter id" case now carries an explicit sibling-id set as
+its precondition, and a new case covers the roman-numeral shape (`"5.2.2i"` must not
+strip from `"5.2.2ivThe system shall..."` when `"5.2.2iv"` is a sibling id).
+
+**Why:** a second opinion requested during review of the previous entry found the
+digit/dot guard was not the whole story -- eirene_fun's ids also carry roman-numeral
+suffixes (`5.2.2i`, `5.2.2ii`, `5.2.2iii`, `5.2.2iv`, `5.2.2v`, ...), and a shorter one is
+a proper string-prefix of a longer sibling exactly the way `11.2.1.1` prefixes
+`11.2.1.10`, except the continuation character is a letter, which the digit/dot guard
+does not see. Confirmed by grep across the real corpus: 32 roman-suffixed ids, 244
+sibling-prefix pairs in `eirene_fun` alone. The gap had not fired -- 583/583 stripped
+correctly in the five committed documents -- so this is a guard against a shape that
+exists in the id-space, not a correction of a wrong prior extraction. Separately, the
+previous entry's "byte-identical across runs" claim carried an unstated platform
+caveat: `Path.write_text` defaults to `os.linesep`, so this Windows box produced CRLF
+against LF-committed files (masked by `.gitattributes`' `eol=lf` on checkout, so never
+a real bug, but a reproducibility claim in the evaluation methodology should not need
+a footnote).
+
+**Impact:** the extracted corpus is unchanged -- same 805 requirements, same 5 counts,
+`pure-eirene-fun-7-2` still 583/583 id-prefix-stripped, zero strips newly blocked by the
+sibling check. A fresh extraction on this machine is now byte-identical to the committed
+`datasets/pure-extracted/*.json` with no CRLF caveat (previously identical only after
+stripping `\r`). 106/106 tests pass (was 104; two new cases for the sibling guard).
+Mutation-tested: removing the sibling-prefix check turns exactly the new roman-numeral
+case red (105/106), nothing else; restored, 106/106. Neither change is an improvement to
+the corpus -- one fixes a gap that never fired, the other fixes a platform-dependent byte
+representation of the same content.
+
+---
+
 ## 2026-08-14 — PURE XML extractor: 805 requirements across five untouched documents
 
 **Changed:** new `tools/extract_pure_xml.py` and `tools/test_extract_pure_xml.py` (104

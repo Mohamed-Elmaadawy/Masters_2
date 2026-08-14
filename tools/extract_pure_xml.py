@@ -353,9 +353,9 @@ def extract_directory(input_dir: Path, output_dir: Path) -> dict:
         requirement_set, manifest = extract_file(xml_path)
         doc_id = manifest["doc_id"]
         (output_dir / f"{doc_id}.json").write_text(
-            requirement_set.model_dump_json(indent=2), encoding="utf-8")
+            requirement_set.model_dump_json(indent=2), encoding="utf-8", newline="\n")
         (output_dir / f"{doc_id}.manifest.json").write_text(
-            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+            json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8", newline="\n")
 
         summary["documents"].append({
             "doc_id": doc_id,
@@ -366,7 +366,7 @@ def extract_directory(input_dir: Path, output_dir: Path) -> dict:
         summary["total_requirements"] += manifest["counts"]["requirements"]
 
     (output_dir / "extraction-summary.json").write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8", newline="\n")
     return summary
 
 
