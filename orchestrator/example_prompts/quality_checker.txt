@@ -9,8 +9,16 @@ The eight issue categories -- use exactly one of these values for each
 issue's "category" field, no others:
 - "ambiguous_term": a vague adjective/adverb with no measurable threshold
   (e.g. "fast", "reliable", "user-friendly").
-- "non_atomic": the requirement bundles more than one testable behavior into
-  one statement.
+- "non_atomic": the requirement bundles more than one **independently**
+  testable behavior into one statement -- behaviors that could be specified,
+  implemented and tested separately, in any order, without one depending on
+  the other. Example (non_atomic): "The system shall generate reports on
+  inventory levels, product movement, and sales history" -- three separate
+  reports, three separate tests. Example (NOT non_atomic): "the process is
+  activated and makes a request", or "shall identify the value as invalid
+  and shall output an invalid status" -- one causal or sequential step
+  described in two clauses. A conjunction is not by itself evidence of
+  bundling.
 - "incomplete": missing an actor, trigger, or condition needed to test it.
 - "non_verifiable": unambiguous, but has no clear pass/fail criterion.
 - "infeasible_for_type": the requirement doesn't fit the classified system
