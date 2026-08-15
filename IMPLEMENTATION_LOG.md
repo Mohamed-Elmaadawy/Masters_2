@@ -26,6 +26,65 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-15 — Future-work item: cite a standard instead of inventing a threshold
+
+**Changed:** `design/DESIGN_NOTES.md`, new entry "Future work, adjacent to Limitation 11 —
+cite a standard instead of inventing a threshold" (documentation only, right after Known
+Limitation 11's block); `docs/superpowers/results/2026-08-14-refiner-answerer-pilot/RESULTS.md`
+cross-references it. No prompt, schema, or orchestrator change. No pipeline runs.
+
+**Why:** the 2026-08-14 refiner-answerer pilot measured an LLM answerer inventing acceptance
+thresholds (SUS≥70, 5/10/15-minute windows) that read as normal professional criteria with no
+tell. The proposal: have the Refiner name a measurable property and a citable source standard
+(ISO/IEC 25010:2023 characteristics, SUS as an instrument) instead of a number, target value
+left explicitly unset. Deferred deliberately — implementing it mid-evaluation would make every
+prior run (behaviour suite, live-answer session, v1/v2 comparison, this pilot) non-comparable
+against a run using the new rewrite behaviour, and would need a prompt v3 with its own re-runs.
+Includes the verified `STANDARDS_REFERENCE` table (ISO/IEC 25010:2023, cross-checked 2026-08-15
+against two independent sources), the 25010:2023/25023:2016 version-mismatch caveat, and a note
+that the commonly-quoted SUS≥68 benchmark has no peer-reviewed source and must not enter the
+thesis unverified. Also records a threat-to-validity the same pilot exposed: PURE's source
+authors are unreachable, so no answerer on that corpus can supply a real value — the banked
+2026-08-14 live-answer comparison measures "does supplying a value help," not "does a human
+help."
+
+**Impact:** documentation only — no behavioural change.
+
+---
+
+## 2026-08-14 — Refiner-answerer pilot: human vs. LLM answering clarifying questions
+
+**Changed:** new `docs/superpowers/results/2026-08-14-refiner-answerer-pilot/` —
+`configs/run-a-human-v2.yaml`/`run-b-llm.yaml` (copies of the pure-peering-smoke
+config, only `run_id`/`output_dir` changed), `input/pilot3.json` (3-requirement subset
+of `datasets/pure-extracted/pure-gamma-j.json`: PURE-GAMMA-J-0033/0034/0042, the "easy
+to use/learn/upgrade" vague-adjective family), `PREDICTIONS.md` (written before
+running), `RESULTS.md`, and both run directories
+(`configs/runs_run-a-human-v2/`, `configs/runs_run-b-llm/`). No code, prompt, schema or
+config-shape change.
+
+**Why:** a cheap manual pilot asked by the user — does it matter whether a human or an
+LLM answers the Refiner's clarifying questions, and does having the source document
+open change anything. Separate from, and cheaper than, the Q1/Q2 evaluation design in
+`docs/superpowers/plans/2026-08-14-evaluation-design.md`.
+
+**Impact:** Run A (human, fixed "I don't know" refusal policy, his own choice
+mid-run): all 3 requirements hit the revision cap with byte-identical no-op rewrites
+every round (Known Limitation 10, reproduced live), ending `cap_generated`. 46,368
+tokens. Run B (me, source XML open, narrating doc-lookup-vs-judgement per answer): all
+3 resolved in exactly one round with a rewritten, testable sentence, ending
+`completed`. 34,765 tokens. Answer-content check: 1 of 3 of my answers was pure
+invention, 2 of 3 pulled real facts from *sibling* requirements in the same document
+(not the ones asked about) with an invented number layered on top — refuting the
+predicted 0/3-retrieved outright, since sibling-requirement context wasn't considered
+as a retrieval channel when the prediction was written. All 3 invented numeric
+thresholds (SUS≥70, 5/10/15-minute windows) read as indistinguishable from genuine
+domain knowledge once embedded in the rewritten text. See `RESULTS.md` for the
+verdict: worth a bigger pilot with an explicit fabrication-flag mechanism, not worth
+trusting as a build-it-now decision. n=3, one document, one prompt version.
+
+---
+
 ## 2026-08-14 — Smoke test: pure-peering (24 reqs) through the full pipeline, clean
 
 **Changed:** new `docs/superpowers/results/2026-08-14-pure-peering-smoke/` —

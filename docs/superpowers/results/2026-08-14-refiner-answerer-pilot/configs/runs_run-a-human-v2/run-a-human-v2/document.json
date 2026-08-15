@@ -1,0 +1,122 @@
+{
+  "requirement_set": {
+    "doc_id": "pure-gamma-j",
+    "requirements": [
+      {
+        "id": "PURE-GAMMA-J-0033",
+        "text": "The system shall be easy to use",
+        "source_doc_id": "pure-gamma-j"
+      },
+      {
+        "id": "PURE-GAMMA-J-0034",
+        "text": "The system shall be easy to learn",
+        "source_doc_id": "pure-gamma-j"
+      },
+      {
+        "id": "PURE-GAMMA-J-0042",
+        "text": "The system shall be easy to upgrade.",
+        "source_doc_id": "pure-gamma-j"
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "run-a-human-v2",
+    "started_at": "2026-08-14T20:35:01.994944Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "pure-gamma-j",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "pure-gamma-j",
+    "dependencies": []
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "9dd682f9e0534692a545ec1bd0dfe5f4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 824,
+      "completion_tokens": 18
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "626186933cfc485487efccfd9b6d9e9c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 983,
+      "completion_tokens": 17
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-GAMMA-J-0033",
+    "PURE-GAMMA-J-0034",
+    "PURE-GAMMA-J-0042"
+  ],
+  "document_stage_tokens": 1842
+}
