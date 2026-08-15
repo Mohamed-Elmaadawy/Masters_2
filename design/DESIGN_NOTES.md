@@ -1719,6 +1719,162 @@ labels alone cannot rank two runs, because a rewrite can clear one category and 
 another. Report final text quality alongside outcomes. Here, doing that happens to confirm the
 label rather than contradict it.
 
+### Future work, adjacent to Limitation 11 — cite a standard instead of inventing a threshold (proposed 2026-08-15, not implemented)
+
+**Status: documentation only.** No prompt, schema, or orchestrator change accompanies this
+entry. Recorded so the idea and its evidence exist in one place before anyone is tempted to
+build it mid-evaluation.
+
+**The proposal.** When the Refiner cannot get a concrete value from the answerer, it should
+rewrite the requirement to name a **measurable property** and its citable **source standard**,
+while leaving the target value explicitly unset. Example shape:
+
+> "Usability shall be measured using the System Usability Scale, per the Interaction
+> Capability characteristic of ISO/IEC 25010:2023. Target score not specified in the source
+> document; to be set by the project."
+
+This is a stronger claim than "the pipeline fills in values": the pipeline converts an
+*unmeasurable* requirement into a *measurable* one with a cited metric, without ever
+supplying the number itself. Record it that way, not as a value-filling feature.
+
+**Why it was proposed — the evidence already exists in the repo.** The 2026-08-14
+refiner-answerer pilot (n=3, `pure-gamma-j`;
+`docs/superpowers/results/2026-08-14-refiner-answerer-pilot/RESULTS.md`) measured an LLM
+answerer inventing acceptance thresholds — SUS ≥ 70, 5/10/15-minute windows — that read as
+normal professional criteria with no tell, and flipped all three requirements from
+`cap_generated` to `completed`. That is fabrication, not refinement: the pipeline accepted
+invented precision as if it were real. This proposal converts that exact failure mode into a
+citation instead of a number: state *what* to measure and *where the definition comes from*,
+and never invent *how much*.
+
+**Why it is not being done now.** It changes the system under test mid-evaluation. Every prior
+run (the behaviour scenario suite, the live-answer session, the v1/v2 prompt comparison, this
+pilot itself) would become non-comparable against a run using this rewrite behaviour, and it
+would need a prompt v3 with its own re-runs across all of them to re-establish comparability.
+That cost is not justified by an n=3 pilot. This is a deferral, recorded as a decision, not an
+oversight.
+
+**The verified reference table.** Below is `STANDARDS_REFERENCE`, verified 2026-08-15 against
+the ISO/IEC 25010:2023 sample text and an independent breakdown (two sources, in agreement).
+Reproduced verbatim — do not regenerate this from model memory and do not add entries beyond
+what is here. That is the exact failure this entry exists to prevent: an earlier draft in
+conversation cited "usability per ISO 25010," a characteristic name that does not exist in the
+2023 model.
+
+```python
+# Verified 2026-08-15 against ISO/IEC 25010:2023 (ISO sample text + an independent
+# breakdown, two sources in agreement). Sub-characteristic names are the 2023 ones.
+#
+# VERSION MISMATCH, state it wherever this is cited: ISO/IEC 25023:2016 supplies the
+# measures but normatively references ISO/IEC 25010:2011, so its measures sit under the
+# OLD names "Usability" and "Portability". Map 2023 -> 2016 explicitly:
+#   Interaction Capability (2023)  ==  Usability (2011/25023)
+#   Flexibility (2023)             ==  Portability (2011/25023)
+#
+# NO thresholds anywhere. The standards define characteristics and measurement
+# functions; they do not set target values. That is the project's decision.
+
+STANDARDS_REFERENCE = {
+    "ease_of_use": {
+        "triggers": ["easy to use", "user-friendly", "intuitive", "simple to use"],
+        "characteristic": "Interaction Capability > operability (ISO/IEC 25010:2023)",
+        "measure": "effectiveness, efficiency and satisfaction in a specified context "
+                   "of use (ISO 9241-11:2018)",
+        "instrument": "System Usability Scale — an instrument, not a standard",
+        "threshold": None,
+    },
+    "learnability": {
+        "triggers": ["easy to learn", "quick to pick up", "minimal training"],
+        "characteristic": "Interaction Capability > learnability (ISO/IEC 25010:2023)",
+        "measure": "learnability measures, ISO/IEC 25023:2016 §8.5.2 (filed under Usability)",
+        "threshold": None,
+    },
+    "speed": {
+        "triggers": ["fast", "quick", "responsive", "without delay"],
+        "characteristic": "Performance Efficiency > time behaviour (ISO/IEC 25010:2023)",
+        "measure": "time behaviour measures, ISO/IEC 25023:2016 §8.3.1",
+        "threshold": None,
+    },
+    "availability": {
+        "triggers": ["always available", "uptime", "24/7"],
+        "characteristic": "Reliability > availability (ISO/IEC 25010:2023)",
+        "measure": "availability ratio over a stated period",
+        "threshold": None,
+    },
+    "reliability": {
+        "triggers": ["reliable", "stable", "shall not crash"],
+        "characteristic": "Reliability > faultlessness, fault tolerance, recoverability",
+        "measure": "state which of the three is meant; each is measured separately",
+        "threshold": None,
+    },
+    "security": {
+        "triggers": ["secure", "protected", "safe from attack"],
+        "characteristic": "Security > confidentiality, integrity, non-repudiation, "
+                          "accountability, authenticity, resistance",
+        "measure": "state which property is meant; each is measured separately",
+        "threshold": None,
+    },
+    "scalability": {
+        "triggers": ["scalable", "handles growth", "supports more users"],
+        "characteristic": "Flexibility > scalability (ISO/IEC 25010:2023, new in 2023)",
+        "measure": "state the load level and the metric that must hold at it",
+        "threshold": None,
+    },
+    "portability": {
+        "triggers": ["portable", "runs anywhere", "easy to install"],
+        "characteristic": "Flexibility > adaptability, installability, replaceability",
+        "measure": "ISO/IEC 25023:2016 portability measures",
+        "threshold": None,
+    },
+    "maintainability": {
+        "triggers": ["maintainable", "easy to change", "easy to update"],
+        "characteristic": "Maintainability > modularity, reusability, analysability, "
+                          "modifiability, testability",
+        "measure": "ISO/IEC 25023:2016 maintainability measures",
+        "threshold": None,
+    },
+    "accessibility": {
+        "triggers": ["accessible", "usable by all", "disability"],
+        "characteristic": "Interaction Capability > inclusivity, user assistance "
+                          "(2023 decomposition of the former 'accessibility')",
+        "measure": "for web interfaces, WCAG 2.2 Level AA — current W3C Recommendation. "
+                   "WCAG 3.0 is a Working Draft as of March 2026, not citable as a standard.",
+        "threshold": None,
+    },
+    "safety": {
+        "triggers": ["safe", "shall not cause harm"],
+        "characteristic": "Safety > operational constraint, risk identification, "
+                          "fail safe, hazard warning, safe integration (new in 2023)",
+        "measure": "state which is meant",
+        "threshold": None,
+    },
+}
+```
+
+**Three caveats that must travel with this table wherever it is cited:**
+
+1. **Version mismatch.** ISO/IEC 25023:2016 supplies the measures but normatively references
+   ISO/IEC 25010:2011, so its measures are filed under the old names "Usability" and
+   "Portability", which do not exist in the 2023 model. Any citation chain must state the
+   mapping: Interaction Capability (2023) == Usability (2011/25023); Flexibility (2023) ==
+   Portability (2011/25023).
+2. **Thresholds are never supplied.** These standards define characteristics and measurement
+   functions, not target values. The proposal's whole defensibility rests on the Refiner never
+   filling one in — the moment it does, it has reproduced Known Limitation 11 with a citation
+   attached instead of fixing it.
+3. **SUS benchmark unverified.** The commonly quoted average of 68 comes from Jeff Sauro's own
+   analysis of 500+ studies, with no formal published citation on the source page. Mark it
+   unverified. It must not enter the thesis without a peer-reviewed source, or SUS should be
+   cited as an instrument with no number.
+
+**Separate threat-to-validity note, prompted by the same pilot.** On a third-party corpus like
+PURE there is no stakeholder who can answer the Refiner's questions — `pure-gamma-j`'s authors
+are unreachable, so any answerer who commits a value is inventing it, human or LLM alike.
+Consequence: "does a human in the loop help?" is not answerable on PURE. The banked 2026-08-14
+live-answer comparison (`docs/superpowers/results/2026-08-14-live-answers/`) measures "does
+*supplying* values help" — a weaker claim — and should be described that way in the evaluation
+plan rather than as evidence about human input specifically.
+
 ## `RequirementSet.requirements` min_length fix (2026-08-05)
 
 `RequirementSet.requirements` had no `min_length`, so a zero-requirement set could be

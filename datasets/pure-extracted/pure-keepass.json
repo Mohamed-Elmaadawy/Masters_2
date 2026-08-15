@@ -1,0 +1,165 @@
+{
+  "doc_id": "pure-keepass",
+  "requirements": [
+    {
+      "id": "PURE-KEEPASS-0001",
+      "text": "REQ-1: KeePass must be downloaded and installed",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0002",
+      "text": "REQ-2: Master Password has no limits in length. A whole sentence can be used with more than 100 characters.",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0003",
+      "text": "Folder selected must be of type the database can read and that is “name”.kdb",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0004",
+      "text": "Databases must have different names or else the previews one will be replace if selected",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0005",
+      "text": "There must be entries in the database in order for them to be printed",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0006",
+      "text": "All data related to the word must be shown. For example if user types “abc” and abc is part of a password and of a username, both entries must be shown",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0007",
+      "text": "A name is required in order for the new group/subgroup to be created",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0008",
+      "text": "A subgroup cannot be created when no group is selected",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0009",
+      "text": "A name is required in order for the group/subgroup to be renamed",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0010",
+      "text": "In order to find something in a group a word must be placed in the find field",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0011",
+      "text": "An entry must belong to a group to be created",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0012",
+      "text": "When the password field is completed the repeat password field must be completed",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0013",
+      "text": "REQ-13: Password field and repeat password field must be identical",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0014",
+      "text": "ìAn entry must be selected to be viewed or modified",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0015",
+      "text": "ìWhen the password field is changed the repeat password field must be Changed and be identical with password field",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0016",
+      "text": "An entry must be selected before it is duplicated",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0017",
+      "text": "REQ-18: An internet connection and a browser are required in order to download new language translations For the following features, use cases are not included",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0018",
+      "text": "The prefix “Auto-Type:” is required in front of each sequence",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0019",
+      "text": "Sequence’s length must not be more than a line (59 characters)",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0020",
+      "text": "If two auto-types are referred in one note field, only the first is used",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0021",
+      "text": "Only one database file is allowed in command line options",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0022",
+      "text": "In case a space is found in the path, it must be enclosed into quotes",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0023",
+      "text": "If a master password is required to unlock the database, the database doesn’t open unless the password is entered",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0024",
+      "text": "If a key file is required to unlock the database, the database doesn’t open unless the key file is present",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0025",
+      "text": "If there is a composite key, both master password and key file are required",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0026",
+      "text": "In case of lost master password or key file, the database never unlocks again. There is no recovery",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0027",
+      "text": "There is no backdoor or key that unlocks all databases",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0028",
+      "text": "REQ-29: File formats are not specialized password database formats",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0029",
+      "text": "REQ-30: File formats only specify a low-level layout of stored data",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0030",
+      "text": "Global hot key cannot be changed",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0031",
+      "text": "Title, username or URL cannot be changed in a TAN entry.",
+      "source_doc_id": "pure-keepass"
+    },
+    {
+      "id": "PURE-KEEPASS-0032",
+      "text": "When a TAN is used, it expires automatically and can never be used again.",
+      "source_doc_id": "pure-keepass"
+    }
+  ]
+}

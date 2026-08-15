@@ -1,0 +1,304 @@
+{
+  "requirement": {
+    "id": "PURE-GAMMA-J-0034",
+    "text": "The system shall be easy to learn",
+    "source_doc_id": "pure-gamma-j"
+  },
+  "run_id": "run-a-human-v2",
+  "outcome": "cap_generated",
+  "errors": [],
+  "cap_reason": "Manual pilot decision: generate anyway at cap, per evaluation plan.",
+  "classification": {
+    "requirement_id": "PURE-GAMMA-J-0034",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding document context contains any signals or keywords indicating a web application, mobile application, or AI-driven system. Therefore, it defaults to 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The system shall be easy to learn",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to learn",
+            "explanation": "The phrase 'easy to learn' is a vague adjective phrase with no measurable threshold or quantifiable criterion (such as a specific training time or task completion rate).",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should the phrase 'easy to learn' be defined in quantifiable terms, such as a specific maximum training duration or a target task completion rate for a new user?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "original_text": "The system shall be easy to learn",
+        "refined_text": "The system shall be easy to learn",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The system shall be easy to learn",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to learn",
+            "explanation": "The phrase 'easy to learn' is vague and subjective, lacking a measurable threshold or defined metric for verification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific, measurable metric or threshold should be used to define 'easy to learn' (for example, maximum training time required or time for a new user to complete standard tasks)?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "original_text": "The system shall be easy to learn",
+        "refined_text": "The system shall be easy to learn",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The system shall be easy to learn",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0034",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to learn",
+            "explanation": "The phrase 'easy to learn' is a vague subjective descriptor with no measurable threshold or specific metric.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-GAMMA-J-0034",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement 'The system shall be easy to learn' is a qualitative usability goal that lacks numeric thresholds, explicit combined conditions, state sequences, or timing constraints. Per guidance, when none of the specific structured patterns apply, exploratory testing is selected."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-GAMMA-J-0034",
+    "test_cases": [
+      {
+        "id": "TC-17-PURE-GAMMA-J-0034-1",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0034"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory Usability Charter: First-Time User Navigation and Learnability",
+        "preconditions": "A newly provisioned system instance with standard sample data and a participant who has received no prior training on the system.",
+        "steps": [
+          "Provide the participant with basic core task objectives (e.g., locate a feature, complete a standard workflow).",
+          "Observe the participant attempting to navigate through the interface without assistance or documentation.",
+          "Note areas where the user encounters confusion, hesitates, or relies heavily on trial-and-error to complete tasks.",
+          "Gather qualitative feedback post-session regarding intuitive UI elements, tooltips, and overall onboarding experience."
+        ],
+        "expected_result": "The participant completes basic core tasks intuitively without external intervention, demonstrating clear UI affordances and minimal learnability friction."
+      },
+      {
+        "id": "TC-17-PURE-GAMMA-J-0034-2",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0034"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory Charter: Onboarding and Help Guidance Discovery",
+        "preconditions": "A fresh user profile logging into the system for the first time.",
+        "steps": [
+          "Log into the application as a new user.",
+          "Explore available contextual help, tooltips, onboarding guides, or walk-throughs across different core screens.",
+          "Attempt to recover from intentional operational errors using only in-app guidance and help documentation.",
+          "Evaluate whether visual cues and help mechanisms effectively guide the user toward correct usage."
+        ],
+        "expected_result": "Contextual help and UI cues clearly explain workflow steps, allowing the user to self-correct and learn system features rapidly."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "3eaf58f1484341bdb766f77bc4442db8",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 817,
+      "completion_tokens": 67
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d4c1ee8cec144bc295c1058a059d5e98",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 87
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "362974dc1b3f40a99e0c24dcd7c46679",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1148,
+      "completion_tokens": 97
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f7afda8cf9054ab69a820cd5182c2a6d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "109c84303d0c42cd9d9811f5bf6d0815",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 67
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "af435c3fa46848eeb82abcac4a230e57",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1138,
+      "completion_tokens": 101
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f52df2e3a4c247939c9cf70d7857d967",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "1fe223f950ba4d91b0f5ce218276cc50",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "35363fe37a014616b9f3179973e2b034",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1102,
+      "completion_tokens": 81
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "6cdfa57233e640028e44189b9285033b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1437,
+      "completion_tokens": 393
+    }
+  ],
+  "final_text": "The system shall be easy to learn",
+  "final_requirement": {
+    "requirement_id": "PURE-GAMMA-J-0034",
+    "original_text": "The system shall be easy to learn",
+    "refined_text": "The system shall be easy to learn",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "I don't know — the document doesn't define this.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 14772
+}

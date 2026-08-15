@@ -1,0 +1,2920 @@
+{
+  "doc_id": "pure-eirene-fun-7-2",
+  "requirements": [
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0001",
+      "text": "The network services necessary to meet the range of UIC requirements are detailed below. These services are to be considered as a minimum set for implementation within each UIC standard network. Railways may implement additional network services as desired. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0002",
+      "text": "This section describes the generic voice telephony services which are to be supported by the EIRENE network: (M)\n- point-to-point voice calls;\n- public emergency voice calls;\n- broadcast voice calls;\n- group voice calls;\n- multi-party voice calls.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0003",
+      "text": "All voice call services shall be able to operate between any combination of fixed and mobile equipment users. (M) Point-to-point voice calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0004",
+      "text": "The system shall support point-to-point voice calls between any two call parties. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0005",
+      "text": "Such point-to-point calls shall allow both parties to talk simultaneously. (M) Public emergency voice calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0006",
+      "text": "The system shall allow a user to make public emergency point-to-point voice calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0007",
+      "text": "Such emergency calls include 112 calls and may not be used for railway emergencies. (I) Broadcast voice calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0008",
+      "text": "The system shall support broadcast voice calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0009",
+      "text": "Broadcast voice calls provide one-way voice communications from a single user to multiple users in a pre-defined local area, all of whom are members of the same call group. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0010",
+      "text": "The composition of call groups shall be able to be modified within the network. A single user shall be able to be a member of one or more call groups. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0011",
+      "text": "The local area over which broadcast calls shall be implemented shall be able to be modified within the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0012",
+      "text": "It shall only be possible for the user who initiated the call to talk, other users can only listen. (M) Group voice calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0013",
+      "text": "The system shall support group voice calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0014",
+      "text": "Group voice calls provide voice communications between a number of users in a pre- defined local area, all of whom are members of the same call group. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0015",
+      "text": "The composition of call groups shall be able to be modified within the network. A single user shall be able to be a member of one or more call groups. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0016",
+      "text": "The local area over which group calls are implemented shall be able to be modified within the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0017",
+      "text": "It is acceptable that only one mobile user involved in the group call may talk at any time. In this case:\n- It shall be possible for controllers to speak at any time during the call. (M)\n- A mechanism shall be provided by the system to arbitrate between those users wishing to speak within the group call. (M) Multi-party voice calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0018",
+      "text": "The system shall support multi-party voice communications between up to six different parties. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0019",
+      "text": "Any of the parties involved in a multi-party voice call shall be able to talk simultaneously. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0020",
+      "text": "The EIRENE network will provide data services to support the following data applications:\n- text messages; (O)\n- general data applications; (M)\n- automatic fax; (O)\n- train control applications. (O) Text messages",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0021",
+      "text": "The network should support the transmission of point-to-point and point-to- multipoint text messages from the ground to mobile users. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0022",
+      "text": "The network should support the receipt of mobile-originated text messages by the ground. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0023",
+      "text": "If the text message facility is implemented, it shall not interfere with the ability of users to make or receive high priority voice or data calls. (M) General data applications",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0024",
+      "text": "Support is required for a range of data communications between the ground and mobile users. Such applications may include: (I)\n- timetable information;\n- maintenance and diagnostic applications;\n- e-mail;\n- remote database access.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0025",
+      "text": "The network shall support point-to-point data communications. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0026",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0027",
+      "text": "The network shall support data rates of at least 2.4 kbit/s. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0028",
+      "text": "Higher data rates will be required by some data applications in order to provide the necessary performance and acceptable transmission times. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0029",
+      "text": "The priority scheme for calls described in section 10.2 is also valid for data applications. (I) Automatic fax",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0030",
+      "text": "The network should support fax transmissions between the ground and mobile users. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0031",
+      "text": "Where fax functionality is provided, it shall be possible to interrupt the fax to make or receive a high priority voice or data call. (M) Train control applications",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0032",
+      "text": "Where ERTMS/ETCS level 2 or 3 is implemented, the network shall be capable of supporting data communications for that train control system. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0033",
+      "text": "The communications requirements for ERTMS/ETCS are included in the document Summary of ERTMS Communications Requirements",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0034",
+      "text": "Communications for train control may be characterised as low data rate per train; however, in some areas there will be a high density of trains requiring simultaneous communications. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0035",
+      "text": "The priority scheme for calls described in section 10.2 is also valid for train control applications. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0036",
+      "text": "The EIRENE network will support the following call related services:\n- display of identity of called/calling user; (M)\n- restriction of display of called/calling user; (O)\n- priority and pre-emption; (M)\n- closed user group; (M)\n- call forwarding; (M)\n- call hold; (M)\n- call waiting; (M)\n- charging information; (O)\n- call barring. (M) Display of identity",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0037",
+      "text": "It shall be possible for the equipment to display the identity of the called or calling party in the form of a standard telephone number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0038",
+      "text": "It shall be possible to display the identity of the called or calling party as a textual description of their function. (M) Restriction of display of identity",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0039",
+      "text": "It should be possible for the network to prevent the identity of certain users from being displayed on the mobile, either when being called, calling or both. (O) Priority and pre-emption",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0040",
+      "text": "The network shall provide a mechanism whereby calls may be assigned one of a number of different priority levels. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0041",
+      "text": "This mechanism shall allow calls with a higher assigned priority to override (pre-empt) existing calls of a lower priority. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0042",
+      "text": "Pre-empted calls will be discontinued and the new call of a higher priority shall be connected instead. (M) Closed user group",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0043",
+      "text": "The group of users who may access the facilities of the EIRENE network shall be limited. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0044",
+      "text": "Any user who is not within the list of allowed EIRENE users shall not be able to gain access to any of the functions and services provided by the network. (M) Call forwarding",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0045",
+      "text": "It shall be possible for an incoming call or data message for one user to be forwarded to another user using functionality provided by the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0046",
+      "text": "In the case of voice calls, it shall be possible for the user who is attempting to forward a call to converse with the intended recipient prior to forwarding. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0047",
+      "text": "There are a number of sub-classes of call forwarding to be supported by the network:\n- automatically forward the incoming call without any user interaction ( unconditional ); (M)\n- automatically forward the incoming call without user interaction if the user is busy in an existing call ( busy ); (M)\n- automatically forward the incoming call if there is no reply from the intended recipient ( no reply ); (O)\n- automatically forward the incoming call if the intended recipient cannot be contacted via the network ( not reachable ). (O) Call hold",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0048",
+      "text": "The network shall allow the user to temporarily exit from an existing call by putting the call on hold. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0049",
+      "text": "It shall be possible for the user to re-join the call which is on hold at any time. (M) Call waiting",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0050",
+      "text": "The network shall provide the ability to inform a user, who is involved in an existing call, of attempts by other users to contact them. (M) Charging information",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0051",
+      "text": "Where network services are chargeable, it should be possible for the network to provide information about call rates and on-going call charges. (O) Call barring",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0052",
+      "text": "It shall be possible, using network management or maintenance facilities, to prevent individual users from: (M)\n- making calls to:\n- another network (fixed or mobile) (eg can only call on home network);\n- certain types of numbers within or external to the network (eg cannot call teleshopping numbers);\n- certain pre-defined telephone numbers (eg cannot call drivers and on-train users);\n- receiving calls from:\n- all other networks (fixed or mobile);\n- certain other networks (fixed or mobile);\n- certain types of numbers within or external to the network;\n- certain pre-defined telephone numbers.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0053",
+      "text": "The EIRENE network shall also provide support for the following railway specific services:\n- functional addressing including registration/deregistration (see section 11); (M)\n- location dependent addressing (see section 11); (M)\n- shunting mode (see section 14); (M)\n- Railway emergency calls (see section 13). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0054",
+      "text": "This section describes the requirements for the EIRENE network and the performance levels which are to be achieved. The aim is to provide interoperability between networks and a consistent level of service. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0055",
+      "text": "It may be necessary to supplement this Functional Requirements Specification with special requirements for supporting the train control application. Further information on the communications requirements to support ERTMS can be found in the Summary of ERTMS Communication Requirements document .",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0056",
+      "text": "For network planning, the coverage level is defined in terms of time and area where the minimum signal criteria are achieved. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0057",
+      "text": "The level of coverage should be at least 95% of the time over 95% of the designated coverage area for a radio installed in a vehicle with an external antenna. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0058",
+      "text": "The network shall support all EIRENE-compliant mobiles. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0059",
+      "text": "The land-based part of the system shall provide communications for mobiles when stationary and when travelling at speeds up to the maximum allowable line speed or",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0060",
+      "text": "(Network selection requirements for mobiles have been moved to sections 5, 6 and 7).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0061",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0062",
+      "text": "Network interconnection is subject to a bilateral agreement between network operators. The interconnection between the networks must, as a minimum, be compliant with applicable open specifications. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0063",
+      "text": "During the process of moving from one GSM-R network to another, the system must minimise the inconvenience to the user. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0064",
+      "text": "Call set-up time requirements are dependent mainly upon priority (see section 10.2). (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0065",
+      "text": "The required call set-up times shall be achieved in 95% of cases. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0066",
+      "text": "Call set-up times for 99% of cases shall not be more than 1.5 times the required call set- up time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0067",
+      "text": "Set-up times shall include the time required for any translation of functional numbers internal to the EIRENE network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0068",
+      "text": "The requirements for end-to-end call set-up performance are indicated in table 3-1. (I) Call type Call set-up time Railway emergency calls <2s* (M) Group calls between drivers in the same area <5s (M) All operational mobile-to-fixed calls not <5s (O) covered by the above All operational fixed-to-mobile calls not <7s (O) covered by the above All operational mobile-to-mobile calls not <10s (O) covered by the above All low priority calls <10s (O) Table 3-1: Call set-up time requirements * This call set-up time refers to the beginning of the audible indication as part of Stage 1: Warning, specified in 13.2.2.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0069",
+      "text": "Where fixed network users are involved in a group or broadcast call, fixed network users will be pre-defined and will not change during the course of the call. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0070",
+      "text": "The group or broadcast call area used will have the effect of determining which mobiles can participate in the call (ie those currently within the area defined). It shall be possible to determine the area over which the call takes place by one, or a combination, of the following: (M)\n- the location of the call initiator (if mobile-originated);\n- the identity of the group being called (eg all users, all trains, etc);\n- a prefix to the group identity specifying the call area (if fixed network-initiated).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0071",
+      "text": "Any group or broadcast calls initiated in a given location shall be broadcast over an associated area based on the location of the call originator, and also to any fixed network numbers associated with the originating location. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0072",
+      "text": "The definition of each broadcast or group call area should take into account factors such as the speed of trains on the line (stopping distance) and the operational control areas. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0073",
+      "text": "It is acceptable that mobiles which move out of the call area during the call be dropped from the call. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0074",
+      "text": "Mobiles configured for reception of railway emergency calls entering into a call area where a railway emergency call is ongoing shall automatically join this call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0075",
+      "text": "Cab Radios configured for reception of a call to all drivers in the same area entering an area where a call to all drivers in the same area is ongoing shall automatically join this call unless involved in a higher priority call or involved in a call of the same priority. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0076",
+      "text": "Requirement 3.5.7 needs further technical specification changes before field implementation can be achieved. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0077",
+      "text": "All EIRENE mobiles are specified with a common level of basic services, facilities and features. This section of the specification gives details of these core requirements, while sections 5, 6 and 7 detail requirements specific to each of the radio types. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0078",
+      "text": "Three distinct mobile radio types are required, based on the type of role they will perform and the environment in which they will operate, as follows: (I) a) Cab radio for use by the driver of a train and/or by other on-train systems, eg ERTMS/ETCS; b) General purpose radio for general use by railway personnel; c) Operational radio for use by railway personnel involved in train operations such as shunting and trackside maintenance. Note: It is possible that the General purpose and Operational radios may have a number of variants to meet railway requirements (eg handheld and vehicle mounted).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0079",
+      "text": "It shall be possible to operate all mobiles in the frequency bands around 900 MHz, allocated for use by the railways, and in the public GSM networks. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0080",
+      "text": "Mobile equipment shall function correctly when travelling at speeds from 0 km/h to",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0081",
+      "text": "Where there are mandatory requirements for human-machine interface attributes that are not defined in this specification, the decision for the way of presentation is a national issue. In any case, these national solutions must not conflict with those of the CENELEC Standard, in particular for the actions required from the drivers of trains passing the borders. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0082",
+      "text": "The following voice telephony services, identified in section 2, are to be supported for each type of mobile radio: Cab radio General purpose Operational radio radio Point-to-point voice calls M M M Public emergency voice calls M M M Broadcast voice calls M M M Group voice calls M M M Multi-party voice calls M O O Table 4-1: Voice telephony services to be supported",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0083",
+      "text": "The following data applications, identified in section 2, are to be supported for each type of mobile radio: Cab radio General purpose Operational radio radio Text message service M M M General data applications M O O Automatic fax O O O Train control applications O O O Table 4-2: Data applications to be supported",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0084",
+      "text": "The following call related services are to be supported for each type of mobile radio: Cab radio General purpose Operational radio radio Display of calling user identity M M M Display of called user identity M M M Restriction of display of user identity O O O EIRENE closed user group M O M Call forwarding: - unconditional M O O - if user busy O O O - if no reply O O O - if not reachable O O O Call hold M O O Call waiting M M M Display of call charging information O O O Call barring M O M Auto answer service M O M Call supervisory information M O O Table 4-3: Call related features to be supported",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0085",
+      "text": "The following EIRENE features are to be supported for each type of mobile radio: Cab radio General purpose Operational radio radio Functional addressing (section 11) M M M Location dependent addressing M O O (section 11) Direct mode (section 15) O N/A O Shunting mode (section 14) M N/A O Multiple driver communications within the M N/A N/A same train (section 5) Railway emergency calls M O M (section 13) Table 4-4: EIRENE specific features to be supported",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0086",
+      "text": "This sub-section defines the core environmental and physical requirements for all EIRENE mobile equipment. The requirements provided in this section are augmented by those provided in later sections for each individual radio type, with each radio type being specified by the superset of the core plus specific requirements. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0087",
+      "text": "The categories of requirements defined for each type of mobile equipment are as follows: (I)\n- climatic conditions (temperature, humidity, solar radiation, altitude, etc);\n- physical conditions (flammability, contamination, physical protection, etc);\n- mechanical conditions (shock and vibration);\n- electrical conditions (power supply variation, battery life, overloading, etc);\n- EMC (both emissions and immunity).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0088",
+      "text": "In normal operation of a mobile radio unit, it is expected that a combination of the above environmental conditions will be experienced. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0089",
+      "text": "Any environmental and physical requirements stated may be superseded by national requirements if the national standards provide a higher level of environmental and physical protection. However, stricter national standards shall not prevent the use of other EIRENE mobiles in that country. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0090",
+      "text": "All design, testing and installation of EIRENE mobile radio equipment shall comply with the quality procedures defined in ISO 9001 . (M) Climatic conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0091",
+      "text": "Any pressure pulses caused by vehicles passing, entering or leaving tunnels shall not affect the normal operation of EIRENE mobile equipment. (M) Physical conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0092",
+      "text": "The design of EIRENE mobiles shall comply with the relevant European Norms for protection against physical hazards, eg: (M)\n- pollution;\n- chemical contaminants (eg diesel);\n- flammable substances;\n- biologically active substances;\n- dust, sand and heavy particles;\n- mould growth. Mechanical conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0093",
+      "text": "All EIRENE mobile equipment shall be capable of being operated on board rolling stock. (M) Electrical",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0094",
+      "text": "The batteries to be used in the mobile equipment shall have sufficient capacity to support typical railway use. (M) Electromagnetic Compatibility",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0095",
+      "text": "EIRENE mobiles will generate electromagnetic emissions. It is the responsibility of national railways operating EIRENE networks to ensure that EIRENE equipment does not interfere with the normal operation of any on-train or ground-based systems. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0096",
+      "text": "In particular, EIRENE equipment could interfere with: (I)\n- signalling relays and contacts;\n- power transformers;\n- track circuits;\n- axle counters;\n- train describers;\n- other radio equipment;\n- radar speed measurement equipment;\n- switched mode power supplies;\n- telecommunications circuits;\n- electronic locking systems.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0097",
+      "text": "This section identifies the functional requirements for the EIRENE Cab radio. It covers the functionality provided by the Cab radio, driver MMI and support to other on-train systems. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0098",
+      "text": "Moreover, a driver may be provided with a handheld portable to allow communications whilst the driver is outside the train. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0099",
+      "text": "In this subsection, the functions to be provided by the Cab radio are described. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0100",
+      "text": "The following functions will be provided: Driver call-related functions:\n- call controller: (M)\n- primary controller;\n- secondary controller;\n- power supply controller;\n- call other drivers in the area; (M)\n- send Railway emergency call; (M)\n- confirm receipt of Railway emergency call; (M)\n- communicate with other drivers on same train; (M)\n- call train staff; (M)\n- call other authorised users; (M)\n- receive incoming voice calls; (M)\n- terminate calls; (M)\n- receive text messages; (M)\n- enter/leave shunting mode; (M)\n- enter/leave direct mode; (O)\n- monitor calls to other on-train users/devices; (M)\n- forward calls/cancel call forwarding to/from driver handheld; (O) Other driver-related functions:\n- powering up radio; (M)\n- switch radio MMI on and off; (M)\n- select language; (M)\n- adjust loudspeaker volume; (M)\n- select mobile radio network; (M)\n- register and deregister train number; (M)\n- register and deregister on-train users; (O)\n- register and deregister stock number; (M)\n- store/retrieve numbers and their details; (M)\n- invoke supplementary services; (M)\n- invoke tests; (M) Other Cab radio functions:\n- automatic connection of incoming calls to appropriate on-train users or devices (conductor, public address system, data systems, etc); (M)\n- automatic establishment of outgoing calls initiated by on-train users or devices; (M)\n- automatic handling of calls of varying priorities; (M)\n- send to the controller(s) a signal on activation of driver safety device; (M)\n- transmit Railway emergency call event indication to train-borne recorder; (M)\n- run-time diagnostics. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0101",
+      "text": "Once a call has been established the connected parties shall be able to communicate. (M) 5.2.2iv A Push-To-Talk function shall be provided for use during group calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0102",
+      "text": "Picking up the handset shall transfer the communication to the handset and reduce the loudspeaker volume to its minimum level. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0103",
+      "text": "Replacing the handset either: (M)\n- cancels the call; or\n- transfers the call to the loudspeaker at the initial volume.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0104",
+      "text": "A Push-To-Talk function shall be provided for use during group calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0105",
+      "text": "The use of Push-To-Talk for all types of communications is acceptable if needed for ergonomic reasons or to avoid the noise of the cab being transmitted to the other party. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0106",
+      "text": "It shall be possible for the driver to initiate a call to any of the following types of controller with a minimum of driver action being required (eg a single keystroke): (M)\n- primary controller;\n- secondary controller;\n- power supply controller.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0107",
+      "text": "If the radio system cannot give a unique identity for a given type of controller, the identity could be obtained using external systems as defined in 11.4.7. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0108",
+      "text": "Once an appropriate destination has been obtained, the radio shall attempt to establish a call to this destination. The functional identity shall be displayed to the controller. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0109",
+      "text": "The functional identity includes the following:\n- the train number, if available; (M)\n- the engine number, if no train number is available; (M)\n- the coach number of the leading cab, if neither a train number nor an engine number is available. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0110",
+      "text": "An audible and visual indication shall be provided to the driver that the call is proceeding. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0111",
+      "text": "When the call is connected to the controller, an audible and visual indication is to be provided to the driver. The call shall be connected to the loudspeaker at the pre-set value. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0112",
+      "text": "The functional identity of the connected party, if available, shall be displayed to the driver. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0113",
+      "text": "If the functional identity of the connected party contains an alphanumeric description, this shall also be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0114",
+      "text": "If the system is not able to connect the call, an audible and visual indication shall be provided to the driver that the call was not received by the controller. This shall also indicate if the called party was busy or if the network could not connect the call. (M) Call other drivers in the area (on other trains)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0115",
+      "text": "It shall be possible for a driver to initiate and participate in group voice calls between drivers in a pre-defined geographical area. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0116",
+      "text": "A driver shall be able to initiate the establishment of a call to other drivers with a minimum of action (eg a single keystroke). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0117",
+      "text": "The group identity shall be displayed on the Cab radios of the participating drivers. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0118",
+      "text": "An audible and visual indication shall be provided to the driver that the call is proceeding. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0119",
+      "text": "Once connected, the driver shall be able to communicate with other driver(s) by using the Push-To-Talk button on the handset. An indication shall be provided to the driver as a reminder of the need to use the Push-To-Talk button on the handset if he wants to talk. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0120",
+      "text": "The call shall be connected to the loudspeaker until the driver picks up the handset. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0121",
+      "text": "The call shall continue until terminated by the calling driver, an authorised controller or the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0122",
+      "text": "If the train moves out of the group call area whilst the call is in progress, an audible and visual indication of the loss of call shall be provided to the driver. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0123",
+      "text": "If the system is not able to connect the call, an audible and visual indication shall be provided to the driver. (M) Send Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0124",
+      "text": "It shall be possible for a driver to initiate Railway emergency calls (see section 13). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0125",
+      "text": "If a train-borne recorder is connected to the Cab radio, details of the activation, termination and any failures of the emergency function shall be sent to the train-borne recorder as each event occurs. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0126",
+      "text": "A continuous visual and short audible indication (from 0 to 20 seconds, for trials: 5 seconds) that the emergency function has been activated shall be provided in the cab. (Note that when the handset is off-hook, the audible indication shall be sounded from the loudspeaker at a low volume, but shall not be sounded from the handset.) (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0127",
+      "text": "Once the Railway emergency call is connected and the audible indication is finished, an indication shall be provided to the driver as a reminder of the need to use the Push- To-Talk button on the handset if he wants to speak. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0128",
+      "text": "The call shall be connected to the loudspeaker until the driver picks up the handset. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0129",
+      "text": "If the train moves out of the call area whilst the call is in progress, it will leave the call and an audible and visual indication of the loss of call shall be provided to the driver. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0130",
+      "text": "Once the call is terminated, the continuous visual alarm indication in the cab shall cease. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0131",
+      "text": "If the system is not able to connect the call, an audible and visual indication shall be provided to the driver. (M) Communicate with other drivers on same train",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0132",
+      "text": "Many trains employ multiple active traction vehicles. Where these vehicles are not connected by on-train wire connections, it shall be possible for the lead driver to establish a permanent radio connection between each of the active cabs. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0133",
+      "text": "The call will be established from the active cab of the lead traction vehicle. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0134",
+      "text": "Whilst on-going, a multi-drivers indication shall be displayed permanently at all Cab radios. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0135",
+      "text": "The lead driver shall be notified if a member of the group has placed the call on hold, although this shall not affect communications between the remaining members of the group. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0136",
+      "text": "At any time during the call, the lead driver shall be able to remove a member of the group. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0137",
+      "text": "The lead driver shall be able to terminate the entire call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0138",
+      "text": "If a driver is disconnected from the multi-driver call, a clear indication shall be given. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0139",
+      "text": "The setting up and closing down of a multi-driver call shall be simplified using automation or guidance through the steps required. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0140",
+      "text": "In each cab, the call shall be connected to the loudspeaker whilst the handset is on- hook. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0141",
+      "text": "If any part of the call fails, an audible and visual indication shall be provided in the appropriate cab. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0142",
+      "text": "If the call fails in the lead traction vehicle, the lead driver will be responsible for re- establishing the call. If the call fails to any other cab, the driver in that cab will call the lead cab and request re-establishment of the call. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0143",
+      "text": "For calls between a controller and the lead cab, it shall be possible to add the controller to the multi-driver call. Either the lead driver calls the controller or the controller calls the lead driver. In the latter case, the controller is automatically added into the multi- driver call. Functional identity of the controller shall be displayed in the leading cab. (M) Call train staff",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0144",
+      "text": "It shall be possible for the driver to contact members of on-board train staff using a point-to-point voice call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0145",
+      "text": "Upon activation of this function, the Cab radio shall provide the driver with a list of generic staff, eg: (M)\n- chief conductor;\n- conductor 1;\n- conductor 2;\n- catering staff 1.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0146",
+      "text": "The driver shall then be prompted to select the train staff with which he wishes to communicate. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0147",
+      "text": "On many trains, staff may be connected by intercom or internal telephone rather than by radio. It is required that, in these cases, the Cab radio shall be integrated with internal communication systems such that the appropriate means of connection (wire or radio) will be determined automatically. (M) Call other authorised users",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0148",
+      "text": "The Cab radio shall be capable of being used as a standard telephone, such that the driver is able to call any valid number subject to pre-defined call restrictions. The call may be initiated by: (M)\n- selection from a pre-defined list (up to 99 entries);\n- direct dialling a subscriber number;\n- calling a functional number. Receive incoming point-to-point voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0149",
+      "text": "An audible and visual indication of an incoming call shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0150",
+      "text": "The functional identity (which may contain an alphanumeric description) of the calling party, when available, shall be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0151",
+      "text": "Point-to-point calls that are not automatically answered (see table 10-1) shall only be answered once the driver accepts the call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0152",
+      "text": "Once the driver has accepted the standard point-to-point call, it shall be connected appropriately, eg if the driver has accepted the call by lifting the handset, then the call shall be routed to the handset. (M) Receive incoming group or broadcast voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0153",
+      "text": "An audible and visual indication of the incoming call shall be provided when a Cab radio receives a group or broadcast call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0154",
+      "text": "The group identity of the voice group call (VBS or VGCS) shall be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0155",
+      "text": "Group or broadcast calls shall automatically be connected to the loudspeaker if the handset is not in use, or to the handset if the handset is off hook. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0156",
+      "text": "The driver shall be informed if a broadcast call is ongoing by a visual indication displayed on the MMI. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0157",
+      "text": "It is not possible for the driver to speak as part of the call when receiving a broadcast call. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0158",
+      "text": "If the call is a group call, the driver shall be required to request permission before being able to speak as part of the call by lifting the handset and pushing the Push-To- Talk (PTT) button. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0159",
+      "text": "During a group call, a visual indication shall be displayed on the drivers MMI to remind the driver of the need to use the PTT button. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0160",
+      "text": "The driver can not speak in a group call until permission is granted by the network after pushing the PTT button. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0161",
+      "text": "In a group call, an audible and visual indication of whether the request to talk was successful shall be provided. The driver shall then be able to speak as part of the call whilst the PTT button is pressed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0162",
+      "text": "If the train moves out of the group or broadcast call area whilst the call is in progress, an audible and visual indication of the loss of call shall be provided to the driver. (M) Receive incoming Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0163",
+      "text": "Reception of this call proceeds as for a standard group or broadcast call, except that a distinctive audible and visual indication shall be provided in the cab. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0164",
+      "text": "If a train-borne recorder is connected to the Cab radio, details of an incoming Railway emergency call shall be transmitted to the train-borne recorder for recording, see section 5.8. (M) Confirm receipt of Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0165",
+      "text": "An automatic confirmation shall be generated by the Cab radio at the end of the Railway emergency call as detailed in section 13. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0166",
+      "text": "Automatic confirmation of receipt of Railway emergency calls will be used to provide a means of determining which trains have received a Railway emergency call (see section 13). (I) Terminate calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0167",
+      "text": "The Cab radio shall provide a means for the driver to terminate calls which he is authorised to terminate (ie all calls except Railway emergency calls not initiated by the driver and shunting group calls). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0168",
+      "text": "For group or broadcast calls, a means to leave the call without terminating the call shall be provided. (M) Receive text messages",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0169",
+      "text": "The Cab radio system shall be able to receive incoming text messages (see section 12 for details). (M) Enter/leave shunting mode",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0170",
+      "text": "The Cab radio shall support a shunting mode of operation that provides a link assurance tone to reassure users of the integrity of the communication link (see section 14). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0171",
+      "text": "A means to enter and leave shunting mode shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0172",
+      "text": "The functionality to enter and leave shunting mode shall not be available when there are on-going calls involving the Cab radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0173",
+      "text": "The link assurance tone shall be provided via the loudspeaker. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0174",
+      "text": "If the Cab radio is equipped with an additional security device, this audible indication may be muted for the drivers convenience. In this case, the security device alerts the driver if the link has failed or if it is cancelled. (I) Enter/leave direct mode",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0175",
+      "text": "It should be possible for the Cab radio to be used without the network service (if it should fail or if there is no authorised network coverage), such that local open channel communications are still possible. This mode of operation is termed direct mode (see section 15). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0176",
+      "text": "If direct mode is implemented, a means to enter and leave direct mode shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0177",
+      "text": "If the radio is in direct mode and the normal network service returns, the user shall be provided with an audible and visual indication. (M) Monitor calls to other on-train users/devices using the Cab radio",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0178",
+      "text": "Not all communications using the Cab radio will involve the driver. Where these calls involve the Cab radio, the driver shall be provided with an indication that the Cab radio is busy. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0179",
+      "text": "For voice calls using the Cab radio not involving the driver as a called or calling party, the driver shall have the possibility to listen to the audio output of the communication. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0180",
+      "text": "For voice communications, if the driver picks up the handset, the radio shall allow him to join the communication. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0181",
+      "text": "The driver shall be able to terminate communications (voice or data) by selecting another call. (M) Forward calls to driver handheld",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0182",
+      "text": "Where the Cab radio is required by a national railway to support a handheld portable, the Cab radio shall: (M)\n- provide a clear indication as to whether the handheld portable is activated or not;\n- provide an interface to allow the handheld portable to be recharged when not in use;\n- forward calls automatically to the handheld portable when the handheld portable is activated;\n- cancel any call forwarding to the handheld portable when it is deactivated;\n- allow the driver to override the call forwarding to the handheld portable.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0183",
+      "text": "Powering up the Cab radio will initiate the following:\n- automatic self-testing; (M)\n- automatic selection of the pre-set loudspeaker volume; (M)\n- registration with other on-train systems, such as ERTMS/ETCS; (M)\n- all failures of self-tests should be recorded in the train-borne recorder; (O)\n- connection of the Cab radio to an authorised mobile network. This shall be the network to which the mobile was last registered (where available); (M)\n- if connection is successful, the name of the network shall be displayed on the MMI and an audible indication of successful connection shall be given; (M)\n- if connection is not successful, an audible and visual indication shall be provided. (M)\n- if connection is not successful, the manual network selection procedure may be initiated by the driver (see 5.2.3.23). (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0184",
+      "text": "At the point of successful connection, the Cab radio will be able to receive all calls made using the Cab radios telephone number, engine number or appropriate group call numbers (including Railway emergency calls). (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0185",
+      "text": "Powering down the Cab radio shall cause the disconnection of the Cab radio from the mobile network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0186",
+      "text": "When switched off, the radio shall retain any numbers which are stored at the time the radio is switched off. (M) Switch radio MMI on/off",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0187",
+      "text": "The MMI on/off control shall be designed to prevent accidental activation/ deactivation. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0188",
+      "text": "Switching the MMI on shall cause the following: (M)\n- self test of MMI (eg transitory lighting of the display and of all the controls and indicator lights of the MMI);\n- determination of the status of the Cab radio, providing a display of radio status on the MMI.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0189",
+      "text": "When the MMI is switched on, the configuration shall be determined by the time elapsed since the MMI was last switched off: (M)\n- less than minutes the MMI shall power up with the same configuration as when t it was last powered down;\n- greater than minutes the MMI shall power up with default settings. t",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0190",
+      "text": "The time should be able to be varied between 0 and 240 minutes, as a maintenance t function, allowing the radio to power up in a consistent state following minor operational procedures or power interruptions. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0191",
+      "text": "Switch off shall be soft so that the Cab radio completes the following housekeeping functions before actually switching off: (M)\n- controlled termination of a current call;\n- deregister train number (where applicable);\n- store required data;\n- confirmation of Railway emergency calls (see section 13).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0192",
+      "text": "As far as possible, the above procedure should also apply on power failure. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0193",
+      "text": "When switched off, the following functions (if available) shall still be provided: (M)\n- public address;\n- call Chief Conductor;\n- intercom. Select language",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0194",
+      "text": "It shall be possible to present radio related prompts and information in a number of different languages. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0195",
+      "text": "By default, prompts and information shall be displayed in the language selected by the train owner (as stored within the system). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0196",
+      "text": "It shall be possible for the user to display a list of available languages and select the language in which radio related prompts and information are displayed both at turn on and during a journey (eg where a change of drivers may occur). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0197",
+      "text": "The languages to be supported will be a matter for each national railway to decide. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0198",
+      "text": "The radio shall support at least ten different languages. (M) Adjust loudspeaker volume",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0199",
+      "text": "By default, the loudspeaker volume shall be set to a pre-determined level suitable for the operating environment (as stored within the system). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0200",
+      "text": "It shall be possible for the driver to increase and decrease the loudspeaker volume within the adjustment range selected. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0201",
+      "text": "When the handset is picked up, the loudspeaker shall continue to operate, but at a reduced volume level. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0202",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0203",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0204",
+      "text": "Deleted. Manual network selection",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0205",
+      "text": "Using a simple MMI action, it shall be possible for the driver to view a prioritised list of all authorised mobile radio networks (see section 10.5). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0206",
+      "text": "When presented with this list, it shall be possible for the driver (using simple MMI actions) to select the required mobile radio network manually, whereupon the Cab radio shall attempt to attach to this selected network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0207",
+      "text": "The manual network selection function shall not be available when there are on-going voice calls involving the Cab radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0208",
+      "text": "A visual confirmation of the new network identity shall be given to the driver when a manually initiated network change has been completed successfully. (M) 5.2.3.25v Directed network selection is suitable for crossing international borders. (I) Automatic network selection 5.2.3.25vi The Cab radio should be capable of selecting the mobile radio network automatically from a list of suitable networks (see section 10.5). (O) 5.2.3.25vii If automatic network selection is implemented, it shall be possible for the driver to activate and deactivate automatic network selection. (M) 5.2.3.25viii Automatic network selection shall not be used for international border crossing. (M) 5.2.3.25x If directed network selection and/or automatic network selection are implemented, the driver shall be informed by means of an audible and visual indication of the new network identity whenever a network change takes place without user intervention. (M) Register and deregister train number",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0209",
+      "text": "Manual network selection is suitable for crossing international borders. (I) Directed network selection 5.2.3.25iv If directed network selection is implemented, input from the external device(s) shall initiate the network change regardless of the identity of the current network and how it was selected. (M) 5.2.3.25ix Automatic network selection is not suitable for use in areas where there is a risk that the Cab radio will change to a foreign network unpredictably. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0210",
+      "text": "The Cab radio should be capable of selecting the mobile radio network as directed by input from an external device (eg a balise). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0211",
+      "text": "If directed network selection is implemented and voice calls are ongoing at the time when the external device attempts to trigger a network change, an audible and visual indication shall be given to the driver and network change shall be deferred until the call is terminated or until coverage of the current network is lost. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0212",
+      "text": "Directed network selection is suitable for crossing international borders. (I) Automatic network selection",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0213",
+      "text": "The Cab radio should be capable of selecting the mobile radio network automatically from a list of suitable networks (see section 10.5). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0214",
+      "text": "If automatic network selection is implemented, it shall be possible for the driver to activate and deactivate automatic network selection. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0215",
+      "text": "Automatic network selection shall not be used for international border crossing. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0216",
+      "text": "Automatic network selection is not suitable for use in areas where there is a risk that the Cab radio will change to a foreign network unpredictably. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0217",
+      "text": "If directed network selection and/or automatic network selection are implemented, the driver shall be informed by means of an audible and visual indication of the new network identity whenever a network change takes place without user intervention. (M) Register and deregister train number",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0218",
+      "text": "It shall be possible for the driver to register and deregister a train number in the following ways: 1) enter train number; (M) 2) initiate automated request (applicable only for leading driver). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0219",
+      "text": "Where the driver is required to enter the train number information, the information entered shall be shown on the display and require confirmation by the driver before further actions are possible. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0220",
+      "text": "If an automated request is initiated (option 2), the driver shall be able to accept or reject the train number returned by the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0221",
+      "text": "Where ERTMS/ETCS and radio systems are available and the driver is required to enter the train number as part of the initialisation procedure, this task shall be carried out only once on the ERTMS/ETCS system and the entered number transmitted to the radio system. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0222",
+      "text": "Data entry may be from either system depending on the operating procedures agreed between the train operator and the railway infrastructure operator. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0223",
+      "text": "The driver shall be warned (by audible and visual indications) if a train with the same train number is already registered on the same network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0224",
+      "text": "A means to override the currently registered train number shall be provided to the newly registering driver. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0225",
+      "text": "The driver of the previously registered train shall be informed (by audible and visual indications) that his train number has been overridden by another driver. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0226",
+      "text": "Where a change of train number is required during the course of a trains journey, it shall be possible for the driver to initiate the change or override the automatic change. This shall be carried out by entering the train number (option 1 in 5.2.3.26). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0227",
+      "text": "Non leading drivers shall be able to indicate to the system their location in the train during the registration procedure (2nd driver, 3rd driver etc). (M) Register and deregister on-train users (on-train functions)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0228",
+      "text": "The drivers functional number shall be automatically registered/deregistered when the train number is registered/deregistered. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0229",
+      "text": "The functional number of other on-train users who may be addressed through the Cab radio via the on-train bus shall be registered/deregistered automatically at the same time as the registration/deregistration of the drivers functional number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0230",
+      "text": "Where an on-train bus is connected to the Cab radio, deregistration of functional numbers can be performed on an individual basis and also by the train driver, by one action for all users (including the driver), at the end of the journey when the train number is no longer associated with the train. (O) Register and deregister stock number (engine/coach number)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0231",
+      "text": "There shall be a fixed relationship between the telephone numbers of radios installed in the locomotive/coach and the stock number, which shall remain even if the radio is changed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0232",
+      "text": "It shall be possible to register and deregister a stock number in one or both of the following ways: (M)\n- automatically using information from on-board systems;\n- automatically via a fixed interface between the locomotive/coach and the radio. Store/retrieve numbers and their details",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0233",
+      "text": "The Cab radio shall have a reconfigurable list of stored numbers that may be used to perform abbreviated dialling to named user identities. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0234",
+      "text": "It shall be possible for the driver to find and display stored numbers and their information. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0235",
+      "text": "It should be possible for the driver to store and overwrite numbers and their details in the Cab radio. (O) Invoke supplementary services",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0236",
+      "text": "General MMI functions are required to support the following call functions:\n- forward call to the driver handportable; (O)\n- put a call on hold; (M)\n- display incoming call details whilst in an on-going call; (M)\n- temporarily exit an existing call to answer another incoming call; (M)\n- multi-driver call service. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0237",
+      "text": "The actions required from the driver will be as simple as possible. (I) Invoke tests",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0238",
+      "text": "It shall be possible to initiate tests of the radio to provide the driver with a reasonable level of certainty that the radio and MMI are working. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0239",
+      "text": "Such tests shall not prevent calls. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0240",
+      "text": "The result of the tests shall be displayed in a similar format to the self-test when MMI is powered on. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0241",
+      "text": "The Cab radio system may be required to be able to handle incoming and outgoing calls not only to and from the driver, but also to and from other on-train users and devices (conductor, public address system, data systems, etc) via appropriate interfaces and ports. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0242",
+      "text": "For data applications, calls shall be possible even if the driver MMI is switched off. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0243",
+      "text": "The Cab radio may need to conserve battery power when the radio is powered up but the MMI is switched off. (I) Handling of call priorities",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0244",
+      "text": "The Cab radio may be required to set up calls from a number of different sources. Therefore, the radio shall provide a priority function for calls from different sources in order to handle contention for the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0245",
+      "text": "In order to meet other call priorities, established calls shall be able to be either put on hold or cleared down (pre-empted). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0246",
+      "text": "The Cab radio shall be capable of handling contention between calls of differing priorities. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0247",
+      "text": "An outgoing call request of higher priority than an established call shall take precedence over the established call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0248",
+      "text": "Where pre-emption occurs, an advisory indication may be provided to the pre-empted parties. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0249",
+      "text": "Priority call handling facilities shall be provided such that the performance requirements defined in sections 3.4 and 10.2 can be met. (M) Run-time diagnostics",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0250",
+      "text": "Upon the request of the driver, the Cab radio should be able to perform a suite of run- time diagnostic tests on all physical interfaces. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0251",
+      "text": "If run-time diagnostics are implemented, failure of an interface shall be reported to the driver via the display. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0252",
+      "text": "If run-time diagnostics are implemented, all failures should be available to be recorded in a train-borne recorder. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0253",
+      "text": "If run-time diagnostics are implemented, diagnostic tests shall not interfere with normal operation of the Cab radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0254",
+      "text": "Railways will require facilities to support the use of automatic test equipment with mobile radios. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0255",
+      "text": "Train-mounted equipment including the Cab radio terminal equipment, MMI and antenna shall comply with all specifications in section 4.3 and all of those defined in this section. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0256",
+      "text": "The radio equipment that will be mounted in rolling stock can be split into two classes: in-cab equipment and external equipment. Each type of equipment has slightly different requirements placed upon it in terms of EMC and climate. (UIC fiche 651 is a useful reference concerning the layout of cab equipment.) (I) Physical conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0257",
+      "text": "Measures should be taken to reduce the risk of theft of radio equipment. Examples of such measures include physical protection, alarms and access control measures. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0258",
+      "text": "Ease of maintenance should be taken into account in the design and installation of radio equipment. For example, maintenance access to antennas on vehicles should be provided. (I) Electrical",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0259",
+      "text": "Cab radios should be able to continue to operate for a period of at least 1 hour in the event of failure of the trains power supply, based on the following cycle: (O)\n- point-to-point calls 20%;\n- group calls 5%;\n- standby 75%. Electromagnetic Compatibility",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0260",
+      "text": "Requirements on electromagnetic emissions for the Cab radio are to be more stringent than those defined for other radio types due to close proximity to other train-mounted control and protection equipment, and higher transmission power. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0261",
+      "text": "The driver man-machine interface shall comprise the following components: (M)\n- display;\n- control panel;\n- loudspeaker;\n- handset with Push-To-Talk button.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0262",
+      "text": "Radio equipment installed in a drivers Cab shall not obstruct the drivers vision or otherwise hinder the safe driving of the train. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0263",
+      "text": "The design of the equipment shall make it possible to install it within a cab complying with the requirements of UIC fiche 651 concerning the layout of cab equipment . (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0264",
+      "text": "All call related functions shall be possible with the handset on or off the hook. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0265",
+      "text": "Note: there is no requirement for hands free operation. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0266",
+      "text": "The driver shall be able to adjust the brightness of buttons, indicator lights and displays according to the ambient lighting in the cab. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0267",
+      "text": "The driver shall be able to adjust the contrast of the display. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0268",
+      "text": "The emergency call button shall be red and shall be protected against accidental use. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0269",
+      "text": "Any displays shall be clearly readable from a normal drivers position, assuming a normal reading distance. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0270",
+      "text": "Displayed characters shall have a minimum height of 5mm. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0271",
+      "text": "The following colours shall only be used where mandated in 5.4.11: (M)\n- red;\n- green.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0272",
+      "text": "The standard set of audible and visual indications specified in the CENELEC Standard for the Driver-Machine Interface for ERTMS shall be implemented in the Cab radio system. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0273",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0274",
+      "text": "Some Cab radios may need to be operated by staff wearing gloves and controls may need to be suitable for use in a wide range of conditions, eg splash proof and suitable for viewing in direct sunlight and in darkness. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0275",
+      "text": "Where there is a risk that stored numbers or other set-up details may be accidentally changed, facilities should be provided on the Cab radio in order to prevent this happening. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0276",
+      "text": "Cab radios shall provide a means of preventing tampering. (M) Service availability",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0277",
+      "text": "If contact with the mobile radio network is lost, then the Cab radio shall give an audible and visual indication. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0278",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0279",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0280",
+      "text": "A driver safety device (DSD) interface should be provided in traction units that are equipped with a DSD in order to support the transmission of a DSD alarm. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0281",
+      "text": "If such an interface is implemented, it shall be capable of being connected to a device complying with UIC fiche 641 concerning automatic vigilance devices used in international traffic. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0282",
+      "text": "The activation of the driver safety device shall automatically trigger the Cab radio to send a data message. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0283",
+      "text": "The DSD alarm call/message shall provide the following information:\n- train number; (M)\n- engine number; (M)\n- location information. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0284",
+      "text": "DSD alarm information shall be transmitted to the primary controller. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0285",
+      "text": "Additional information may also be provided if available from external systems. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0286",
+      "text": "The Cab radio shall be able to provide the following information to a train-borne recorder or other equipment via a standardised interface:\n- activation of Cab radio emergency call button; (M)\n- receipt of incoming Railway emergency call; (M)\n- termination of outgoing or incoming Railway emergency call; (M)\n- radio faults; (O)\n- driver safety device alarm message transmission; (M)\n- details of confirmation of Railway emergency call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0287",
+      "text": "On-train mobiles shall provide a standardised interface to ERTMS/ETCS. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0288",
+      "text": "In addition, individual railways may have requirements to interface to national control/command systems. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0289",
+      "text": "Other interfaces may be provided in the Cab radio system. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0290",
+      "text": "This section identifies the functional requirements for General purpose radio. It covers the functionality to be provided by the General purpose radio and the man-machine interface (MMI) is also defined. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0291",
+      "text": "In this section, the functions to be provided by the General purpose radio are described. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0292",
+      "text": "The following functions will be provided: Call related functions\n- call authorised users (including controllers); (M)\n- send Railway emergency calls; (O)\n- receive Railway emergency calls; (O)\n- receive incoming calls; (M)\n- group and broadcast calls; (M)\n- terminate calls; (M) Other functions\n- switch radio on and off; (M)\n- select language; (M)\n- select mobile radio network; (M)\n- adjust loudspeaker volume; (M)\n- register and deregister functional numbers; (M)\n- store/retrieve numbers and their details; (M)\n- computer interface. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0293",
+      "text": "The General purpose radio shall be capable of use as a standard telephone, such that the user is able to call any valid number subject to call restrictions enforced by the network. (M) Send Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0294",
+      "text": "The facility for a given General purpose radio to send a Railway emergency call (see section 13) shall be determined as a management function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0295",
+      "text": "A special MMI action shall be required for a General purpose radio user to send a Railway emergency call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0296",
+      "text": "It shall not be possible for any General purpose radio user to send a Railway emergency call by dialling a short code or telephone number. (M) Receive incoming point to point voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0297",
+      "text": "An audible and visual indication of an incoming call shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0298",
+      "text": "Where available, the functional identity of the calling party shall be displayed. (M) Receive incoming group or broadcast voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0299",
+      "text": "A short audible and visual indication of the incoming call shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0300",
+      "text": "The group identity of the voice group call (VBS or VGCS) shall be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0301",
+      "text": "If the call is a broadcast call, the user shall be informed that he cannot speak as part of the broadcast call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0302",
+      "text": "If the call is a group call, the user has to request permission to speak during the call by using the Push-To-Talk (PTT) function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0303",
+      "text": "In a group call, a visual indication shall be provided to remind the user of the need to use the PTT function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0304",
+      "text": "The user may not speak in a group call until permission is granted by the network after using the PTT function. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0305",
+      "text": "In a group call, an audible and visual indication of whether the request was successful shall be provided. The user may then talk whilst the PTT function is used. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0306",
+      "text": "If the user moves out of the group or broadcast call area whilst the call is in progress, an audible and visual indication of the loss of call shall be provided to the user. (M) Receive incoming Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0307",
+      "text": "Reception of this call (if implemented) shall proceed as for a standard group or broadcast call except that a distinctive audible and visual indication shall be provided. (M) Terminate calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0308",
+      "text": "The radio shall provide a means for the user to terminate calls which he is authorised to terminate (ie all calls except broadcast or group calls not initiated by the user). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0309",
+      "text": "The radio shall have an on/off switch. Switching the radio on shall initiate the following: (M)\n- transitory lighting of any display, controls or indicator lights;\n- automatic self-testing;\n- if the self-test fails a visible and audible indication shall be provided;\n- connection to a mobile network (see section 3.3);\n- if connection is successful, the name of the network shall be displayed and an audible confirmation of successful connection shall be given;\n- if connection is not successful, an audible and visual indication shall be provided.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0310",
+      "text": "At this point, the radio will be able to receive all calls initiated using the telephone number or appropriate group call number. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0311",
+      "text": "Switching the radio off shall cause the following: (M)\n- termination of all calls under the control of (ie initiated by) the radio;\n- disconnection of the radio from the network;\n- clearing the display and inhibition of functions.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0312",
+      "text": "When switched off, the radio shall retain any settings and numbers which are stored at the time the radio is switched off. (M) Select language",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0313",
+      "text": "Prompts and messages shall be capable of being displayed in at least 10 languages (each railway will choose which languages will be implemented). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0314",
+      "text": "The user shall be able to select his preferred language for the display; this setting shall be retained by the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0315",
+      "text": "When the radio is first powered on, the language that appears on the display shall be the default one set by the national railway. (M) Select mobile radio network",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0316",
+      "text": "Where more than one mobile radio network is available for use by a mobile, the selection of the network to use shall be automatic (see section 10.5). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0317",
+      "text": "When the mobile changes network automatically, a visual and audible indication shall be given. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0318",
+      "text": "It shall be possible for a user to override the automatic network selection manually. This function shall not be available during calls. (M) Register and deregister functional number",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0319",
+      "text": "It shall be possible to register and deregister a functional number in the following way:\n- Initiated by the user and transmitted to the ground:\n- user enters functional number which is transmitted to the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0320",
+      "text": "Where a change of functional number is required, it shall be possible for the user to initiate the change. (M) Store/retrieve numbers and their details",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0321",
+      "text": "It shall be possible for the user to find and display stored numbers and their information. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0322",
+      "text": "It shall be possible for the user to store and/or overwrite numbers and their details in the radio. (M) Computer interface",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0323",
+      "text": "A standard data interface should be provided to allow a computer to be connected to the radio. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0324",
+      "text": "The full environmental and physical specification of the General purpose radio is intended to be as close as possible to that of a Commercial-Off-The-Shelf (COTS) mobile whilst adhering to the specifications provided in section 4.3 and this section. (I) Physical conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0325",
+      "text": "The General purpose radio should be small, compact and easy to carry. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0326",
+      "text": "It should be possible for a user to change the battery without the use of tools. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0327",
+      "text": "The weight of the General purpose radio including battery should not exceed 250g. (O) Electrical",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0328",
+      "text": "General purpose radios should be equipped with rechargeable batteries capable of providing a minimum of eight hours operation from a single charge based on the following cycle (see section 4.3.9): (O)\n- point-to-point calls 20%;\n- group calls 5%;\n- standby 75%.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0329",
+      "text": "Changing the battery should not result in losing data stored in the radio. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0330",
+      "text": "The General purpose radio should be suitable for use with a car adapter kit. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0331",
+      "text": "The General purpose radio should comprise the man-machine interface which includes the following components: (O)\n- display;\n- control panel;\n- loudspeaker;\n- microphone.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0332",
+      "text": "The MMI should be suitable for use both by day and night. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0333",
+      "text": "The on/off control should be designed to prevent accidental activation/deactivation. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0334",
+      "text": "Facilities should be provided to adjust the loudspeaker volume. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0335",
+      "text": "A Push-To-Talk function shall be provided. The Push-To-Talk function does not need to be a dedicated button. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0336",
+      "text": "Four buttons should be provided for designated stored numbers. These buttons need not be dedicated buttons. (This facility is required to allow calls to specified users to be initiated quickly.) (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0337",
+      "text": "Stored numbers and other set-up details should be protected against accidental alteration. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0338",
+      "text": "If the ability to initiate Railway emergency calls is implemented in the radio, accidental initiation of a Railway emergency call shall be prevented. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0339",
+      "text": "A visual and audible indication shall be given when the remaining capacity of the battery is such as to enable only 10 minutes of full duplex call time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0340",
+      "text": "A network service availability indication shall be provided to the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0341",
+      "text": "A visual indication shall be provided to the user if the network service is no longer available. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0342",
+      "text": "An audible indication should be provided to the user if the network service is no longer available. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0343",
+      "text": "This section identifies the functional requirements for the EIRENE Operational radio. It covers the functionality to be provided by the Operational radio and the man-machine interface (MMI) is also defined. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0344",
+      "text": "In this section, the functions to be provided by the Operational radio are described. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0345",
+      "text": "The following functions will be provided: Call related functions\n- call authorised users; (M)\n- call controller; (M)\n- send Railway emergency calls; (M)\n- receive Railway emergency calls; (M)\n- receive incoming calls; (M)\n- group and broadcast calls; (M)\n- terminate calls; (M)\n- shunting mode communications; (O)\n- enter/leave direct mode; (O) Other functions\n- switch radio on/off; (M)\n- select language; (M)\n- select mobile radio network; (M)\n- adjust loudspeaker volume; (M)\n- register and deregister functional number; (M)\n- store/retrieve numbers and their details; (M)\n- computer interface. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0346",
+      "text": "The Operational radio shall be capable of use as a standard telephone, such that the user is able to call any valid number subject to call restrictions enforced by the network. (M) Call controllers",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0347",
+      "text": "It shall be possible for the user of an Operational radio to establish a call with each of the following types of controller (who are not permanently included in a shunting group) with a minimum number of actions being required:\n- primary controller; (M)\n- secondary controller; (M)\n- power supply controller. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0348",
+      "text": "For some users, particularly for shunting team leaders, up to twenty valid numbers may be stored for one controller type. In these cases, the identities of the controllers corresponding to these valid numbers shall be displayed with an audible and visual prompt for one to be selected. The number of the controller selected shall then be used to establish the call. If no selection is made by the user within 10 seconds the radio shall abandon the call attempt. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0349",
+      "text": "Once an appropriate number has been obtained, the radio shall attempt to establish a call to this number with railway operation priority. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0350",
+      "text": "An audible and visual indication shall be provided to the user that the call is proceeding. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0351",
+      "text": "When the call is connected to the controller, an audible and visual indication shall be provided to the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0352",
+      "text": "The functional identity of the connected party, if available, shall be displayed to the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0353",
+      "text": "Where available, an alphanumeric description of the identity of the connected party shall be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0354",
+      "text": "If the system is not able to connect the call, an audible and visual indication shall be provided to the user. (M) Send Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0355",
+      "text": "The Railway emergency call shall be able to be initiated using a single red button (see section 13). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0356",
+      "text": "It should be possible, as a maintenance function, to enable/disable the emergency call function. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0357",
+      "text": "If the emergency call function is disabled, a visual indication and short audible indication shall be given when:\n- the radio is switched on; (M)\n- the emergency button is pushed (in this case nothing else will happen). (M) Receive incoming point to point voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0358",
+      "text": "An audible and visual indication of an incoming call shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0359",
+      "text": "Where available, the functional identity of the calling party shall be displayed. (M) Receive incoming group or broadcast voice call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0360",
+      "text": "A short audible and visual indication of the incoming call shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0361",
+      "text": "The group identity of the voice group call (VBS or VGCS) shall be displayed. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0362",
+      "text": "If the call is a broadcast call, the user shall be informed that he cannot speak as part of the broadcast call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0363",
+      "text": "If the call is a group call, the user has to request permission to speak during the call by using the Push-To-Talk (PTT) function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0364",
+      "text": "In a group call, a visual indication shall be provided to remind the user of the need to use the PTT function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0365",
+      "text": "The user may not speak in a group call until permission is granted by the network after using the PTT function. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0366",
+      "text": "In a group call, an audible and visual indication of whether the request was successful shall be provided. The user may then talk whilst the PTT function is used. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0367",
+      "text": "If the user moves out of the group or broadcast call area whilst the call is in progress, an audible and visual indication of the loss of call shall be provided to the user. (M) Receive incoming Railway emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0368",
+      "text": "Reception of this call shall proceed as for a standard group or broadcast call except that a distinctive audible and visual indication shall be provided. (M) Terminate calls",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0369",
+      "text": "The radio shall provide a means for the user to terminate calls which he is authorised to terminate (ie all calls except broadcast or group calls not initiated by the user). (M) Shunting mode communications",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0370",
+      "text": "The Operational radio should provide facilities to support shunting mode as described in section 14. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0371",
+      "text": "If shunting mode is implemented, a means to enter and leave shunting mode shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0372",
+      "text": "If shunting mode is implemented, the functionality to enter or leave shunting mode shall not be available whilst there are on-going calls involving the Operational radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0373",
+      "text": "If shunting mode is implemented, the link assurance tone shall be provided via the loudspeaker. (M) Direct mode",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0374",
+      "text": "A means to enter/leave the direct mode of operation should be provided (see section 15). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0375",
+      "text": "The radio shall have an on/off switch. Switching the radio on shall initiate the following: (M)\n- transitory lighting of any display, controls or indicator lights;\n- automatic self-testing;\n- if the self-test fails a visible and audible indication shall be provided;\n- connection to a mobile network (see section 3.3);\n- if connection is successful, the name of the network shall be displayed and an audible confirmation of successful connection shall be given;\n- if connection is not successful, an audible and visual indication shall be provided.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0376",
+      "text": "At this point the radio should be able to receive all calls initiated using the telephone number or appropriate group call number. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0377",
+      "text": "Switching the radio off shall cause the following: (M)\n- termination of all calls under the control of (ie initiated by) the radio;\n- disconnection of the radio from the network;\n- clearing the display and inhibition of functions.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0378",
+      "text": "When switched off, the radio shall retain any settings and numbers which are stored at the time the radio is switched off. (M) Select language",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0379",
+      "text": "Prompts and messages shall be capable of being displayed in at least 10 languages (each railway will choose which languages will be implemented). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0380",
+      "text": "The user shall be able to select his preferred language for the display; this setting shall be retained by the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0381",
+      "text": "When the radio is first powered on, the language that appears on the display shall be the default one set by the national railway. (M) Select mobile radio network",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0382",
+      "text": "Where more than one mobile radio network is available for use by a mobile, the selection of the network to use shall be automatic (see section 10.5). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0383",
+      "text": "When the mobile changes network automatically, a visual and audible indication shall be given. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0384",
+      "text": "It shall be possible for a user to override the automatic network selection manually. This function shall not be available during calls. (M) Register and deregister functional number",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0385",
+      "text": "It shall be possible to register and deregister a functional number in the following way:\n- Initiated by the user and transmitted to the ground:\n- user enters functional number which is transmitted to the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0386",
+      "text": "Where a change of functional number is required, it shall be possible for the user to initiate the change. (M) Store/retrieve numbers and their details",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0387",
+      "text": "It shall be possible for the user to find and display stored numbers and their information. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0388",
+      "text": "It shall be possible for the user to store and/or overwrite numbers and their details in the radio. (M) Computer interface",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0389",
+      "text": "A standard data interface should be provided to allow a computer to be connected to the radio. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0390",
+      "text": "The Operational radio shall comply with the basic standards defined for all EIRENE mobile equipment in section 4.3 and this section. The Operational radio is specified to allow its use in the operating environment experienced on the operational railway (eg shunting and maintenance). (I) Climatic conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0391",
+      "text": "The Operational radio should be capable of withstanding exposure to the following extreme environmental conditions: (O)\n- salt mist spray;\n- torrential rain at up to 2mm/min;\n- heavy hail;\n- snow and sand storms;\n- accretion of ice;\n- corrosive atmospheres (including sulphur dioxide, hydrogen sulphide, nitrogen oxides, ozone, organic hydrocarbons). Physical conditions",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0392",
+      "text": "The Operational radio shall be of a rugged design suitable for use in the railway environment by operational railway personnel. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0393",
+      "text": "The Operational radio should have a carry feature that allows the operator to instantly have both hands free without dropping the radio. It should be possible to release the carry feature instantly in the event that the radio is caught on a projecting part of a moving vehicle. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0394",
+      "text": "Controls shall be designed such that they are suitable for use by people wearing gloves. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0395",
+      "text": "Controls shall be designed for use in a wide range of conditions, eg splash proof and suitable for viewing in direct sunlight and in darkness. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0396",
+      "text": "It should be possible for a user to change the battery without the use of tools. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0397",
+      "text": "The weight of the Operational radio including battery should not exceed 800g. (O) Electrical",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0398",
+      "text": "It shall be possible to change the battery without losing data stored in the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0399",
+      "text": "Operational radios shall be equipped with rechargeable batteries capable of providing a minimum of eight hours operation from a single charge based on the following cycle (see section 4.3.9): (M)\n- point-to-point calls 20%;\n- group calls 60%;\n- standby 20%.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0400",
+      "text": "The Operational radio should be suitable for use with a car adapter kit. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0401",
+      "text": "The Operational radio MMI shall comprise the following components: (O)\n- display;\n- control panel;\n- loudspeaker;\n- microphone.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0402",
+      "text": "The MMI shall be suitable for use by day and night. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0403",
+      "text": "The display shall be capable of displaying at least 6 lines, each of 20 characters. (M )",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0404",
+      "text": "Four buttons should be provided for designated stored numbers. (This facility is required for calls to local controllers, etc.) (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0405",
+      "text": "The emergency button shall be designed to avoid accidental use. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0406",
+      "text": "If shunting mode is implemented, the link assurance button shall be designed to avoid accidental use. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0407",
+      "text": "A dedicated Push-To-Talk button shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0408",
+      "text": "A visual and audible alarm shall be given when the remaining capacity of the battery is such as to enable only 10 minutes of full duplex call time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0409",
+      "text": "A visual indication shall be provided to the user if the network service is no longer available. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0410",
+      "text": "An audible indication should be provided to the user if the network service is no longer available. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0411",
+      "text": "Within a railway operational structure there may be several different controller types such as primary, power, secondary, etc. These may be physically separate or co- located; however, the majority of interaction is with the primary controller. This section addresses the following: (I)\n- primary controllers MMI;\n- other controllers MMIs;\n- controller terminal interface;\n- environmental specifications.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0412",
+      "text": "Detailed specification of controller equipment and the interface between such equipment and the EIRENE network is at the discretion of the railway operator. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0413",
+      "text": "Within a control centres equipment, the radio control functions and presentation may be integrated within a set of equipment used for other control operations. The following description is based on dedicated equipment but does not preclude integration. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0414",
+      "text": "Details concerning controller equipment requirements for Railway emergency calls are given in section 13. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0415",
+      "text": "The primary controllers MMI should provide the following functionality: (O)\n- Queue all incoming calls or call requests.\n- Display the queue to the controller, showing the functional identity and priority of callers. High priority calls should be identified and presented at the top of the queue.\n- Allow the controller to select any of the incoming calls currently queued by the system.\n- Allow the controller to establish a call of Railway emergency, public emergency or railway operation priority to any mobile by selection from the display.\n- Allow the controller to establish, close, enter and leave group calls (at Railway emergency, public emergency or railway operation priority).\n- Allow sending and receiving of text messages.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0416",
+      "text": "For post incident analysis, the controller equipment should provide the possibility to record all operational speech and data calls. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0417",
+      "text": "It should be possible for calls to be answered automatically according to incoming call priority as defined in section 10.2. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0418",
+      "text": "The functionality required by other types of controllers is essentially the same as for primary controllers, but the control area will differ and the call set-up subsystem may be integrated into their own function management system. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0419",
+      "text": "At the detailed level, different controllers may have specific addressing needs, eg catering controllers will need to call specific vehicles in a train. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0420",
+      "text": "The communications architecture will be dictated by local circumstances. The definition of this interface is beyond the scope of EIRENE. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0421",
+      "text": "The controller equipment must be designed to function correctly in a railway operating environment, such as control centres and signal boxes. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0422",
+      "text": "International standardisation of numbering plans is needed to ensure interworking between networks. Furthermore, standardised allocation of numbers to subscribers will facilitate schemes for identification, barring, etc. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0423",
+      "text": "This section addresses the following: (I)\n- numbering plan requirements;\n- standardised telephone numbers;\n- group numbers;\n- calls from external networks to the EIRENE network.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0424",
+      "text": "The EIRENE system shall enable users to originate and receive calls by functional number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0425",
+      "text": "Each mobile shall be identified by a unique telephone number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0426",
+      "text": "The use of train numbers to address trains shall not result in any ambiguities. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0427",
+      "text": "Every on-train function shall be identified by a unique standard number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0428",
+      "text": "The use of engine/coach numbers to address trains shall not result in any ambiguities. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0429",
+      "text": "Every on-engine/coach function shall be identified by a unique standard number. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0430",
+      "text": "Every shunting team number shall be based on an association of: (M)\n- service area identifier;\n- shunting team identifier.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0431",
+      "text": "Every maintenance team number shall be based on an association of: (M)\n- service area identifier;\n- type of maintenance team (speciality code);\n- maintenance team identifier.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0432",
+      "text": "Every controller number shall be based on an association of: (M)\n- controller location;\n- controller identifier.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0433",
+      "text": "The numbering for other teams shall be treated in the same way as maintenance teams in 9.2.4.2. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0434",
+      "text": "Group call service areas shall be freely configurable within the operational responsibility of each railway network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0435",
+      "text": "In some countries, train numbers are alphanumeric. Support for such numbers is not required for interoperability. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0436",
+      "text": "Telephone numbers can be defined on a national basis, but codes for certain functions shall be used on an international basis in order to allow interoperability. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0437",
+      "text": "For certain functions, standardised telephone numbers shall be implemented. These functions are: (M) - Route call to most appropriate ERTMS/ETCS RBC; - Railway emergency call; - Route call to primary controller; - Route call to secondary controller; - Route call to power supply controller; - Public emergency call.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0438",
+      "text": "To provide interoperability between the fixed railway networks within the EIRENE network, standardisation of UIC group numbering will be required. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0439",
+      "text": "In network boundary areas, the pre-defined local area shall be allocated on a bilateral basis. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0440",
+      "text": "Authorised users within the EIRENE network shall be able to receive calls from calling parties outside the EIRENE network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0441",
+      "text": "In order to provide a consistent level of service in each railway network and, in particular, to ensure interoperability for train drivers and other users roaming between networks, it is important to harmonise subscription details and other information stored in the network. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0442",
+      "text": "For the purposes of defining common subscription profiles, a number of subscription types might be used, for example: (I)\n- Cab radio;\n- on-train radio;\n- controller;\n- trackside worker;\n- general staff;\n- data services;\n- administration/management.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0443",
+      "text": "A number of levels of priority shall be required in order to offer different grades of service to different users and calls. Five levels of priority shall be defined: (M)\n- Railway emergency;\n- control-command (safety);\n- public emergency and group calls between drivers in the same area;\n- railway operation;\n- railway information.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0444",
+      "text": "In order to provide interoperability, priorities shall be allocated consistently across all EIRENE networks, as shown in the following table. (M) UIC Priority Automatic Pre-emption answering* (of) Railway emergency Y Control-command (safety) and below Control-command (safety) Y Public emergency, group calls between drivers in the same area and below Public emergency and group calls Y Railway operation, between drivers in the same area Control-command information and below Railway operation Y ** Railway information (eg calls from or for drivers and and below controllers) and Control-command information Railway information and all other N - calls * Automatic call answering applies only to voice calls ** Mandatory for Cab radio, optional for other user equipment Table 10-1: Allocation of priorities",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0445",
+      "text": "The lowest priority ongoing call shall be pre-empted before that of a higher priority. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0446",
+      "text": "In the case where an EIRENE mobile attempts to make a Railway emergency call over a public network, the ability to pre-empt lower priority calls (particularly public emergency calls) may be inhibited, unless a special agreement is in place. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0447",
+      "text": "Various types of call restriction may be employed by the railways as an additional security measure. Such facilities may be particularly important if public network access to the radio system is provided (eg to prevent members of the public calling drivers and drivers calling members of the public). (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0448",
+      "text": "Any implementation of such call restrictions shall not affect international interoperability. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0449",
+      "text": "A mobile may be a member of a number of groups. It shall be possible to activate or deactivate the mobiles subscription to these groups. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0450",
+      "text": "Activating a group on the mobile shall allow a user to receive a call from that group. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0451",
+      "text": "Deactivating a group on the mobile shall prevent a user receiving calls from that group. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0452",
+      "text": "In order to provide interoperability, Cab radios will be members of a number of standard groups:\n- Railway emergency call; (M)\n- all train drivers; (M)\n- shunting team; (M)\n- trackside worker. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0453",
+      "text": "All mobiles with Railway emergency group call subscription(s) shall be prevented from deactivating the emergency group(s) whilst operational. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0454",
+      "text": "Authorised networks shall be listed (or automatically selected if automatic selection has been enabled) in the following order: (M)\n- home EIRENE network;\n- foreign EIRENE networks;\n- public networks.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0455",
+      "text": "Where EIRENE facilities are not available within the currently selected network, the user shall be given a visible indication. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0456",
+      "text": "The access matrix defines which subscribers are able to contact which other subscribers within the EIRENE network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0457",
+      "text": "Yes indicates that the network shall allow a call from the stated initiating party to the stated receiving party. Yes* indicates that the call shall be allowed at least for users on the same train. Open indicates that permissions for calls of this type are to be assigned by the implementing railway according to their specific communication requirements. Shaded cells on the access matrix mean that this call is outside the scope of the EIRENE specifications. The access matrix is shown in table 10-2. (M) Receiving Party Primary Secondary Power Lead Other Chief Public Controller Controller Controller Driver Driver Conductor Address Primary Yes Open Open Open Controller Secondary Yes Open Open Open Controller Power Yes Open Open Open Controller Lead Yes Yes Yes Open Yes* Yes* Yes* Driver Initiating Party Other Yes Yes Yes Yes* Yes* Yes* Yes* Driver Chief Open Open Open Yes* Yes* Yes* Yes* Conductor Public Address * At least for persons on the same train Table 10-2: Access matrix",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0458",
+      "text": "If required, a railway may make additional restrictions to the access matrix. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0459",
+      "text": "There is a requirement to be able to address communications to a functional number rather than a telephone number. Such numbers are generally only associated with a user for a limited period of time. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0460",
+      "text": "The addressing scheme can be divided into two areas: (I)\n- functional addressing;\n- location dependent addressing.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0461",
+      "text": "An addressing scheme shall be provided which permits users to be identified by numbers corresponding to their functional roles rather than by numbers tied to the terminal equipment that they are using. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0462",
+      "text": "The primary usage of functional addressing will be for controllers to establish communications with train drivers by making use of the train number. The train number will vary between journeys although EIRENE equipment in the cab is unlikely to change. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0463",
+      "text": "Other uses of functional addressing will include identifying on-train functions and other users performing particular roles such as shunting team leaders, maintenance team members, etc. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0464",
+      "text": "It shall be possible to assign up to a minimum of 3 functional numbers to an EIRENE user at any one time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0465",
+      "text": "Only one EIRENE user shall be assigned to a given functional number at any one time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0466",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0467",
+      "text": "A user shall be able to set up a functional number on one network, and cancel the number from another network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0468",
+      "text": "The functional number shall remain valid as a user roams from one network to another. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0469",
+      "text": "The functional addressing scheme shall be independent of specific configurations of mobile and terminal equipment. For example, the functional number of a conductor on board a particular train shall be the same irrespective of whether the conductor accesses the network through the Cab radio or has a separate dedicated EIRENE mobile. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0470",
+      "text": "It shall be possible to call EIRENE users by functional numbers from a wide range of terminals (EIRENE and non-EIRENE). Examples include EIRENE mobiles, controller terminals, railway fixed network telephones and public telephones. (All such calls will be subject to any access restrictions see section 10.3.) (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0471",
+      "text": "The functional addressing scheme should permit calls to be routed from a controller to an international train within the control area without reference to any EIRENE system other than that providing service to the international train. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0472",
+      "text": "Functional numbers must be unique within the domain of operation. Since the number must be independent of networks, each number must be unique across all networks (including implementation of EIRENE facilities on public networks). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0473",
+      "text": "The functional number shall consist of numeric characters only. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0474",
+      "text": "If alphanumeric numbers are applied by a national railway, the railway will be responsible for the translation to unique numeric functional numbers compatible with the EIRENE specification. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0475",
+      "text": "The functional identity of the called user shall be presented to the user initiating a call and the functional identity of the initiator shall be presented to the user receiving a call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0476",
+      "text": "For broadcast and group voice communications, the functional identity provided shall be that of the broadcast or group identity. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0477",
+      "text": "If the user initiating the call has more than one functional identity, the user shall be able to select, prior to call establishment, which functional identity is presented to the receiving user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0478",
+      "text": "In the case of Cab radio, when a train number is assigned as a functional identity, this shall take priority over other Cab radio functional identities, and shall be the functional identity for the Cab radio to be displayed to other users. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0479",
+      "text": "The functional identity shall be presented to the user in a form which can be readily understood (eg driver of train abcd rather than abcd01 or xyz shunting team 3 rather than xyz03). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0480",
+      "text": "Three procedures can be identified for managing the relationship between the functional number and the telephone number by the mobile user as defined below. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0481",
+      "text": "The functional addressing scheme shall be supported by a straightforward procedure for registration of functional numbers. This procedure shall be carried out by the user on commencement of the functional role. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0482",
+      "text": "The functional number registration facility shall be supported by all EIRENE user equipment. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0483",
+      "text": "It should be possible for the system to prevent certain types of users from registering functional numbers that they are not authorised to use, for example: (O)\n- train number;\n- driver of train;\n- shunting team leader.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0484",
+      "text": "It shall be possible to register up to ten functional numbers to items of equipment physically connected to the Cab radio within 30 seconds. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0485",
+      "text": "The registration procedure shall provide a means to prevent mis-allocation of functional numbers during registration. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0486",
+      "text": "Duplicate functional numbers (eg two trains with the same train number) shall be prevented. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0487",
+      "text": "The system shall provide a means to recover consistent data sets following a system failure during which functional addressing facilities are lost. During this recovery period, the system shall not permit the use of unverified functional numbers. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0488",
+      "text": "The functional addressing scheme shall be supported by a straightforward procedure for deregistration of functional numbers. This procedure shall be carried out by the user at the end of the functional role. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0489",
+      "text": "The functional number deregistration facility shall be supported by all EIRENE user equipment. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0490",
+      "text": "It shall be possible to deregister up to ten functional numbers to items of equipment physically connected to the Cab radio within 30 seconds. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0491",
+      "text": "In addition, a given set of users shall also be allowed to: (M)\n- deregister a functional number which is no longer valid but which has not been deregistered by the user;\n- deregister, by overriding, another user of the same type (eg a driver can deregister a train number that another driver has forgotten to deregister);\n- deregister, with one action, all functional numbers associated with the same mobile (eg the driver deregisters all functions at the end of the journey).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0492",
+      "text": "An EIRENE mobile shall remove the displayed functional number and provide an indication to the user that deregistration has taken place. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0493",
+      "text": "To allow roaming between EIRENE networks, the system shall support a procedure for the re-registration of functional numbers after selection of a new network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0494",
+      "text": "This procedure shall be carried out without manual intervention. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0495",
+      "text": "After automatic re-registration is performed, the new registration details shall be displayed to the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0496",
+      "text": "Location dependent addressing shall be provided to route calls for a given function to a destination number that is dependent upon the users location. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0497",
+      "text": "The functions to which calls shall be routed based upon the location of the mobile shall include: (M)\n- Primary controller;\n- Secondary controller;\n- Power supply controller;\n- Train management centre (eg RBC, CTS).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0498",
+      "text": "The correspondence between the locations and the destination of the call shall be easily re-configurable to support dynamic changes in controller area boundaries (eg controller area boundaries will change from peak to off-peak periods during the working day or over longer periods, areas may change to match changes in railway organisation or traffic demand). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0499",
+      "text": "When operating with location dependent addressing, no manual action shall be required to update the system when a mobile moves between locations. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0500",
+      "text": "The location dependent addressing scheme shall be available to all mobiles. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0501",
+      "text": "As a minimum, the location information used by the EIRENE system shall be derived from that available from the network itself (eg current cell or base station serving the mobile). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0502",
+      "text": "Where greater accuracy for location dependent addressing is required, additional location information may be provided by systems external to EIRENE. Sources of such information may include: (O) a) ground-based signalling systems; b) on-train systems (eg ERTMS/ETCS equipment, balise readers, GPS etc).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0503",
+      "text": "There is a requirement that the EIRENE system can be used as a bearer to support an application connected to the radio for exchange of text messages between ground and mobile(s) or mobile and ground. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0504",
+      "text": "The aim of this section is to define the features and level of performance required for this service in order to ensure interoperability. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0505",
+      "text": "There is no requirement for an internationally standardised pre-defined messaging application. However, it is anticipated that individual national railways may have a requirement for pre-defined messages, in which case the application should be specified as part of individual national procurements. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0506",
+      "text": "It should be possible to transfer text messages between ground and mobile(s) through the EIRENE system. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0507",
+      "text": "In order to ensure interoperability, the service is optional for the ground and mandatory for the Cab radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0508",
+      "text": "If a message is safety related, the safety mechanisms will be included at the application level and do not concern the EIRENE system. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0509",
+      "text": "The maximum length of a message segment shall be 96 characters. A message can include several segments. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0510",
+      "text": "The transfer time for each message segment should be less then 30 seconds for 95% of messages. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0511",
+      "text": "The text message facility shall not interfere with the ability of users to use the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0512",
+      "text": "A standard data interface between the mobile and the application module shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0513",
+      "text": "This section covers the use of the EIRENE radio system for Railway emergency calls. This section also describes the facility for confirmation of such emergency calls and storage of confirmation for post-incident analysis. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0514",
+      "text": "This section describes the handling of high priority voice calls for railway operational emergencies and does not cover public emergency calls (ie handling of 112 calls). (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0515",
+      "text": "There are two types of Railway emergency call: (I)\n- Train emergency call;\n- Shunting emergency call.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0516",
+      "text": "The type of call initiated shall be determined automatically, based upon the mode of operation of the radio. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0517",
+      "text": "If the mobile is in shunting mode, the emergency call button shall initiate a shunting emergency call, otherwise the call shall be a Train emergency call. (M) Train emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0518",
+      "text": "The Train emergency call shall be sent to all drivers and controller(s) within an area, which is pre-defined to meet operational requirements. The predefined areas for emergency calls shall include, where necessary, parts of one or more network(s). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0519",
+      "text": "The appropriate ERTMS/ETCS RBC should be informed when a Train emergency call is initiated. (O) Shunting emergency call",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0520",
+      "text": "The Shunting emergency call shall be sent to all users involved in shunting operations in the shunting area. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0521",
+      "text": "The Shunting emergency call shall automatically take priority over the link assurance signal. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0522",
+      "text": "A Railway emergency call may be defined in three distinct phases. These are: (I)\n- Stage 1: Warning;\n- Stage 2: Information;\n- Stage 3: Terminate Railway emergency call.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0523",
+      "text": "A Railway emergency call shall be able to be initiated by using a simple MMI action (eg a single MMI action for the Cab and Operational radios). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0524",
+      "text": "A connection of Railway emergency priority (see section 10.2) shall be established to a pre-determined set of receiving mobiles and controller(s). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0525",
+      "text": "If the system is not able to connect the call, the system shall automatically keep trying to connect the call for 30 seconds. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0526",
+      "text": "During this period the user shall be provided with an audible and visual indication that the system is trying to connect the call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0527",
+      "text": "After the 30 second period, if the connection was unsuccessful, the system shall provide another audible and visual indication that it was unable to connect the call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0528",
+      "text": "An audible indication of 5 seconds (to be confirmed by trials) shall be provided to originating and receiving users that the emergency function has been activated. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0529",
+      "text": "Different indications at the originating and receiving terminal may be provided. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0530",
+      "text": "A continuous visual indication that the emergency function has been activated shall be provided at the originating and all receiving terminals. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0531",
+      "text": "In the event that a train enters the affected area after the warning stage is complete, the same audible and visual indications shall be provided. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0532",
+      "text": "A speech connection shall be established immediately following the warning tone, to allow the originator of the emergency call, to give information concerning the nature of the emergency. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0533",
+      "text": "Speech should be possible to allow a controller receiving the warning tone to give information. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0534",
+      "text": "Additionally, speech should be possible to allow other mobile users receiving the warning tone to give information. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0535",
+      "text": "The information shall be received by the same set of users who received the warning tone. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0536",
+      "text": "A Railway emergency call may only be terminated by: (M)\n- the originator of the call;\n- a controller participating in the call;\n- the network following a (nationally determined) period of no speech.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0537",
+      "text": "If the radio moves out of the area whilst the emergency call is in progress, an audible and visual indication of the loss of the call shall be provided to the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0538",
+      "text": "Authorised EIRENE mobiles shall be able to receive a Railway emergency call at any time while the mobile is powered up. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0539",
+      "text": "For Railway emergency calls initiated by a mobile, the controllers display will indicate:\n- location; (O)\n- the functional identity of the originating mobile, which includes the following:\n- the train number, if available; (M)\n- the engine number, if no train number is available; (M)\n- the coach number of the leading cab, if neither a train number nor an engine number is available. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0540",
+      "text": "For post-incident analysis, it is important that the origination and reception of Railway emergency calls by mobiles is confirmed by a message sent to a ground-based central location (and also recorded in the on-train recording device). (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0541",
+      "text": "The confirmation shall be generated automatically without input from the user. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0542",
+      "text": "The confirmation message shall commence at the end of the call or if the radio moves out of the call area. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0543",
+      "text": "If the radio loses contact with the network, the mechanism shall commence as soon as possible on regaining communications, for up to a maximum of 5 minutes without achieving contact. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0544",
+      "text": "For Railway emergency calls initiated by a mobile, the automatic confirmation message of the initiating mobile shall contain: (M)\n- the time at call establishment;\n- the time at clear down;\n- the functional number of the call originator;\n- the train number and engine number of the call originator, if a train.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0545",
+      "text": "For Railway emergency calls received by a mobile, the automatic confirmation message of the receiving mobile shall contain: (M)\n- the time at which the call was first received;\n- the time at which the call was lost (or terminated);\n- the group identity of the sender;\n- the functional number of the recipient;\n- the train number and engine number of the recipient, if a train.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0546",
+      "text": "The confirmation message shall be received at the central location with a 99% probability of success within 5 minutes of call termination. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0547",
+      "text": "The performance of the confirmation procedure shall not be dependent upon the current use of the mobile and shall not overload the network. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0548",
+      "text": "Shunting mode is the term used to describe the application that will regulate and control user access to facilities and features in the mobile while it is being used for shunting communications. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0549",
+      "text": "There is a requirement to regulate the membership of shunting groups to prevent uncontrolled membership. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0550",
+      "text": "During specific shunting operations where the driver is not able to see the way ahead and where he is therefore relying on information from another shunting member, a link assurance signal is needed to provide reassurance during silent periods that the radio link is still established. This signal is also employed to provide reassurance that this other shunting member is not incapacitated. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0551",
+      "text": "The shunting call shall be a group call and shall have Railway operation priority (see section 10.2). (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0552",
+      "text": "Throughout the duration of the shunting group call, it shall be possible for any member of the shunting group to speak to all other members of the group, using the PTT function (as described in sections 5.2.2.53, 6.2.2.12 and 7.2.2.20), except during transmission of the link assurance signal. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0553",
+      "text": "During the transmission of the link assurance signal, only the originator of the link assurance signal shall be able to speak to all other members using the PTT function. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0554",
+      "text": "The shunting communication shall be protected from unintentional and unauthorised access. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0555",
+      "text": "It shall be possible for all mobile members of the shunting group (except the driver) to transmit a link assurance signal. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0556",
+      "text": "Within the shunting group, it shall be possible for only one member of the group to transmit the link assurance signal at any time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0557",
+      "text": "Operational radios used for shunting shall enable the link assurance signal to be activated and de-activated by the shunting group member. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0558",
+      "text": "The link assurance signal should be used to reassure the driver of the integrity of the member at the head of the shunting movement. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0559",
+      "text": "Operational radios used for shunting shall be able to be switched between the following two operating modes by a maintenance function: (M)\n- Mode 1: the member is required to continuously press the link assurance signal button in order to transmit the link assurance signal;\n- Mode 2: the member is required to switch on the link assurance signal and then periodically press a button in order to transmit the link assurance signal (failure to do so shall result in the deactivation of the link assurance signal after a predefined period has elapsed).",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0560",
+      "text": "The link assurance signal shall be used to provide an audible indication to all group members. For the driver, this indicates that the radio link is operational. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0561",
+      "text": "Deleted.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0562",
+      "text": "It shall be possible for any member of the shunting group (including a driver) to transmit a shunting emergency call to all shunting groups in the area. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0563",
+      "text": "It shall be possible for all shunting drivers and shunting group members to receive a shunting emergency call from any equipment capable of taking part in shunting communications. The shunting emergency call shall cause the audible link assurance signal to be interrupted. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0564",
+      "text": "It should be possible for the system to record: (O)\n- shunting group composition at a given instant;\n- the source and time a shunting emergency call was transmitted;\n- the recipients of a shunting emergency call.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0565",
+      "text": "If a user, other than the shunting leader, attempts to make another call whilst being an active member of a shunting group, the attempt shall be ignored. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0566",
+      "text": "If the radio is used by the team leader for a shunting group call (ie initiated the shunting group call), switching the radio off shall result in the termination of the shunting group call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0567",
+      "text": "A shunting group shall be able to consist of the following mobile members: (M)\n- the shunting leader;\n- the shunting driver, who may remain fixed (ie in a shunting area) or may change one or more times during a working period (ie passenger or freight stations);\n- up to three shunting team members.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0568",
+      "text": "In addition to the above shunting group members:\n- a controller shall be able to be associated permanently or temporarily with the shunting group; (M)\n- a shunting manager or other person capable of taking part in a shunting communication should be able to be temporarily associated with the shunting group. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0569",
+      "text": "It shall only be possible for the shunting leader to communicate with a person external to the ongoing shunting communication. This may be initiated by either the shunting leader or the external user. In the latter case, in order to avoid disturbing a shunting movement, the shunting leader should be informed by a visual and audible indication. The shunting leader can then choose the moment when he takes or rejects the call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0570",
+      "text": "The shunting leader shall then be able to allow the external user to join the shunting communication. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0571",
+      "text": "National railways will be responsible for limiting the availability of equipment that is capable of taking part in shunting communications to persons that are authorised to engage in such communications. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0572",
+      "text": "The link assurance signal is a means to provide end-to-end confirmation between users that a voice communication link remains intact. This facility is required principally for the safe conduct of pushing manoeuvres to assure continuing availability of the radio channel while a shunting worker is guiding a train driver. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0573",
+      "text": "The link assurance signal shall consist of an intermittent audio tone (between 800 and 850Hz). The tone shall be of one second duration, followed by an interval of two seconds. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0574",
+      "text": "In order to fulfil the requirements of some railways, it should be possible to provide an alternative means of link assurance indication. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0575",
+      "text": "This means will consist of an additional safety device (external to the radio system) interposed between the Cab radio and the loudspeaker with the purpose of muting the continuous link assurance signal for the drivers convenience. In this case, the safety device will alert the driver only if the link assurance signal has failed or if it is cancelled. (I)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0576",
+      "text": "Operational radios used for shunting shall be able to be switched between the following two operating modes by a maintenance function: (M)\n- Mode A: the link assurance signal shall be interrupted, but not cancelled, when the initiator of the link assurance signal presses the PTT to speak.\n- Mode B: the link assurance signal shall not be interrupted when the initiator of the link assurance signal presses the PTT to speak.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0577",
+      "text": "The link assurance signal shall be deactivated upon receipt of a shunting emergency call. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0578",
+      "text": "All members of the shunting group, other than the initiator of the link assurance signal, shall be unable to speak during the transmission of the link assurance signal. However, they shall be able to initiate a shunting emergency call at any time. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0579",
+      "text": "Operating flexibility:\n- it shall be possible to modify a shunting groups composition during a working period. The process for acceptance (or rejection) of new members, and for admission and removal of temporary members, shall be simple. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0580",
+      "text": "Management flexibility:\n- in a given area, a radio set shall be capable of operation in any of the shunting groups in use in that area, subject to any user access restrictions. (M)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0581",
+      "text": "The operational requirement for direct mode is to: (I)\n- provide short range fall-back communications between train drivers and trackside personnel in the event of failure of mobile telephony services normally available;\n- provide short range communications for railway personnel operating in remote areas where no mobile telephony facilities are available.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0582",
+      "text": "Implementation of direct mode is optional. Where the facility is provided, the following requirements are mandatory. (O)",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    },
+    {
+      "id": "PURE-EIRENE-FUN-7-2-0583",
+      "text": "Principal requirements are: (M see above)\n- a range of up to at least 2000m in open terrain between a direct mode transmitter and receiver;\n- a voice only capability that supports the use of the link assurance signal;\n- open channel mode of operation such that all users employing direct mode receive transmissions when in range of the transmitting user;\n- it is sufficient that the user may talk or listen only, but not both. The ability to talk shall be achieved through use of the Push-To-Talk function;\n- a minimum of one channel is to be available for use of direct mode facilities;\n- if more than one channel is provided, there must be a function allowing the user to manually select the channel;\n- where equipment provides both normal and direct mode capability, the user shall be able to switch between the two modes in a straightforward manner (but not by accident);\n- the user may only select direct mode when the normal mobile telephony services are not available;\n- controls shall be simple to use, eg:\n- direct mode on/off switch;\n- Push-To-Talk function;\n- channel selection;\n- volume control;\n- battery warning for handportables;\n- battery life for handportables operating in direct mode shall be a minimum of 8 hours based on the following cycle:\n- 20% transmit;\n- 20% receive;\n- 60% stand-by;\n- when direct mode is used as a fall-back, an audible and visual indication shall be provided of normal mobile telephony services returning.",
+      "source_doc_id": "pure-eirene-fun-7-2"
+    }
+  ]
+}

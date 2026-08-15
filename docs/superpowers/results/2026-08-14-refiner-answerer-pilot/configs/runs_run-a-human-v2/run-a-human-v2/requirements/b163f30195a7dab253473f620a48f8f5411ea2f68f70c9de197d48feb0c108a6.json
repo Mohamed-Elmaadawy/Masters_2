@@ -1,0 +1,302 @@
+{
+  "requirement": {
+    "id": "PURE-GAMMA-J-0042",
+    "text": "The system shall be easy to upgrade.",
+    "source_doc_id": "pure-gamma-j"
+  },
+  "run_id": "run-a-human-v2",
+  "outcome": "cap_generated",
+  "errors": [],
+  "cap_reason": "Manual pilot decision: generate anyway at cap, per evaluation plan.",
+  "classification": {
+    "requirement_id": "PURE-GAMMA-J-0042",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding context contains specific signals indicating a web, mobile, or AI system, so it is classified as 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The system shall be easy to upgrade.",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy",
+            "explanation": "The term 'easy' is a vague adjective with no measurable threshold or objective metric for verification.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should 'easy' be defined in measurable or objective terms for system upgrades (for example, maximum allowable downtime, maximum duration, or maximum number of manual steps required)?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "original_text": "The system shall be easy to upgrade.",
+        "refined_text": "The system shall be easy to upgrade.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The system shall be easy to upgrade.",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy",
+            "explanation": "The requirement uses the vague adjective 'easy', which lacks a measurable threshold or quantifiable metric to test or verify.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific, measurable criteria or operational metrics (such as maximum downtime, maximum completion time, or number of manual steps) should be used to define 'easy' in the requirement 'The system shall be easy to upgrade'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "original_text": "The system shall be easy to upgrade.",
+        "refined_text": "The system shall be easy to upgrade.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The system shall be easy to upgrade.",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0042",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy",
+            "explanation": "The word 'easy' is a vague adjective with no defined, measurable threshold or objective criterion for testing.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-GAMMA-J-0042",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement 'The system shall be easy to upgrade' is a high-level usability/maintainability statement that does not specify numeric boundaries, multi-condition decision rules, state sequences, explicit multi-step dependencies, or performance metrics. Per the guidance rule, when nothing else clearly matches, exploratory testing is selected to evaluate the upgrade process."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-GAMMA-J-0042",
+    "test_cases": [
+      {
+        "id": "TC-17-PURE-GAMMA-J-0042-1",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0042"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory evaluation of standard system upgrade procedure usability and workflow",
+        "preconditions": "System is installed in baseline version 1.0 on a test environment containing standard configuration and representative data.",
+        "steps": [
+          "Obtain the version 1.1 upgrade package and standard operator upgrade documentation.",
+          "Execute the upgrade workflow following the documented steps while observing the number of manual interventions, clarity of prompts, and overall operational effort.",
+          "Verify system operation, database schema migration integrity, and user data retention post-upgrade."
+        ],
+        "expected_result": "The upgrade process completes straightforwardly with clear user guidance, requiring minimal manual configuration adjustments and no specialized developer intervention."
+      },
+      {
+        "id": "TC-17-PURE-GAMMA-J-0042-2",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0042"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory evaluation of upgrade failure handling and rollback ease",
+        "preconditions": "System is running baseline version 1.0; upgrade package 1.1 is staged for deployment.",
+        "steps": [
+          "Initiate the system upgrade process.",
+          "Simulate an unexpected disturbance during deployment (e.g., stopping the upgrade process mid-execution or introducing a invalid upgrade artifact).",
+          "Observe system diagnostics, error messaging, and the steps required to abort or roll back to version 1.0."
+        ],
+        "expected_result": "System provides clear error messaging and straightforward recovery or automated rollback paths without risking permanent system corruption or data loss."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "60caaa6937934b6783f73b7ba3700145",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 817,
+      "completion_tokens": 55
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "995d5a4997024d13b6b542b9d124892b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 99
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "db67be77fe3e4e87aead159f735595da",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1133,
+      "completion_tokens": 87
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "2d2996ab4bdd47a289feb2c576038cac",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 130
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "a8d69b37dc2e46f2933b772f682ae3ab",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 76
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "5654071caa2d42d9980d423d1fdaf4b6",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1136,
+      "completion_tokens": 135
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "a50b41781b604043822b3ec9af9ae0c7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 92
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "210991a7f07a4f34b036a1e6de2014f7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 101
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "ef8b3aaa34f34fc1a63ab8a608b5c1e1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1102,
+      "completion_tokens": 100
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "cc969d33548f431688949a09ce4b5839",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1456,
+      "completion_tokens": 472
+    }
+  ],
+  "final_text": "The system shall be easy to upgrade.",
+  "final_requirement": {
+    "requirement_id": "PURE-GAMMA-J-0042",
+    "original_text": "The system shall be easy to upgrade.",
+    "refined_text": "The system shall be easy to upgrade.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "I don't know — the document doesn't define this.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 14922
+}

@@ -26,6 +26,215 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-15 — Future-work item: cite a standard instead of inventing a threshold
+
+**Changed:** `design/DESIGN_NOTES.md`, new entry "Future work, adjacent to Limitation 11 —
+cite a standard instead of inventing a threshold" (documentation only, right after Known
+Limitation 11's block); `docs/superpowers/results/2026-08-14-refiner-answerer-pilot/RESULTS.md`
+cross-references it. No prompt, schema, or orchestrator change. No pipeline runs.
+
+**Why:** the 2026-08-14 refiner-answerer pilot measured an LLM answerer inventing acceptance
+thresholds (SUS≥70, 5/10/15-minute windows) that read as normal professional criteria with no
+tell. The proposal: have the Refiner name a measurable property and a citable source standard
+(ISO/IEC 25010:2023 characteristics, SUS as an instrument) instead of a number, target value
+left explicitly unset. Deferred deliberately — implementing it mid-evaluation would make every
+prior run (behaviour suite, live-answer session, v1/v2 comparison, this pilot) non-comparable
+against a run using the new rewrite behaviour, and would need a prompt v3 with its own re-runs.
+Includes the verified `STANDARDS_REFERENCE` table (ISO/IEC 25010:2023, cross-checked 2026-08-15
+against two independent sources), the 25010:2023/25023:2016 version-mismatch caveat, and a note
+that the commonly-quoted SUS≥68 benchmark has no peer-reviewed source and must not enter the
+thesis unverified. Also records a threat-to-validity the same pilot exposed: PURE's source
+authors are unreachable, so no answerer on that corpus can supply a real value — the banked
+2026-08-14 live-answer comparison measures "does supplying a value help," not "does a human
+help."
+
+**Impact:** documentation only — no behavioural change.
+
+---
+
+## 2026-08-14 — Refiner-answerer pilot: human vs. LLM answering clarifying questions
+
+**Changed:** new `docs/superpowers/results/2026-08-14-refiner-answerer-pilot/` —
+`configs/run-a-human-v2.yaml`/`run-b-llm.yaml` (copies of the pure-peering-smoke
+config, only `run_id`/`output_dir` changed), `input/pilot3.json` (3-requirement subset
+of `datasets/pure-extracted/pure-gamma-j.json`: PURE-GAMMA-J-0033/0034/0042, the "easy
+to use/learn/upgrade" vague-adjective family), `PREDICTIONS.md` (written before
+running), `RESULTS.md`, and both run directories
+(`configs/runs_run-a-human-v2/`, `configs/runs_run-b-llm/`). No code, prompt, schema or
+config-shape change.
+
+**Why:** a cheap manual pilot asked by the user — does it matter whether a human or an
+LLM answers the Refiner's clarifying questions, and does having the source document
+open change anything. Separate from, and cheaper than, the Q1/Q2 evaluation design in
+`docs/superpowers/plans/2026-08-14-evaluation-design.md`.
+
+**Impact:** Run A (human, fixed "I don't know" refusal policy, his own choice
+mid-run): all 3 requirements hit the revision cap with byte-identical no-op rewrites
+every round (Known Limitation 10, reproduced live), ending `cap_generated`. 46,368
+tokens. Run B (me, source XML open, narrating doc-lookup-vs-judgement per answer): all
+3 resolved in exactly one round with a rewritten, testable sentence, ending
+`completed`. 34,765 tokens. Answer-content check: 1 of 3 of my answers was pure
+invention, 2 of 3 pulled real facts from *sibling* requirements in the same document
+(not the ones asked about) with an invented number layered on top — refuting the
+predicted 0/3-retrieved outright, since sibling-requirement context wasn't considered
+as a retrieval channel when the prediction was written. All 3 invented numeric
+thresholds (SUS≥70, 5/10/15-minute windows) read as indistinguishable from genuine
+domain knowledge once embedded in the rewritten text. See `RESULTS.md` for the
+verdict: worth a bigger pilot with an explicit fabrication-flag mechanism, not worth
+trusting as a build-it-now decision. n=3, one document, one prompt version.
+
+---
+
+## 2026-08-14 — Smoke test: pure-peering (24 reqs) through the full pipeline, clean
+
+**Changed:** new `docs/superpowers/results/2026-08-14-pure-peering-smoke/` —
+`configs/pure-peering-smoke.yaml` (copy of `scn-04-conflict-numeric-v2.yaml`'s shape,
+only `run_id`/`output_dir` changed), `PREDICTIONS.md` (written and committed before the
+run, commit `6a16957`), `RESULTS.md`, and the run directory itself
+(`configs/runs_pure-peering-smoke/pure-peering-smoke/`, `document.json` +
+24 `requirements/*.json`). No code, prompt, schema or config-shape change — this is a
+run, not a modification.
+
+**Why:** confirm a freshly extracted PURE document flows through the pipeline at all
+before any Q1/Q2 evaluation work touches it (the task that requested this). This is a
+smoke test, not an evaluation result — n=1, no ground truth, not blinded, and not part
+of `docs/superpowers/plans/2026-08-14-evaluation-design.md`'s design. Ran
+`datasets/pure-extracted/pure-peering.json` (24 requirements, ~700 tokens of
+consistency-checker payload) — 3x the requirement count and ~2.75x the document-level
+payload of the largest document run through this pipeline before today
+(`themas-fischbach2022`, 8 requirements). PAID Gemini key, `gemini-3.6-flash`,
+temperature 1.0, v2 prompts as currently committed, scripted reasoned-decline answer
+policy, via `paid_gemini_driver.py` unchanged (same driver, same policy, as every
+comparable real run to date).
+
+**Impact:** ran clean end to end. Exit code 0. **Zero schema-validation failures,
+zero transport failures, zero id-mismatches** across 192 real API calls (24
+classifier, 70 quality_checker, 46 refiner_questioner, 46 refiner_rewriter, 2
+strategy_selector, 2 test_generator, 2 document-level) and 310,542 tokens — every call
+succeeded on its first attempt. Outcome mix: 22/24 `cap_stopped`, 2/24 `completed`, 0
+`error`. Full prediction-vs-actual comparison in `RESULTS.md`: 2 of 6 pre-registered
+predictions held (duplicate texts never flagged `inconsistent`; id agreement clean
+across all 24), 1 held loosely (outcome mix), 3 refuted (first-pass Quality Checker
+clean rate 0/24, not the predicted 2-5/24; token/attempt cost above the predicted
+range on both counts; Classifier gave `web` to 7/24, not the predicted near-total
+`other`).
+
+**Two findings that reach beyond this smoke test, both flagged in `RESULTS.md` rather
+than acted on here:** (1) the Classifier's 7/24 `web` result is new evidence against
+Known Limitation 9's premise ("every real run classified `other`") — that premise as
+currently worded in CLAUDE.md/`DESIGN_NOTES.md` is now measurably wrong and needs
+correcting, separately from this run. (2) `PURE-PEERING-0012`'s `TestPlan` has a test
+case citing dependency `PURE-PEERING-0013` (`dependency_report` independently reports
+`0013 -> 0012`), with the test_strategy's own rationale naming the dependency by id —
+direct evidence the Test Generator uses dependency context, making n=2 (was n=1) on
+the open question Known Limitations 1/6/7 attach to. Neither finding is resolved here;
+both are handed off as leads, not conclusions.
+
+**Not scaled up.** Per instructions, this smoke test stops here rather than
+progressing to `cctns` (115 reqs) or `eirene_fun` (583 reqs, ~88x anything run) without
+first discussing the results above.
+
+---
+
+## 2026-08-14 — Extractor hardening: sibling-id guard, newline stability, corpus unchanged
+
+**Changed:** `tools/extract_pure_xml.py` -- `strip_id_prefix` takes a third argument,
+`other_ids` (every `<req id>` in the document, computed once in `extract_file`); it now
+refuses to strip when `req_id` is a proper prefix of another id in the same document, on
+top of the existing digit/dot guard. All three `write_text` call sites (`RequirementSet`,
+manifest, summary) pass `newline="\n"` explicitly. `tools/test_extract_pure_xml.py`: the
+"longer number NOT stripped by shorter id" case now carries an explicit sibling-id set as
+its precondition, and a new case covers the roman-numeral shape (`"5.2.2i"` must not
+strip from `"5.2.2ivThe system shall..."` when `"5.2.2iv"` is a sibling id).
+
+**Why:** a second opinion requested during review of the previous entry found the
+digit/dot guard was not the whole story -- eirene_fun's ids also carry roman-numeral
+suffixes (`5.2.2i`, `5.2.2ii`, `5.2.2iii`, `5.2.2iv`, `5.2.2v`, ...), and a shorter one is
+a proper string-prefix of a longer sibling exactly the way `11.2.1.1` prefixes
+`11.2.1.10`, except the continuation character is a letter, which the digit/dot guard
+does not see. Confirmed by grep across the real corpus: 32 roman-suffixed ids, 244
+sibling-prefix pairs in `eirene_fun` alone. The gap had not fired -- 583/583 stripped
+correctly in the five committed documents -- so this is a guard against a shape that
+exists in the id-space, not a correction of a wrong prior extraction. Separately, the
+previous entry's "byte-identical across runs" claim carried an unstated platform
+caveat: `Path.write_text` defaults to `os.linesep`, so this Windows box produced CRLF
+against LF-committed files (masked by `.gitattributes`' `eol=lf` on checkout, so never
+a real bug, but a reproducibility claim in the evaluation methodology should not need
+a footnote).
+
+**Impact:** the extracted corpus is unchanged -- same 805 requirements, same 5 counts,
+`pure-eirene-fun-7-2` still 583/583 id-prefix-stripped, zero strips newly blocked by the
+sibling check. A fresh extraction on this machine is now byte-identical to the committed
+`datasets/pure-extracted/*.json` with no CRLF caveat (previously identical only after
+stripping `\r`). 106/106 tests pass (was 104; two new cases for the sibling guard).
+Mutation-tested: removing the sibling-prefix check turns exactly the new roman-numeral
+case red (105/106), nothing else; restored, 106/106. Neither change is an improvement to
+the corpus -- one fixes a gap that never fired, the other fixes a platform-dependent byte
+representation of the same content.
+
+---
+
+## 2026-08-14 — PURE XML extractor: 805 requirements across five untouched documents
+
+**Changed:** new `tools/extract_pure_xml.py` and `tools/test_extract_pure_xml.py` (104
+checks, plain-script convention, seven mutations run). New `datasets/pure-extracted/` —
+five `<doc_id>.json` RequirementSets, five `<doc_id>.manifest.json` provenance sidecars,
+and `extraction-summary.json`. Correction note appended to
+`docs/superpowers/plans/2026-08-14-evaluation-design.md` section 5. Nothing under
+`design/` or `orchestrator/` touched, so no diagram regeneration is due —
+`generate_arch_diagrams.py`'s `INTERNAL_PACKAGES` is `("design", "orchestrator")` and
+does not scan `tools/` (checked, not assumed).
+
+**Why:** step 2 of `docs/superpowers/plans/2026-08-14-evaluation-design.md` section 7 —
+the corpus the Q1 ablation runs against. Deterministic XML parse rather than LLM
+extraction, per that plan's circularity argument; PURE's own annotators decide what counts
+as a requirement, so this project does not have to. Exclusions are enforced by
+`SPENT_DOCUMENTS` (section 5 item 4), not remembered.
+
+**Impact:** 805 requirements emitted and validated as `RequirementSet` — eirene_fun 583,
+cctns 115, gamma j 51, keepass 32, peering 24. `themas` and `ertms` skipped by the
+exclusion list, with the reason printed and recorded in the summary. Extraction is
+byte-identical across runs (asserted). Four findings that change what the plan assumed:
+
+1. **The plan's counts were regex overcounts.** `<req id=` also appears inside
+   commented-out empty template blocks (5 in cctns, 9 in gamma j), which no parser sees.
+   Parsed totals are 115 not 120, and 51 not 60; the untouched corpus is **805, not 819**,
+   and the six-document figure is 1,004 not 1,018. Pinned as test constants so it cannot
+   drift back.
+
+2. **`<req id>` is section-local, not document-unique**, so three of the five documents
+   fail `RequirementSet._ids_are_unique` on their raw ids (cctns 24 repeats, gamma j 6,
+   peering 4; ertms 8). Ids are therefore synthesised ordinally
+   (`PURE-CCTNS-0001…0115`, document order). The section path is *not* a usable fallback:
+   cctns's duplicates all sit inside one `<p id="">`. Provenance (source file, section
+   path, original `<req id>`, file position, text hash) lives in the manifest sidecar, not
+   on `Requirement` — decided against adding schema surface for extraction bookkeeping.
+
+3. **`<itemize>`/`<enum>` bullets are preserved as newline + "- "** rather than
+   space-joined into the sentence, for 75 of eirene_fun's 583. A space-join manufactures
+   run-on requirements, which is precisely the shape the Quality Checker over-flags as
+   `non_atomic` (Known Limitation 8) — the flag would then be measuring extraction, not
+   the requirement.
+
+4. **eirene_fun repeats its own section number at the head of every text_body**, stripped
+   on exact match against the `<req id>` (583/583). Two have the number fused to the first
+   word ("11.2.1.10It shall…"), so the delimiter is optional and a digit/dot guard stops a
+   shorter id eating a longer number's leading digit. Both halves are mutation-tested.
+
+**Two corpus quirks recorded as counts, flagged but never filtered, because they bear on
+sampling and on Known Limitation 1:** eirene_fun carries **10 `Deleted.` tombstones** —
+withdrawn clauses PURE still tags as `<req>` — and **31 verbatim-repeated texts** (71
+requirements involved); peering has 3 repeated texts out of 24, cctns 1 of 115. Whoever
+draws the evaluation sample now has numbers rather than a discovery during hand-scoring.
+
+**Not measured yet:** plan section 5 item 5, the extraction-corruption scan over this
+output. The cheap signals were clean on all five (no mojibake, no flattened comparison
+operators — themas, the known-corrupt document, is excluded anyway), but that is not the
+scan. Also unaddressed by choice: 6 of keepass's 32 texts begin with their own `REQ-n:`
+label, which is the document's own prose and does not match the `<req id>`, so the
+stripping rule correctly leaves it.
+
+
 ## 2026-08-14 — Prompt v2 batch: non_atomic definition + rewriter no-op rules, re-run on 4 scenarios
 
 **Changed:** `orchestrator/example_prompts/quality_checker.txt` (non_atomic definition

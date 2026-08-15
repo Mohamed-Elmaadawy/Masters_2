@@ -1,0 +1,58 @@
+# Refiner-answerer pilot, Run A: human (Mohamed) answers clarifying questions at the
+# real terminal (orchestrator/human_cli.py's answer_questions_cli/decide_at_cap_cli via
+# orchestrator/cli.py's default human_fns_factory -- unchanged). Copy of
+# docs/superpowers/results/2026-08-14-pure-peering-smoke/configs/pure-peering-smoke.yaml
+# with only run_id, output_dir and this comment changed -- same retry/rate_limits/
+# defaults/stages/prompts shape as every real run in that directory.
+#
+# 3 requirements only (docs/superpowers/results/2026-08-14-refiner-answerer-pilot/input/
+# pilot3.json, a hand-picked subset of datasets/pure-extracted/pure-gamma-j.json):
+# PURE-GAMMA-J-0033/0034/0042 -- the "easy to use / easy to learn / easy to upgrade"
+# vague-adjective family. See docs/superpowers/plans/2026-08-14-evaluation-design.md.
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env() reads
+# GEMINI_API_KEY from the environment only. This run's invocation sets GEMINI_API_KEY to
+# the paid-tier key's value for the one process, to stay clear of the free tier's
+# absolute 20-request cap (docs/superpowers/results/2026-08-10-first-real-run/
+# ANALYSIS.md) -- no code changed, orchestrator/providers/gemini.py's from_env() still
+# only ever reads GEMINI_API_KEY.
+
+run_id: run-a-human-v2
+output_dir: runs_run-a-human-v2   # resolved relative to THIS file's directory, not the cwd
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v2
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+
+prompts:
+  classifier: ../../../../../orchestrator/example_prompts/classifier.txt
+  quality_checker: ../../../../../orchestrator/example_prompts/quality_checker.txt
+  refiner_questioner: ../../../../../orchestrator/example_prompts/refiner_questioner.txt
+  refiner_rewriter: ../../../../../orchestrator/example_prompts/refiner_rewriter.txt
+  strategy_selector: ../../../../../orchestrator/example_prompts/strategy_selector.txt
+  test_generator: ../../../../../orchestrator/example_prompts/test_generator.txt
+  consistency_checker: ../../../../../orchestrator/example_prompts/consistency_checker.txt
+  dependency_mapper: ../../../../../orchestrator/example_prompts/dependency_mapper.txt

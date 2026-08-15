@@ -1,0 +1,247 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0004",
+    "text": "Resource provisioning, delegation and reservation policies are in place",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "completed",
+  "errors": [],
+  "cap_reason": null,
+  "classification": {
+    "requirement_id": "PURE-PEERING-0004",
+    "system_type": "other",
+    "rationale": "The requirement specifies resource provisioning, delegation, and reservation policies within a CDN peering network architecture. This represents a backend infrastructure/service requirement rather than a web application, mobile app, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Resource provisioning, delegation and reservation policies are in place",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0004",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "non_atomic",
+            "span": "Resource provisioning, delegation and reservation policies",
+            "explanation": "The requirement bundles three distinct policy types (resource provisioning, delegation, and reservation) into a single statement, which can be defined, implemented, and tested independently.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "are in place",
+            "explanation": "The requirement lacks an actor, trigger, or actionable condition describing what system or component enforces or provides these policies and under what conditions.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0004",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "The phrase 'Resource provisioning, delegation and reservation policies' combines three separate concepts. Should this requirement be split into three distinct requirements—one for provisioning policies, one for delegation policies, and one for reservation policies—so each can be defined and tested independently?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the phrase 'are in place', which specific system, component, or actor is responsible for implementing or enforcing these policies, and under what specific conditions or triggers must they be active?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0004",
+        "original_text": "Resource provisioning, delegation and reservation policies are in place",
+        "refined_text": "Resource provisioning, delegation and reservation policies are in place",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Resource provisioning, delegation and reservation policies are in place",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0004",
+        "passed": true,
+        "issues": []
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-PEERING-0004",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement broadly states that resource provisioning, delegation, and reservation policies are in place without detailing specific numeric limits, decision rule combinations, explicit state sequences, or multi-step workflows. Following the guidance rule where no other pattern clearly matches, exploratory testing is selected."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-PEERING-0004",
+    "test_cases": [
+      {
+        "id": "TC-17-PURE-PEERING-0004-1",
+        "requirement_ids": [
+          "PURE-PEERING-0004"
+        ],
+        "technique_used": "exploratory",
+        "title": "Explore resource provisioning policies enforcement and boundary behavior",
+        "preconditions": "Administrative access to the peering platform and defined user role configurations.",
+        "steps": [
+          "Log into the system under various user authorization levels (e.g., standard operator, peer admin, guest).",
+          "Attempt to provision various compute, memory, and bandwidth resources within and beyond typical expected bounds.",
+          "Observe system responses when provisioning requests conflict with active administrative limits or unallocated pools."
+        ],
+        "expected_result": "Resource provisioning requests strictly conform to defined allocation policies, gracefully rejecting requests that violate limits with actionable feedback."
+      },
+      {
+        "id": "TC-17-PURE-PEERING-0004-2",
+        "requirement_ids": [
+          "PURE-PEERING-0004"
+        ],
+        "technique_used": "exploratory",
+        "title": "Explore resource delegation and reservation policy enforcement",
+        "preconditions": "Multi-tenant or multi-peer environment active with active delegation configurations.",
+        "steps": [
+          "Delegate resource control permissions to subordinate entities and verify permissions propagate according to delegation policies.",
+          "Attempt unauthorized delegation of non-delegable resources or delegating beyond granted scopes.",
+          "Create, modify, and cancel resource reservations under conflicting, overlapping, or peak-load scenarios."
+        ],
+        "expected_result": "Delegation and reservation policies prevent unauthorized scope expansion, enforce isolation between tenants, and properly handle resource contention without policy breaches."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "b533a0913d034eabaf50cb640c63c665",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1424,
+      "completion_tokens": 66
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "33477a0898d641919a771dbc169ab939",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1749,
+      "completion_tokens": 125
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "572c3d82a16e48cd81b61c1eab30e820",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1215,
+      "completion_tokens": 222
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "ba2a410f73ee41ad9babea3edc9893c0",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1442,
+      "completion_tokens": 202
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "7c4a9b0bced04321a114c734bbe248dd",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1754,
+      "completion_tokens": 39
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "052e38ffe6df4bb7b738a8a28acdbad2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1104,
+      "completion_tokens": 83
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "d84db92cc19f4cc5815fee03fe4fa701",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1441,
+      "completion_tokens": 329
+    }
+  ],
+  "final_text": "Resource provisioning, delegation and reservation policies are in place",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0004",
+    "original_text": "Resource provisioning, delegation and reservation policies are in place",
+    "refined_text": "Resource provisioning, delegation and reservation policies are in place",
+    "revision_number": 1,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+        "user_confirms_resolved": true
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    2,
+    0
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1
+    ]
+  },
+  "total_tokens": 11195
+}

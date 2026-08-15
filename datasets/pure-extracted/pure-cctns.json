@@ -1,0 +1,580 @@
+{
+  "doc_id": "pure-cctns",
+  "requirements": [
+    {
+      "id": "PURE-CCTNS-0001",
+      "text": "The solution should provide detailed context-sensitive help material for all the possible actions and scenarios on all user interfaces in the application.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0002",
+      "text": "The solution should provide detailed context-sensitive help material for all the possible actions and scenarios on all user interfaces in the application.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0003",
+      "text": "The solution should provide an interface for the user to log any defects or enhancement requests on the application and track thereafter.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0004",
+      "text": "The solution should send alerts (e.g., email, SMS) to the user if the user chooses to whenever any action has been taken on the alert.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0005",
+      "text": "The solution should enable the user to track the submitted defect or enhancement request.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0006",
+      "text": "The solution should enable the help-desk user to view the reports on the submitted defects or enhancement requests category-wise, status-wise, and age- wise.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0007",
+      "text": "The support solution should be accessible to the users both from within the application and also outside the application through a browser interface.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0008",
+      "text": "An audit trail is a record of actions taken by either the user or the system triggers. This includes actions taken by users or Administrators, or actions initiated automatically by the system as a result of system parameters. The System must keep an unalterable audit trail capable of automatically capturing and storing information about:\n- All the actions (create/read/update/delete) that are taken upon the critical entities (case, suspect, property,...) in the system\n- The user initiating and or carrying out the action;\n- The date and time of the event.\n- Administrative parameters\nThe word “unalterable” is to mean that the audit trail data cannot be modified in any way or deleted by any user; it may be subject to re-department and copying to removable media if required, so long as its contents remain unchanged.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0009",
+      "text": "Once the audit trail functionality has been activated, the System must track events without manual intervention, and store in the audit trail information about them.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0010",
+      "text": "The System must maintain the audit trail for as long as required, which will be at least for the life of the case to which it refers.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0011",
+      "text": "The System must ensure that audit trail data is available for inspection on request, so that a specific event can be identified and all related data made accessible, and that this can be achieved by authorised external personnel who have little or no familiarity with the system.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0012",
+      "text": "The System must be able to export audit trails for specified cases (without affecting the audit trail stored by the System). This functionality can be used by external auditors who wish to examine or analyse system activity.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0013",
+      "text": "The System must be able to capture and store violations (i.e. A user’s attempts to access a case to which he is denied access), and (where violations can validly be attempted) attempted violations, of access control mechanisms.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0014",
+      "text": "The System must at a minimum be able to provide reports for actions on cases organised:\n- By case;\n- By user;\n- In chronological sequence.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0015",
+      "text": "The System should be able to provide reports for actions on cases organised by workstation and (where technically appropriate) by network address.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0016",
+      "text": "The System must allow the user to limit access to cases to specified users or user groups.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0017",
+      "text": "The system should provide for role-based control for the functionality within the system",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0018",
+      "text": "The System must allow a user to be a member of more than one group.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0019",
+      "text": "The System must allow only admin-users to set up user profiles and allocate users to groups.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0020",
+      "text": "The System should allow a user to stipulate which other users or groups can access cases.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0021",
+      "text": "The System must allow changes to security attributes for groups or users (such as access rights, security level, privileges, password allocation and management) to be made only by super-user.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0022",
+      "text": "If a user requests access to, or searches for, a case which he does not have the right to access, the System must provide one of the following responses (selectable at configuration time):\n- display title and metadata;\n- display the existence of a case but not its title or other metadata;\n- do not display any case information or indicate its existence in any way.\nThese options are presented in order of increasing security. Note that the requirement in the third option (i.e. the most stringent) implies that the System must not include such cases in any count of search results; this level of security is normally appropriate for cases dealing with matters such as national security.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0023",
+      "text": "If a user performs a quick or advanced search, the System must never include in the search result list any record which the user does not have the right to access.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0024",
+      "text": "If the System allows users to make unauthorised attempts to access cases, it must log these in the audit trail.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0025",
+      "text": "Any access to cases, and all other activities involving the cases and related documents or data should also need to be stored in the audit trail to ensure legal admissibility and to assist in data recovery.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0026",
+      "text": "All error messages produced by the System must be meaningful, so that they can be appropriately acted upon by the users who are likely to see them. Ideally, each error message will be accompanied by explanatory text and an indication of the action(s) which the user can take in response to the error.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0027",
+      "text": "The System must employ a single set of user interface rules, or a small number of sets to provide a familiar and common look and feel for the application.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0028",
+      "text": "The System must be able to display several entities (cases, suspects) simultaneously.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0029",
+      "text": "The interfaces must be made customizable or user-configurable to the extent possible. (e.g., the displayed columns in the table, move, resize, modify the appearance). Such configurations must be saved in the user profile.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0030",
+      "text": "The System user interface must be suitable for users with special needs; that is, compatible with specialist software that may be used and with appropriate interface guidelines",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0031",
+      "text": "The System must provide End User and Administrator functions which are easy to use and intuitive throughout.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0032",
+      "text": "The System must allow persistent defaults for data entry where desirable. These defaults should include:\n- user-definable values;\n- values same as previous item;\n- values derived from context, e.g. date, file reference, user identifier;",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0033",
+      "text": "Frequently-executed System transactions must be designed so that they can be completed with a small number of interactions (e.g. mouse clicks).",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0034",
+      "text": "Where the System employs a graphical user interface, it must allow users to customise it. Customisation should include, but need not be limited to the following changes:\n- menu contents;\n- layout of screens;\n- use of function keys;\n- on-screen colours, fonts and font sizes;",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0035",
+      "text": "The user interfaces should be designed to make them user-intuitive.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0036",
+      "text": "The user interfaces of the system should comply with Standard ISO 9241.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0037",
+      "text": "ICT accessibility: ISO 9241-20 shall be the standard for guidance on ICT accessibility. Application user interfaces to meet its requirements and recommendations. Software accessibility ISO 9241-171 shall be the standard for guidance on software accessibility. User interfaces should meet its requirements and recommendations. Content accessibility WCAG 1.0 shall be the standard used for guidance on content accessibility. The application logo to be available on all pages as a link to the home page.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0038",
+      "text": "Providing text equivalents for non-text media objects: All non-text media objects, such as graphical images or video, should be provided with alternative equivalent textual descriptions and/or with equivalent text-based functionality.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0039",
+      "text": "Making navigation self-descriptive: Navigation should be designed to help users understand where they are, where they have been and where they can go next. General guidance on achieving self-descriptiveness is given in ISO 9241-110.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0040",
+      "text": "Showing users where they are: Each presentation segment (page or window) should provide the user with a clear and sufficient indication of where he or she is in the navigation structure and of the current segment position with respect to the overall structure.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0041",
+      "text": "Offering alternative access paths: Alternative access paths for navigating to a specific unit of content should be offered to support different navigation strategies.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0042",
+      "text": "Minimizing navigation effort: The number of navigation steps needed to reach a certain piece of content should be minimized as long as different mental models, navigation strategies and tasks of the user are taken into account.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0043",
+      "text": "Splash screens should be avoided unless they provide useful content or feedback about the application state to the user. If a splash screen is used, a navigation option to skip it should be offered.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0044",
+      "text": "Avoiding opening unnecessary windows: Additional windows such as new browser windows or pop-up windows should only be opened if this supports the user’s task. Opening new windows can distract, confuse or impede users for a variety of reasons. They can superimpose the primary window, hiding relevant information. They could make it cognitively more difficult to understand the navigation structure with negative effects on both usability and accessibility. They also require additional user actions for closing unwanted windows.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0045",
+      "text": "Vertical scrolling should be minimized. This may be done by placing important information at the top and providing links to information that is further down the page. Horizontal scrolling should be avoided wherever possible.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0046",
+      "text": "Designing for input device independence: User interfaces should be designed to allow activation of controls by a variety of input devices. The ability to choose between different input devices for activating controls such as links, fields and buttons is important both for users who prefer a certain input mode, mobile users and users with disabilities. In general, device independence can be achieved if the functionality is operable via a keyboard.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0047",
+      "text": "Making user interfaces robust: User interfaces should be designed to be as robust as possible in the face of changing technology. This encompasses being able to present content containing newer technologies by older user agents as well as designing content to be usable with future technologies.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0048",
+      "text": "Acceptable opening / download times: Application pages should be designed and implemented so that there are acceptable opening times and download times for the expected range of technical contexts of use (e.g. bandwidth between the application and the user). This is particularly important for frequently accessed pages or pages that are important for user navigation and exploration, such as the home page.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0049",
+      "text": "Minimizing user errors: Potential user errors as well as the effort needed to recover from errors should be minimized.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0050",
+      "text": "Providing clear error messages: The content of error messages shown on the pages or special error pages should clearly state the reason why the error occurred and, if possible, actions the user can take to resolve the error. Users expect error messages to be in the same language as the user interface.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0051",
+      "text": "Using appropriate formats, units of measurement or currency: When designing user interfaces for use by diverse groups, input and output of information elements such as currency, units of measurement, temperatures, date and time, phone numbers, address or postal codes should be designed so that they are usable.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0052",
+      "text": "Making text resizable by the user: Text should be able to be resized by the user, using functions provided by the user agent or other appropriate means i.e. see ISO 9241-171.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0053",
+      "text": "Text quality: The quality of textual content with respect to spelling and grammar should be sufficient so as not to impede readability.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0054",
+      "text": "Writing style: The reading and understanding of the textual content on the screen should be supported by suitable means, including the use of short sentences, the division of the text into shorter chunks or the presentation of content items in the form of bullet points.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0055",
+      "text": "Supporting text skimming: Fast skimming of text should be supported by the provision of clear links, bulleted lists, highlighted keywords, logical headings, and short phrases and sentences.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0056",
+      "text": "Readability of text: Text presented on the pages should be readable taking into account the expected display characteristics and spatial arrangement. ISO 9241-303 shall be consulted for screen text legibility requirements.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0057",
+      "text": "Distinguishable within-page links: Within-page links should be clearly distinguishable from other links that lead to a different page. EX. Within-page links are shown with dashed rather than solid underlines",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0058",
+      "text": "Avoiding link overload: Text pages containing large proportions of links should be formatted so that the presence of links does not impede the readability of the text.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0059",
+      "text": "Using familiar terminology for navigation links: Navigation links — particularly links representing the main navigation structure — should be labelled with terms that are familiar to the user, based on his/her general knowledge, prior experience in the application domain or experience of using other systems.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0060",
+      "text": "Using descriptive link labels: The target or purpose of a link should be directly indicated by its label, avoiding generic labels such as “go” or “click here” except where the purpose of the link is clear from its context on the page or the labels have commonly understood semantics in the particular application domain. Using appropriate terminology specific to the user’s tasks and information needs is important for making the content easy to understand.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0061",
+      "text": "Marking links opening new windows: Links that open new browser windows or pop-up windows should be clearly marked.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0062",
+      "text": "Distinguishing navigation links from controls: Navigation links should be clearly distinguishable from controls activating some action. Typical action types in user interfaces include manipulating application data, performing searches, communication actions, such as opening a new e-mail window or starting a chat function, and presentation-related actions, such as sorting a list of search results.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0063",
+      "text": "Providing printable document versions: If a document is either too long, dispersed over several pages or in a specific layout that is not suitable for online reading, a printer-friendly version of the document should be provided that prints the content in a form acceptable to the user (e.g. in the expected layout, paper format, or orientation).",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0064",
+      "text": "Use of “white space”: “White space” on a page i.e. space filled only with the background color should be used in such a way that it does not impair the visual skimming of the page. While white space is an important means of visually organizing the different content elements on a page, if the distance between the blocks of information displayed becomes too large, rapid skimming of the page can be impeded.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0065",
+      "text": "Selecting appropriate page lengths The length of a page should be selected so as to support the primary purpose and use of the page. Short pages are generally more appropriate for homepages, navigation pages, or overview pages that need to be read quickly. Longer pages can be more appropriate when users want to read the content without interruptions or when the page needs to match a paper counterpart.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0066",
+      "text": "Using colour: Colour should be used with care, taking into account human capabilities and restrictions in perceiving colour, and not as the only means of conveying information. Color should never be the only means of coding. Some users may have difficulties in perceiving certain colors or color combinations (color-blindness).",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0067",
+      "text": "Using frames with care: If frames are used, care should be taken to avoid possible problems, for example, those involving the use of the back button, bookmarking of pages, or scrolling of information. When frames are used, it is important to title each frame, and to describe its purpose and how frames relate to one another other.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0068",
+      "text": "Providing alternatives to frame-based presentation: If frames are used, an alternative way of presenting relevant information without frames should be provided. Providing alternative text-only pages: When style sheets and/or frames are turned off it should be possible for the user to read and understand the page; alternatively, the user should be provided with an equivalent alternative text-only page.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0069",
+      "text": "Consistent page layout: Pages should be designed using consistent layout schemes, supporting the user in finding similar information at the same position on different pages. Overall layout schemes apply to all pages and are preferable when all pages have a similar structure. Frequently, however, different pages have different purposes and types of content. In such cases, pages can usually be grouped in different categories, using one layout scheme for each category consistently.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0070",
+      "text": "Placing title information consistently: Page titles should be placed in a consistent location on the different pages.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0071",
+      "text": "Observing principles of human perception When designing application pages, the general principles of human perception should be taken into account. The International Standards mentioned below shall be consulted for guidance. Practical guidelines for presenting information to the user are to be found in ISO 9241-12. Guidance on selecting and using different forms of interaction techniques is to be found in ISO 9241-14 to ISO 9241-17. ISO 9241-14 gives guidance about menus, ISO 9241-15 about command dialogues, ISO 9241-16 about direct manipulation and ISO 9241-17 about forms. In addition, when designing multimedia information presentations, the design principles and recommendations described in ISO 14915-1 to ISO 14915-3 should be taken into account. Appropriate content presentation also plays a key role in accessibility.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0072",
+      "text": "Linking back to the home page or landmark pages: Each page should contain a link leading to the home page of the application or to a landmark page that is easy to recognize for the user.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0073",
+      "text": "Providing a site map: A separate navigation overview such as a site map should be provided for application showing the structure of the site in an overview form.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0074",
+      "text": "Consistency between navigation components and content: If navigation components (or overviews) are shown in conjunction with associated content, consistency between the navigation component and the content shown should be maintained by indicating in the navigation component (e.g. highlighting) the topic currently visible in the content area.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0075",
+      "text": "Placing navigation components consistently: Navigation components should be placed consistently on the pages or in the framesets in the pages of the application.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0076",
+      "text": "Individualization and user adaptation : Adapting the content and the navigation of a user interface to individual users or user groups can be a useful mechanism for providing information that is of interest to the users and for making access to relevant information more efficient. User adaptation can also be important for making the user interface more accessible. Different approaches can be used for achieving these goals, like providing users with means for customizing the user interface to their personal needs i.e. individualization designing content and navigation differently for varying user groups or roles i.e. such as employees of different levels, citizens etc, monitoring the user’s behaviour and adapting to the user’s goals that are inferred from the behaviour observed, recommending information that is potentially more relevant or interesting to the specific user, based on the behaviour of all users or a user group.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0077",
+      "text": "Taking account of the users’ tasks and information needs: When providing different access paths or navigation structures for different user groups, the tasks and information needs of these user groups should be taken into consideration.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0078",
+      "text": "Making individualization and adaptation evident: It should be made evident to the user when individualization and/or adaptation are used.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0079",
+      "text": "Making user profiles evident: If predefined user profiles or user-specified profiles are used for individualizing or adapting content, the profile currently used should be made evident. If profiles are used, it is important to provide users with information about this concept and its implications.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0080",
+      "text": "Allowing users to see and change profiles: If user-specified profiles are used, users should be able to see, modify and delete that profile on demand.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0081",
+      "text": "The user interfaces of the system should follow the guidelines specified under www.usability.gov",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0082",
+      "text": "The System must be available to users:\n- from <xx:00> to <xx:00>;\n- on <all weekdays/xxx days per year>.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0083",
+      "text": "The planned downtime for the System must not exceed <xx> hours per <rolling three month period>. The System is considered to be down if any user is unable to perform any normal System function and if this failure is attributed to any component of the System other than the workstation.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0084",
+      "text": "Unplanned downtime for the System must not exceed <xx hours/minutes> per <rolling three month period>.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0085",
+      "text": "The number of incidents of unplanned downtime for the System must not exceed <x> per <rolling three month period>.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0086",
+      "text": "In the event of any software or hardware failure, it must be possible to restore the System (with inline synchronization) within no more than <xx> hours.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0087",
+      "text": "The System must provide adequate response times for commonly performed functions under both standard and peak conditions",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0088",
+      "text": "The System must be able to perform a simple search within 5-8 seconds and a advanced search (multiple search criteria) within 10-15 seconds regardless of the storage capacity or number of cases in the system. In this context, performing a search means returning a result list. It does not include retrieving the records themselves.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0089",
+      "text": "The System must be able to retrieve and display within 5-8 seconds the case which has been accessed within the previous 2 months, regardless of storage capacity or number of cases in the system. This requirement is intended to allow for rapid retrieval of frequently-used cases, on the understanding that frequency of use is typically correlated with recent use.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0090",
+      "text": "The System must be able to retrieve and display within 20 seconds the case which has not been accessed within the previous 2 months, regardless of storage capacity or number of cases in the system. This requirement is intended to allow for cases where cases used infrequently are stored on slower media than more active records.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0091",
+      "text": "The System be scaleable and must not have any features which would preclude use in small or large police stations, with varying numbers of cases handled.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0092",
+      "text": "The system should support multilingual interface",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0093",
+      "text": "The system should be designed in manner that operational data is not lost in case of any failure of equipment or communication network.",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0094",
+      "text": "The system should work even in an offline mode with the critical functionality",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0095",
+      "text": "The system should be designed to have satisfactory performance even in Police Stations connected on low-bandwidth",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0096",
+      "text": "The system should be implemented using Service Oriented Architecture (SOA) and have a modular design",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0097",
+      "text": "The system should be developed on Open Standards",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0098",
+      "text": "The system should be built on a common User Access and Authentication Service to ensure Single-Sign on for the end-user",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0099",
+      "text": "The system should be developed for a centralized deployment and maintenance",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0100",
+      "text": "The system should be developed to be deployed in a 3-tier datacenter architecture",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0101",
+      "text": "The system should be designed to have a n-tier architecture with the presentation logic separated from the business logic that is again separated from the data-access logic",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0102",
+      "text": "The system should be extensible to provide access to the interfaces through PDA’s and mobile data terminals",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0103",
+      "text": "The system should adopt standardized formats and common metadata elements",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0104",
+      "text": "The system should be designed for access through browser-based systems and must impose minimal requirements on the client device",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0105",
+      "text": "The system must support multiple types of communication services for remote access",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0106",
+      "text": "The system should have capability to support public access to a subset of data and functionality",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0107",
+      "text": "The system should support multi-tier authentication where required",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0108",
+      "text": "The system should support SSL encrypted connections",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0109",
+      "text": "The system should support secure virtual private network connections",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0110",
+      "text": "The system should use HTTPS as the communication protocol, i.e., HTTP over an encrypted secure socket layer (SSL)",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0111",
+      "text": "The system should run on multiple browsers",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0112",
+      "text": "The system should support selective encryption of the stored data",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0113",
+      "text": "The system should ensure secure transmission of data over the network and utilize SSL and 2-way digital signatures",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0114",
+      "text": "The system should ensure high standards of security and access control through:\n- Prevent cross-site scripting\n- Validate the incoming data / user request\n- Encode the incoming data / user request\n- Prevent SQL Injection\n- Utilize parameterized queries\n- Sanitize the user-inputs\n- Validate the data both at the client and server\n- Do not allow hard delete and perform only soft tagging the row for deletion",
+      "source_doc_id": "pure-cctns"
+    },
+    {
+      "id": "PURE-CCTNS-0115",
+      "text": "The system should ensure high scalability and performance through:\n- Use of cache for storing frequent data\n- Use of AJAX based technology to improve user experience. Aggressive page loading to be considered based on the screen and estimate usage pattern\n- Leverage Asynchronous HTTP socket capabilities of web server for scalability and performance\n- Host all the static content (documents, images) on the web server\n- The search results should be fetched from the database in batches of 10 or 20 maximum as configured within the application\n- Display of records on the screen in batches/paged manner\n- The search should fetch only the fields that need to be displayed to the user. Only when the user clicks on a particular record to view its further details should a query be fired to fetch the additional details for this particular record only\n- A hierarchical cache should be configured and used for caching of results of most frequently used searches\n- Database Indexes should be applied on the key columns used for searching",
+      "source_doc_id": "pure-cctns"
+    }
+  ]
+}

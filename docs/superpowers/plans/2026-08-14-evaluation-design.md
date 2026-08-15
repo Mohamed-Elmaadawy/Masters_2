@@ -209,6 +209,22 @@ sixteen times what the evaluation needs.
 
 The 79-document full corpus (PDF/DOC/HTML) stays hard and is probably unnecessary. Start here.
 
+**Corrected 2026-08-14, after building the extractor (`tools/extract_pure_xml.py`).** The
+counts above come from a regex over `<req id=`, which overcounts: both `0000 - cctns` and
+`0000 - gamma j` contain commented-out empty `<req>` template blocks (5 and 9 respectively)
+that no XML parser sees. Parsed totals are **cctns 115** (not 120) and **gamma j 51** (not
+60), so the six-document figure is **1,004** and the untouched corpus is **805** (not 819).
+Still roughly sixteen times what the evaluation needs; the argument is unchanged.
+
+Two further things the "zero inference" claim needed qualifying on, both settled in the
+extractor and recorded in `IMPLEMENTATION_LOG.md`: PURE's `<req id>` is **section-local,
+not document-unique** (cctns repeats 24, gamma j 6, peering 4, ertms 8), so
+`RequirementSet` rejects the raw ids and the extractor synthesises ordinal ones with a
+provenance manifest alongside; and `2007-eirene_fun_7-2` repeats each section number at
+the head of its own `<text_body>` and puts 75 of its 583 requirements inside `<itemize>`
+lists. So the annotators settled *what counts as a requirement* — which is the load-bearing
+claim — but not identity or text normalisation.
+
 ### Glossary data exists, but do not wire it up yet
 
 The same files carry **171 `<glossary_item>`** entries as `<term>`/`<meaning>` pairs

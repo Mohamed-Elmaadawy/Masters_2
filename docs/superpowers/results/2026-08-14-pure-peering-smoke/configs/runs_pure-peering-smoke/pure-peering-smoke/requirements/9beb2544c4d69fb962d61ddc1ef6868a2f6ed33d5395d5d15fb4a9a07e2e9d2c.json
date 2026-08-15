@@ -1,0 +1,245 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0002",
+    "text": "The format for service information description is defined",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0002",
+    "system_type": "other",
+    "rationale": "The requirement specifies defining service information formats for a CDN peering and mediation architecture. This represents backend networking and infrastructure protocols rather than a web application, mobile app, or AI system, fitting 'other' (plain backend services)."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The format for service information description is defined",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0002",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "The format for service information description is defined",
+            "explanation": "The requirement is incomplete because it lacks an actor, a trigger/condition, and specific details describing the format or where it is specified, making it impossible to test.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0002",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "The requirement states 'The format for service information description is defined', but it lacks essential specification details. Who or what system is responsible for defining this format, under what trigger or condition does this apply, and what specific data format or standard must be used?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0002",
+        "original_text": "The format for service information description is defined",
+        "refined_text": "The format for service information description is defined",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The format for service information description is defined",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0002",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-PEERING-0002-ISSUE-1",
+            "category": "incomplete",
+            "span": "is defined",
+            "explanation": "The requirement does not specify what the actual format is, who or what system component defines or uses it (missing actor), or under what conditions it applies, making it incomplete and untestable.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0002",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "PURE-PEERING-0002-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the phrase 'is defined', what specific format (e.g., JSON, XML) should be used for the service information description, and which system actor or component is responsible for defining or consuming this format?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0002",
+        "original_text": "The format for service information description is defined",
+        "refined_text": "The format for service information description is defined",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The format for service information description is defined",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0002",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-PEERING-0002-ISSUE-1",
+            "category": "incomplete",
+            "span": "is defined",
+            "explanation": "The requirement does not specify the actor responsible for defining the format, the actual format details, or the conditions under which the format applies.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "997df36a1fbf450f904501a34495147d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1422,
+      "completion_tokens": 74
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ad843f359c9c46209d962587b1c62a9e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 79
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "0f685805b5b04dc9b6c02337e44ff03a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1151,
+      "completion_tokens": 111
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "d83555beda42484884e644aaaaa53ae8",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1374,
+      "completion_tokens": 119
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f2040b3d264f48ceaaa26742e6126e8a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 77
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "a34f85a134e0494d920e2118db51e678",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1160,
+      "completion_tokens": 113
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f0065c57297b4051a01092611361aef4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1374,
+      "completion_tokens": 120
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "6a1f64bb29584c9b9669a3bbd6e32199",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 67
+    }
+  ],
+  "final_text": "The format for service information description is defined",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0002",
+    "original_text": "The format for service information description is defined",
+    "refined_text": "The format for service information description is defined",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "PURE-PEERING-0002-ISSUE-1": [
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12482
+}

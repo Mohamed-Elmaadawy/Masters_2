@@ -1,0 +1,269 @@
+{
+  "requirement_set": {
+    "doc_id": "pure-peering",
+    "requirements": [
+      {
+        "id": "PURE-PEERING-0001",
+        "text": "The format for service information description is defined",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0002",
+        "text": "The format for service information description is defined",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0003",
+        "text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0004",
+        "text": "Resource provisioning, delegation and reservation policies are in place",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0005",
+        "text": "There is an established norm that any resource failure will be reported",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0006",
+        "text": "The interaction protocol between Web Server-SR, SR-mediator is defined.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0007",
+        "text": "Malicious requests are detected and rejected.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0008",
+        "text": "Web servers have already replicated necessary content.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0009",
+        "text": "Both anticipated and unanticipated user requests (traffic) are considered.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0010",
+        "text": "The format for service information description is defined",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0011",
+        "text": "The format of service requirements is defined.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0012",
+        "text": "Mediator-SR, mediator-PR, mediator-PA interaction protocols are defined.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0013",
+        "text": "Mediator works in conjunction with the PA to establish negotiation.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0014",
+        "text": "Interaction protocols between PAs are identified.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0015",
+        "text": "Malicious requests are identified and acted upon.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0016",
+        "text": "There are existing policies for long-term peering arrangement.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0017",
+        "text": "There is procedure to perform short-term negotiation.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0018",
+        "text": "Negotiation is established between selected CDN peers.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0019",
+        "text": "Primary CDN has already acquired sufficient external resources.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0020",
+        "text": "Functional policies are identified and deployed.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0021",
+        "text": "Effective content delivery is ensured through SLA satisfaction.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0022",
+        "text": "Policies identifying the consequences of SLA violation are defined.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0023",
+        "text": "Policies are in place to perform renegotiation for problem resolution.",
+        "source_doc_id": "pure-peering"
+      },
+      {
+        "id": "PURE-PEERING-0024",
+        "text": "Policies are in place to perform renegotiation for problem resolution.",
+        "source_doc_id": "pure-peering"
+      }
+    ]
+  },
+  "metadata": {
+    "run_id": "pure-peering-smoke",
+    "started_at": "2026-08-14T17:16:53.070888Z",
+    "stages": {
+      "consistency_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "7aef6c8efb05",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "dependency_mapper": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "57b7bcbdf714",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "classifier": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "d0b3f8685513",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "quality_checker": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "1d0f79545e45",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_questioner": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "8b09bc233a80",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "refiner_rewriter": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "e0e31d8d8b7b",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "strategy_selector": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "419ccbe58a34",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      },
+      "test_generator": {
+        "model": "gemini/gemini-3.6-flash",
+        "prompt_hash": "6e2ad35a493f",
+        "prompt_version": "v2",
+        "temperature": 1.0,
+        "output_mode": "text"
+      }
+    },
+    "schema_version": "1.2"
+  },
+  "outcome": "completed",
+  "errors": [],
+  "consistency_report": {
+    "doc_id": "pure-peering",
+    "conflicts": []
+  },
+  "dependency_report": {
+    "doc_id": "pure-peering",
+    "dependencies": [
+      {
+        "from_requirement_id": "PURE-PEERING-0013",
+        "to_requirement_id": "PURE-PEERING-0012",
+        "explanation": "The Mediator's operational ability to work in conjunction with the Peering Agent (PA) to establish negotiation depends on the mediator-PA interaction protocols being defined."
+      },
+      {
+        "from_requirement_id": "PURE-PEERING-0018",
+        "to_requirement_id": "PURE-PEERING-0013",
+        "explanation": "Establishing negotiation between CDN peers depends on the Mediator actively working in conjunction with the PA to establish negotiation."
+      },
+      {
+        "from_requirement_id": "PURE-PEERING-0018",
+        "to_requirement_id": "PURE-PEERING-0014",
+        "explanation": "Establishing negotiation between CDN peers requires that interaction protocols between PAs are identified."
+      },
+      {
+        "from_requirement_id": "PURE-PEERING-0018",
+        "to_requirement_id": "PURE-PEERING-0017",
+        "explanation": "Establishing negotiation between CDN peers relies on having a defined procedure to perform short-term negotiation."
+      }
+    ]
+  },
+  "requirement_records": [],
+  "attempts": [
+    {
+      "stage": "consistency_checker",
+      "invocation_id": "451d2436a8de4ab78733a0c58fbed6b1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1428,
+      "completion_tokens": 17
+    },
+    {
+      "stage": "dependency_mapper",
+      "invocation_id": "0597f0ffcf754352ac50b116398aa86f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1587,
+      "completion_tokens": 318
+    }
+  ],
+  "pending_requirement_ids": [
+    "PURE-PEERING-0001",
+    "PURE-PEERING-0002",
+    "PURE-PEERING-0003",
+    "PURE-PEERING-0004",
+    "PURE-PEERING-0005",
+    "PURE-PEERING-0006",
+    "PURE-PEERING-0007",
+    "PURE-PEERING-0008",
+    "PURE-PEERING-0009",
+    "PURE-PEERING-0010",
+    "PURE-PEERING-0011",
+    "PURE-PEERING-0012",
+    "PURE-PEERING-0013",
+    "PURE-PEERING-0014",
+    "PURE-PEERING-0015",
+    "PURE-PEERING-0016",
+    "PURE-PEERING-0017",
+    "PURE-PEERING-0018",
+    "PURE-PEERING-0019",
+    "PURE-PEERING-0020",
+    "PURE-PEERING-0021",
+    "PURE-PEERING-0022",
+    "PURE-PEERING-0023",
+    "PURE-PEERING-0024"
+  ],
+  "document_stage_tokens": 3350
+}

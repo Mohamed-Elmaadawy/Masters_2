@@ -1,0 +1,310 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0016",
+    "text": "There are existing policies for long-term peering arrangement.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0016",
+    "system_type": "other",
+    "rationale": "The requirement describes policies for long-term peering arrangements within a Content Delivery Network (CDN) / network infrastructure system. It is a backend networking and policy specification rather than a web application, mobile application, or ML-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "There are existing policies for long-term peering arrangement.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0016",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "There are existing policies for long-term peering arrangement.",
+            "explanation": "The requirement is phrased as a statement of fact rather than a functional requirement, and is missing an actor, explicit system behavior, trigger, or condition needed to make it testable.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "long-term",
+            "explanation": "The term 'long-term' is a vague adjective that lacks a specific, measurable time threshold or duration.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0016",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "The phrase 'There are existing policies for long-term peering arrangement.' is stated as a statement of fact; what specific system behavior, actor, trigger, or condition should be defined to make this functional and testable?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the phrase 'long-term peering arrangement', what specific duration, time threshold, or measurable criteria defines 'long-term'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0016",
+        "original_text": "There are existing policies for long-term peering arrangement.",
+        "refined_text": "There are existing policies for long-term peering arrangement.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "There are existing policies for long-term peering arrangement.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0016",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "long-term",
+            "explanation": "The term 'long-term' is vague and does not define a measurable threshold or timeframe.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0016-ISSUE-1",
+            "category": "incomplete",
+            "span": null,
+            "explanation": "The statement functions as background context rather than a functional requirement, as it lacks an actor, trigger, condition, and clear action for what the system must do.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0016",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-2",
+            "issue_category": "ambiguous_term",
+            "question_text": "In the requirement \"There are existing policies for long-term peering arrangement.\", what specific timeframe or measurable threshold defines a \"long-term\" arrangement?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "PURE-PEERING-0016-ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "What specific system behavior, actor, trigger, and action should be specified for managing or applying these policies, so that the requirement defines functional system behavior rather than background context?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0016",
+        "original_text": "There are existing policies for long-term peering arrangement.",
+        "refined_text": "There are existing policies for long-term peering arrangement.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "There are existing policies for long-term peering arrangement.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0016",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-PEERING-0016-ISSUE-2",
+            "category": "incomplete",
+            "span": "There are existing policies for long-term peering arrangement.",
+            "explanation": "The statement describes a state or context rather than a functional requirement; it lacks a system actor, trigger, and specified system behavior describing what the system must do with these policies.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "ambiguous_term",
+            "span": "long-term",
+            "explanation": "The term 'long-term' is a vague adjective with no defined duration or measurable threshold.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "b3d1b633396149e38e4fcaac90b9dae4",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1424,
+      "completion_tokens": 76
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "6153ef7e43104d0c94e5b67c4b12c5dd",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1749,
+      "completion_tokens": 187
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "b1d69469f74b4f329cd08f81acfa1f44",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1220,
+      "completion_tokens": 167
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "31a7ab07c88d43618cb5e65dae130959",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1458,
+      "completion_tokens": 257
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "1b3aed140ee04772a3a8558b9413814c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1749,
+      "completion_tokens": 113
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "adc7aca2881f4240902b1248f71d8c98",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1212,
+      "completion_tokens": 210
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "95583b7f8e3742d3a20fa037af3dce80",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1458,
+      "completion_tokens": 204
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8ef12f09af59497fb34baae62ca8a056",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1749,
+      "completion_tokens": 183
+    }
+  ],
+  "final_text": "There are existing policies for long-term peering arrangement.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0016",
+    "original_text": "There are existing policies for long-term peering arrangement.",
+    "refined_text": "There are existing policies for long-term peering arrangement.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ],
+    "PURE-PEERING-0016-ISSUE-1": [
+      2
+    ],
+    "PURE-PEERING-0016-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 13416
+}

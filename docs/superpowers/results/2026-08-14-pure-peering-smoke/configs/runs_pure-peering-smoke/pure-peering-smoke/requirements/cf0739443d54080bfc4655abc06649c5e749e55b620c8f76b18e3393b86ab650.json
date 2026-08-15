@@ -1,0 +1,243 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0023",
+    "text": "Policies are in place to perform renegotiation for problem resolution.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0023",
+    "system_type": "other",
+    "rationale": "The requirement describes SLA renegotiation policies within a CDN peering and network infrastructure context, which is a backend/protocol service rather than a web application, mobile app, or AI-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Policies are in place to perform renegotiation for problem resolution.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0023",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Policies are in place to perform renegotiation for problem resolution.",
+            "explanation": "The requirement lacks an identified actor responsible for maintaining or executing the policies, as well as specific triggers or conditions defining when renegotiation must occur for problem resolution.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0023",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the statement 'Policies are in place to perform renegotiation for problem resolution', which specific actor or role is responsible for maintaining and executing these policies, and what triggers or conditions determine when renegotiation must take place?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0023",
+        "original_text": "Policies are in place to perform renegotiation for problem resolution.",
+        "refined_text": "Policies are in place to perform renegotiation for problem resolution.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Policies are in place to perform renegotiation for problem resolution.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0023",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Policies are in place to perform renegotiation for problem resolution.",
+            "explanation": "The requirement is missing an actor (who maintains policies or executes renegotiation), a specific trigger (what issue or threshold initiates renegotiation), and defined operational conditions needed to test the behavior.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0023",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "For the statement 'Policies are in place to perform renegotiation for problem resolution.', which entity or system component is responsible for executing or maintaining these policies, what specific conditions or thresholds trigger a renegotiation, and what operational conditions are required to verify this process?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0023",
+        "original_text": "Policies are in place to perform renegotiation for problem resolution.",
+        "refined_text": "Policies are in place to perform renegotiation for problem resolution.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Policies are in place to perform renegotiation for problem resolution.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0023",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Policies are in place to perform renegotiation for problem resolution.",
+            "explanation": "The requirement is missing an actor responsible for maintaining or enforcing the policies, a trigger specifying when renegotiation must occur, and conditions defining what constitutes a problem requiring resolution.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "d8a7424c3acb4e64bf5abd44a9397e16",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1425,
+      "completion_tokens": 63
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "f652315e1f0c455889c4d19c35e1d3db",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1750,
+      "completion_tokens": 99
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "4a2ff5069ff74a199b8130773343d7ab",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1155,
+      "completion_tokens": 103
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "f478608c774d42298fc7b204a16c2ae7",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1377,
+      "completion_tokens": 128
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "053211e5a13e46cd816ecea0ed864a0c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1750,
+      "completion_tokens": 87
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "f08ccce3142c43ca84dd6d7288e94c10",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1161,
+      "completion_tokens": 111
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "13981b161d5e43678515d9257a1cfe91",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1377,
+      "completion_tokens": 138
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "85086cfa90c449de81b5c9ee8faf7700",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1750,
+      "completion_tokens": 83
+    }
+  ],
+  "final_text": "Policies are in place to perform renegotiation for problem resolution.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0023",
+    "original_text": "Policies are in place to perform renegotiation for problem resolution.",
+    "refined_text": "Policies are in place to perform renegotiation for problem resolution.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 12557
+}

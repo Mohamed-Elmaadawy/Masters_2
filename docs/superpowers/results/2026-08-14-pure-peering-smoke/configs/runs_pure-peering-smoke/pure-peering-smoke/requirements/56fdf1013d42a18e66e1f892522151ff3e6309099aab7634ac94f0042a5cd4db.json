@@ -1,0 +1,245 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0022",
+    "text": "Policies identifying the consequences of SLA violation are defined.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0022",
+    "system_type": "other",
+    "rationale": "The requirement specifies defining policies for SLA violations within a CDN peering and resource negotiation context. This pertains to backend infrastructure and service-level management rather than a web application, mobile application, or machine-learning-driven system."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Policies identifying the consequences of SLA violation are defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0022",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Policies identifying the consequences of SLA violation are defined.",
+            "explanation": "The requirement uses passive voice and is missing a clear actor (specifying who or what system component defines or maintains the policies), as well as the trigger or context required to test when and how these policies are defined.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0022",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "Regarding the requirement 'Policies identifying the consequences of SLA violation are defined.', which specific actor or system component is responsible for defining these policies, and what trigger or context determines when they are defined?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0022",
+        "original_text": "Policies identifying the consequences of SLA violation are defined.",
+        "refined_text": "Policies identifying the consequences of SLA violation are defined.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Policies identifying the consequences of SLA violation are defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0022",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Policies identifying the consequences of SLA violation are defined.",
+            "explanation": "The requirement is stated in the passive voice and lacks an actor (e.g., who or what system defines or maintains the policies) and specific triggers or conditions required to test and verify compliance.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0022",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In the statement 'Policies identifying the consequences of SLA violation are defined.', who or what system is responsible for defining and maintaining these policies, and what specific conditions or triggers govern SLA violations?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0022",
+        "original_text": "Policies identifying the consequences of SLA violation are defined.",
+        "refined_text": "Policies identifying the consequences of SLA violation are defined.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Policies identifying the consequences of SLA violation are defined.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0022",
+        "passed": false,
+        "issues": [
+          {
+            "id": "PURE-PEERING-0022-ISSUE-1",
+            "category": "incomplete",
+            "span": "are defined",
+            "explanation": "The requirement is stated in the passive voice ('are defined') and lacks a designated actor responsible for defining or enforcing the policies, as well as specific conditions or a location required to test and verify compliance.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "275659b626df4b5eac1d8b58480dbfcb",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1423,
+      "completion_tokens": 74
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ca33e027bf9f43b19d969d5efeba33c3",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1748,
+      "completion_tokens": 127
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "44e0e7bc3aaf45dcb9ccca55242c6985",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1163,
+      "completion_tokens": 97
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "7ac3de9153884e26881b53dbae86c56a",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1375,
+      "completion_tokens": 134
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "8ea54bc9d41d4b5f91ff4eefa0532232",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1748,
+      "completion_tokens": 95
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "f6e7de9c7b0343ea995354292180f2e2",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1159,
+      "completion_tokens": 123
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "51abb1c75fc3434a9d9c3b64396f79dd",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1375,
+      "completion_tokens": 134
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "28c5584fb92b412ab09fe4127a0baf94",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1748,
+      "completion_tokens": 117
+    }
+  ],
+  "final_text": "Policies identifying the consequences of SLA violation are defined.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0022",
+    "original_text": "Policies identifying the consequences of SLA violation are defined.",
+    "refined_text": "Policies identifying the consequences of SLA violation are defined.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2
+    ],
+    "PURE-PEERING-0022-ISSUE-1": [
+      3
+    ]
+  },
+  "total_tokens": 12640
+}

@@ -1,0 +1,532 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-14T16:38:14+00:00",
+  "doc_id": "pure-keepass",
+  "source_file": "2008 - keepass.xml",
+  "source_sha256": "476fab645523c6cb83160e4a667145e6d7085fc4988b0eda9096001c7d6e3148",
+  "counts": {
+    "requirements": 32,
+    "skipped_empty": 0,
+    "with_bullets": 0,
+    "id_prefix_stripped": 0,
+    "duplicate_original_ids": 0,
+    "duplicate_texts": 0,
+    "deleted_marker": 0
+  },
+  "requirements": [
+    {
+      "id": "PURE-KEEPASS-0001",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.3"
+      ],
+      "position": 0,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "0bba2069b96b74c77d7802993fb57f83107469c5ea57f960811e0f5c7a6c4260",
+      "text_chars": 47,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0002",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.3"
+      ],
+      "position": 1,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "98d64ae6159e7674ee461397cd65528c4f4b752d14525409ecc92d824954ebb2",
+      "text_chars": 107,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0003",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.2",
+        "3.2.3"
+      ],
+      "position": 2,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "9ad7674d2c0ab622bd87bff59e1019663deac0f36a0196d67376fd11467ca88d",
+      "text_chars": 76,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0004",
+      "original_req_id": "4",
+      "section_path": [
+        "3",
+        "3.3",
+        "3.3.3"
+      ],
+      "position": 3,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5668293b65877b96bd728af548e24127f3cec113f3949b79355c0f129a7a2afd",
+      "text_chars": 88,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0005",
+      "original_req_id": "5",
+      "section_path": [
+        "3",
+        "3.4",
+        "3.4.3"
+      ],
+      "position": 4,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "ec17d3aac23f7da5b692dda614bbf1eadc5ce6e97a3c3548a53a1b2e1460460e",
+      "text_chars": 69,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0006",
+      "original_req_id": "6",
+      "section_path": [
+        "3",
+        "3.5",
+        "3.5.2.",
+        "3.5.3"
+      ],
+      "position": 5,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "bca5413b66bfd6b94e446ca7d34e5e3dcd4ed92b74b48edeff197cb3d403b0cc",
+      "text_chars": 151,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0007",
+      "original_req_id": "7",
+      "section_path": [
+        "3",
+        "3.6",
+        "3.6.3"
+      ],
+      "position": 6,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "49954cd67eb640d3589d3f226e239b7e3a33ef5f3b65e8620e5fa18ddd911ba8",
+      "text_chars": 68,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0008",
+      "original_req_id": "8",
+      "section_path": [
+        "3",
+        "3.6",
+        "3.6.3"
+      ],
+      "position": 7,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "283cce5cb0b43571a1c2e6c60967280b04040db784347ecfa67709f1ba157545",
+      "text_chars": 54,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0009",
+      "original_req_id": "9",
+      "section_path": [
+        "3",
+        "3.7",
+        "3.7.3"
+      ],
+      "position": 8,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "95e0ee8351a49cea758f4ab7bec8b30a9d4453c3be2200f1f16c8aade154b37c",
+      "text_chars": 64,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0010",
+      "original_req_id": "10",
+      "section_path": [
+        "3",
+        "3.9",
+        "3.9.3"
+      ],
+      "position": 9,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f7991b1dbf8026682cc29936c87c6c4b232a566dbbd1b2c98ea66a98f03bb9ec",
+      "text_chars": 77,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0011",
+      "original_req_id": "11",
+      "section_path": [
+        "3",
+        "3.10",
+        "3.10.3"
+      ],
+      "position": 10,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "2ba93e0f7a3b2905bd252a1ba715a2cd159243e6c8270d6be2460770d9e61324",
+      "text_chars": 45,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0012",
+      "original_req_id": "12",
+      "section_path": [
+        "3",
+        "3.10",
+        "3.10.3"
+      ],
+      "position": 11,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "bef3417aa608e5646a1a18773d7f73376c144564af6496ff373ce016c39a4283",
+      "text_chars": 80,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0013",
+      "original_req_id": "13",
+      "section_path": [
+        "3",
+        "3.10",
+        "3.10.3"
+      ],
+      "position": 12,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "166d646b4c8d7953b5a035f76c2223946d482012feb92656fed7c92059a91c47",
+      "text_chars": 66,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0014",
+      "original_req_id": "14",
+      "section_path": [
+        "3",
+        "3.11",
+        "3.11.3"
+      ],
+      "position": 13,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "86e84ba493b1e44c0ad294a158c9869d4e9f66abea5fad5725d06aa05dd725c3",
+      "text_chars": 51,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0015",
+      "original_req_id": "15",
+      "section_path": [
+        "3",
+        "3.11",
+        "3.11.3"
+      ],
+      "position": 14,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "6c242f9dd5e6ce7335bdfddcc367eaffa67f6282d0f960982fd03341af410da2",
+      "text_chars": 114,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0016",
+      "original_req_id": "16",
+      "section_path": [
+        "3",
+        "3.12",
+        "3.12.3"
+      ],
+      "position": 15,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "0977fbc607aacb1afe6b2fdc9175e50d3454b2939d23084a28805c21efcfcf90",
+      "text_chars": 49,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0017",
+      "original_req_id": "18",
+      "section_path": [
+        "3",
+        "3.14",
+        "3.14.3"
+      ],
+      "position": 16,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "98c6c853fb20e7f56788ed088661af54d2ccf17812b1d28ea4c3864a01b0e35e",
+      "text_chars": 159,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0018",
+      "original_req_id": "19",
+      "section_path": [
+        "3",
+        "3.15",
+        "3.15.2"
+      ],
+      "position": 17,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "fc71e43747d3422695445388a50831ca3098b25912b49189a45199998bdcc8de",
+      "text_chars": 61,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0019",
+      "original_req_id": "20",
+      "section_path": [
+        "3",
+        "3.15",
+        "3.15.2"
+      ],
+      "position": 18,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "bf8157e2e18d095fbfb16ee8374ecf58e49abb0c511347f27aec3fe67b85f1cd",
+      "text_chars": 62,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0020",
+      "original_req_id": "21",
+      "section_path": [
+        "3",
+        "3.15",
+        "3.15.2"
+      ],
+      "position": 19,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "368337502936870f0cbf3a7b819a3e90eb14674e6c41989170113e487375d3a6",
+      "text_chars": 72,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0021",
+      "original_req_id": "22",
+      "section_path": [
+        "3",
+        "3.16",
+        "3.16.2"
+      ],
+      "position": 20,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "32cc1c4cad874e22bbe75f0cfca91a739e19ec387007892fa1c1fb09de3226eb",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0022",
+      "original_req_id": "23",
+      "section_path": [
+        "3",
+        "3.16",
+        "3.16.2"
+      ],
+      "position": 21,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "9ba22727e2f72466c1397a27372454745995c2e7f802aaea1f8d4a9aa0d4f4e2",
+      "text_chars": 69,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0023",
+      "original_req_id": "24",
+      "section_path": [
+        "3",
+        "3.17",
+        "3.17.2"
+      ],
+      "position": 22,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "cb192e468efc06837d7b672160b10602bc6b502bfb5509fbc7cda4215f22d6c2",
+      "text_chars": 113,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0024",
+      "original_req_id": "25",
+      "section_path": [
+        "3",
+        "3.17",
+        "3.17.2"
+      ],
+      "position": 23,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "cff0dc5efc8e5bbcafe6b0efccea53ec9d2d184a8cce43f29481137203a9f3b7",
+      "text_chars": 106,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0025",
+      "original_req_id": "26",
+      "section_path": [
+        "3",
+        "3.17",
+        "3.17.2"
+      ],
+      "position": 24,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f0c08f17f9b84adb045ab68f9abf5326d106c547ba3a733c67330c62f8d85683",
+      "text_chars": 75,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0026",
+      "original_req_id": "27",
+      "section_path": [
+        "3",
+        "3.17",
+        "3.17.2"
+      ],
+      "position": 25,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5ec8223b522647368cc3d2f7069f5e0f85052b044d4d9aff019435f6970a7c3c",
+      "text_chars": 99,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0027",
+      "original_req_id": "28",
+      "section_path": [
+        "3",
+        "3.17",
+        "3.17.2"
+      ],
+      "position": 26,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a34d9a0060ebafe310b3fd649eea936e4cb101f1abf37dd09b7088a13659798e",
+      "text_chars": 54,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0028",
+      "original_req_id": "29",
+      "section_path": [
+        "3",
+        "3.18",
+        "3.18.2"
+      ],
+      "position": 27,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d1e2291208d2f03d5e4a5868418d65b6bf35353d9546a2e614faa6024716e123",
+      "text_chars": 66,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0029",
+      "original_req_id": "30",
+      "section_path": [
+        "3",
+        "3.18",
+        "3.18.2"
+      ],
+      "position": 28,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "48357953944deee26e3ec41930920248a36d7f8dcbe79a3cf97759949a827d6d",
+      "text_chars": 67,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0030",
+      "original_req_id": "31",
+      "section_path": [
+        "3",
+        "3.19",
+        "3.19.2"
+      ],
+      "position": 29,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "427ae620833e1dbfd6c249d1b780657b6f9b75a6b2332a07ec4017e6f88408d5",
+      "text_chars": 32,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0031",
+      "original_req_id": "32",
+      "section_path": [
+        "3",
+        "3.21",
+        "3.21.2"
+      ],
+      "position": 30,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "cecf29d56184c3800c0b0b746e976554a40e75c27ae497b3ece4497028cb0070",
+      "text_chars": 56,
+      "flags": []
+    },
+    {
+      "id": "PURE-KEEPASS-0032",
+      "original_req_id": "33",
+      "section_path": [
+        "3",
+        "3.21",
+        "3.21.2"
+      ],
+      "position": 31,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "dae4e1abb6e8dabd3970bd3bb3863bb6aef61001bdd965f78616d314ccb26304",
+      "text_chars": 73,
+      "flags": []
+    }
+  ],
+  "skipped_empty": []
+}

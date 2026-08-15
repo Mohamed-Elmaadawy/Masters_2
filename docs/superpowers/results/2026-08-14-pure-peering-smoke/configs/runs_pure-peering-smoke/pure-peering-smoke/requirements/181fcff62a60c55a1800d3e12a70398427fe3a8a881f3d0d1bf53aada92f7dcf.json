@@ -1,0 +1,306 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0007",
+    "text": "Malicious requests are detected and rejected.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0007",
+    "system_type": "web",
+    "rationale": "The document context explicitly describes a web-based CDN peering and content delivery architecture involving 'Web Server-SR', 'Web servers', and user traffic requests. Detecting and rejecting malicious requests within this context pertains directly to the web-based system's request handling and security."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Malicious requests are detected and rejected.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0007",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The term 'Malicious' is vague and lacks a measurable threshold or defined rules to determine what constitutes a malicious request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Malicious requests are detected and rejected.",
+            "explanation": "The requirement is missing an explicit actor (e.g., 'The system') and the specific trigger or conditions required to test when and how detection occurs.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0007",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific criteria, rules, or thresholds should be used to define a 'Malicious' request so that detection can be accurately measured and tested?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "Which system component is responsible for performing the detection, and what specific triggers or conditions initiate the detection and rejection process for the requirement 'Malicious requests are detected and rejected.'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0007",
+        "original_text": "Malicious requests are detected and rejected.",
+        "refined_text": "Malicious requests are detected and rejected.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Malicious requests are detected and rejected.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0007",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The term 'Malicious' is vague and subjective, lacking a measurable definition or specific criteria (e.g., SQL injection, XSS signatures, rate limits) to determine what constitutes a malicious request.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Malicious requests are detected and rejected.",
+            "explanation": "The requirement is written in passive voice and lacks an explicit actor (e.g., 'The Web Application Firewall') as well as specific triggers or conditions under which detection and rejection occur.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0007",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable criteria or request patterns (such as SQL injection, XSS signatures, or rate limit thresholds) define a request as 'Malicious'?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "ISSUE-2",
+            "issue_category": "incomplete",
+            "question_text": "Which specific system or component (e.g., the Web Application Firewall) is responsible for detecting and rejecting requests in 'Malicious requests are detected and rejected.', and under what specific conditions or triggers should this take place?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0007",
+        "original_text": "Malicious requests are detected and rejected.",
+        "refined_text": "Malicious requests are detected and rejected.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Malicious requests are detected and rejected.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0007",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "Malicious",
+            "explanation": "The term 'Malicious' is ambiguous and lacks a clear, measurable definition or threshold specifying what types of request behaviors or payloads (e.g., SQL injection, XSS, malformed headers) are considered malicious.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "ISSUE-2",
+            "category": "incomplete",
+            "span": "Malicious requests are detected and rejected.",
+            "explanation": "The requirement is passive and incomplete, lacking a specified actor (e.g., system component, firewall, API gateway), trigger, or condition required to verify and test the behavior.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "b80c32a975de4cd09e94c9b5686680a1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1421,
+      "completion_tokens": 79
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "a27dc91621b1401bad089f00d8110dd9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1746,
+      "completion_tokens": 123
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "cc6249d622ad4eb1a61572e20421eb51",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1209,
+      "completion_tokens": 199
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "3f5ee9c046a1461a81f3a23f0a9c4967",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1455,
+      "completion_tokens": 198
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "9d26f809944445c1afc4e5c597622a86",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1746,
+      "completion_tokens": 203
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "7c54e8823ca349b8a6d988292f580344",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1232,
+      "completion_tokens": 210
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "9a280aa0fe1c4b4cb84fcbdcaf704ad9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1455,
+      "completion_tokens": 212
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "1f6b67fc830b4c098ea1c3d0c69f816e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1746,
+      "completion_tokens": 205
+    }
+  ],
+  "final_text": "Malicious requests are detected and rejected.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0007",
+    "original_text": "Malicious requests are detected and rejected.",
+    "refined_text": "Malicious requests are detected and rejected.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "No numeric threshold is specified in the source document for this term; treat it as a placeholder the requirements author must supply a measurable value for (e.g. a specific time, temperature delta, or rate) -- do not invent a number that isn't grounded in the document.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    2,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "ISSUE-2": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 13439
+}

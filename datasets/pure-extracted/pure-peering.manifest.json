@@ -1,0 +1,407 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-14T16:38:14+00:00",
+  "doc_id": "pure-peering",
+  "source_file": "2008 - peering.xml",
+  "source_sha256": "92273bce8ee0f39d13155f40e317a23522317a2747bbabfe118f2ffa7b0e86fb",
+  "counts": {
+    "requirements": 24,
+    "skipped_empty": 0,
+    "with_bullets": 0,
+    "id_prefix_stripped": 0,
+    "duplicate_original_ids": 4,
+    "duplicate_texts": 3,
+    "deleted_marker": 0
+  },
+  "requirements": [
+    {
+      "id": "PURE-PEERING-0001",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 0,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "777b2fff40b226df467bd994eb1e9e27f723522cf9adb8e93857a7f870d32d23",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0002",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 1,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "777b2fff40b226df467bd994eb1e9e27f723522cf9adb8e93857a7f870d32d23",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0003",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 2,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "acab273187dfc87adaa65fc85a4948eab1a8f5e6223f594cbd75cf29d2edd0e0",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0004",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 3,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "86f561a16d47f834875693fd97a4c4583277737c260c50794c7b8bac0e26e930",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0005",
+      "original_req_id": "4",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 4,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "0e8293023e70eba3d9a5b2ef0945067fe9712fd04b00050fdf9cdedb37b1470a",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0006",
+      "original_req_id": "5",
+      "section_path": [
+        "3",
+        "3.1",
+        "3.1.7"
+      ],
+      "position": 5,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "acab273187dfc87adaa65fc85a4948eab1a8f5e6223f594cbd75cf29d2edd0e0",
+      "text_chars": 71,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0007",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.2",
+        "3.2.7"
+      ],
+      "position": 6,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a7c150c9404d60bbc82bc6a351b62c49b123a3cec0aff1c7c3738b437167e8b1",
+      "text_chars": 45,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0008",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.2",
+        "3.2.7"
+      ],
+      "position": 7,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "d61f546866d9f497754f1857c16a3539e46b17752e5c0dfd56ffd26c6c96683f",
+      "text_chars": 54,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0009",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.2",
+        "3.2.7"
+      ],
+      "position": 8,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "e46dad1a24c238b3d2545e961b163e14b603502a27544389dd642687f729f5c7",
+      "text_chars": 74,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0010",
+      "original_req_id": "4",
+      "section_path": [
+        "3",
+        "3.2",
+        "3.2.7"
+      ],
+      "position": 9,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "777b2fff40b226df467bd994eb1e9e27f723522cf9adb8e93857a7f870d32d23",
+      "text_chars": 57,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0011",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.3",
+        "3.3.7"
+      ],
+      "position": 10,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "3ca17b740d0cc7c2f2c34faddb2573e3e577f1cfa253014931ab1bfd048bf7d8",
+      "text_chars": 46,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0012",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.3",
+        "3.3.7"
+      ],
+      "position": 11,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "6fa62f3ff4b2f5ccb46ca1124ddb10a76ef6405b6bf02ba25d162f28405d5ad3",
+      "text_chars": 72,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0013",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.3",
+        "3.3.7"
+      ],
+      "position": 12,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "5bcb3ac51afc6d71a5ec5c27f02b6371236c66b838785d13fbc5a9dd37736513",
+      "text_chars": 67,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0014",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.4",
+        "3.4.7"
+      ],
+      "position": 13,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a6614eb35659df0317cf74e5b7f5e652d488c9588b695438160d16ecbe8acf70",
+      "text_chars": 49,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0015",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.4",
+        "3.4.7"
+      ],
+      "position": 14,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "44f98824a936b23c2913af5edd57528811c504d084a91fb019ac199c0f7cf7cb",
+      "text_chars": 49,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0016",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.4",
+        "3.4.7"
+      ],
+      "position": 15,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a7c1d90178e643a1758c4499037fd77b4c044f39c6fc6d203a77aa9224f286f3",
+      "text_chars": 62,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0017",
+      "original_req_id": "4",
+      "section_path": [
+        "3",
+        "3.4",
+        "3.4.7"
+      ],
+      "position": 16,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "9ebac718395067b734aa88c9255d1b28275406352edeb29a99021b829ee87f8f",
+      "text_chars": 53,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0018",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.5",
+        "Figure 6",
+        "3.5.7"
+      ],
+      "position": 17,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "7cf392230a567371847dea3836ea71d901d9c729455c340b8237a895558f732c",
+      "text_chars": 54,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0019",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.5",
+        "Figure 6",
+        "3.5.7"
+      ],
+      "position": 18,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "f8c0b99c86420dfaca09cc42251331518b8b218f0768e19de79f77a84cb6c09d",
+      "text_chars": 63,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0020",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.5",
+        "Figure 6",
+        "3.5.7"
+      ],
+      "position": 19,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "a5bd7c609737015d02b1ca354644c8f54ed07ef62c136999b4eb0dbe1a477dc5",
+      "text_chars": 48,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0021",
+      "original_req_id": "4",
+      "section_path": [
+        "3",
+        "3.5",
+        "Figure 6",
+        "3.5.7"
+      ],
+      "position": 20,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "428edfc880f4733c0c5882aad24516d4a34bbb43d689944731e9266e22c88ad5",
+      "text_chars": 63,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0022",
+      "original_req_id": "1",
+      "section_path": [
+        "3",
+        "3.6",
+        "3.6.7"
+      ],
+      "position": 21,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "579b445eabf97ba78aedb1cac5b7f556441922ab5e5cdf87fa21381eff90b228",
+      "text_chars": 67,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0023",
+      "original_req_id": "2",
+      "section_path": [
+        "3",
+        "3.6",
+        "3.6.7"
+      ],
+      "position": 22,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "e1cc95492aca31dc50270698effab4f6399c442e8a02366dd1e62afeffe95ae0",
+      "text_chars": 70,
+      "flags": []
+    },
+    {
+      "id": "PURE-PEERING-0024",
+      "original_req_id": "3",
+      "section_path": [
+        "3",
+        "3.6",
+        "3.6.7"
+      ],
+      "position": 23,
+      "text_body_count": 1,
+      "bullet_items": 0,
+      "id_prefix_stripped": false,
+      "text_sha256": "e1cc95492aca31dc50270698effab4f6399c442e8a02366dd1e62afeffe95ae0",
+      "text_chars": 70,
+      "flags": []
+    }
+  ],
+  "skipped_empty": []
+}

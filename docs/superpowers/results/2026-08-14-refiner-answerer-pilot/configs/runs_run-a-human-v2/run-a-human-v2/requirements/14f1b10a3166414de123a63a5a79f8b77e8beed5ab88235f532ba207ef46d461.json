@@ -1,0 +1,302 @@
+{
+  "requirement": {
+    "id": "PURE-GAMMA-J-0033",
+    "text": "The system shall be easy to use",
+    "source_doc_id": "pure-gamma-j"
+  },
+  "run_id": "run-a-human-v2",
+  "outcome": "cap_generated",
+  "errors": [],
+  "cap_reason": "Manual pilot decision: generate anyway at cap, per evaluation plan.",
+  "classification": {
+    "requirement_id": "PURE-GAMMA-J-0033",
+    "system_type": "other",
+    "rationale": "Neither the target requirement nor the surrounding context contains any specific indicators of a web, mobile, or AI-driven system; therefore, it is classified as 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "The system shall be easy to use",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to use",
+            "explanation": "The phrase 'easy to use' is a vague usability adjective with no objective, measurable threshold.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "How should the phrase \"easy to use\" be defined in objective, measurable terms (e.g., maximum training time required, task completion rate, or usability score benchmark)?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "original_text": "The system shall be easy to use",
+        "refined_text": "The system shall be easy to use",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "The system shall be easy to use",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to use",
+            "explanation": "The phrase 'easy to use' is a vague quality description with no measurable threshold or objective criteria for testing.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "ambiguous_term",
+            "question_text": "What specific measurable metrics or acceptance criteria (such as maximum task completion time, required training duration, or a minimum usability score threshold) should be used to replace the phrase 'easy to use'?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "I don't know — the document doesn't define this.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "original_text": "The system shall be easy to use",
+        "refined_text": "The system shall be easy to use",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "I don't know — the document doesn't define this.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "The system shall be easy to use",
+      "quality_report": {
+        "requirement_id": "PURE-GAMMA-J-0033",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "ambiguous_term",
+            "span": "easy to use",
+            "explanation": "The phrase 'easy to use' is a vague quality description that lacks a measurable threshold or objective criteria.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": []
+    }
+  ],
+  "test_strategy": {
+    "requirement_id": "PURE-GAMMA-J-0033",
+    "system_type": "other",
+    "techniques": [
+      "exploratory"
+    ],
+    "rationale": "The requirement 'The system shall be easy to use' is a qualitative usability statement without explicit numeric thresholds, state sequences, combined logic conditions, use case dependencies, or performance parameters. According to the guidance, when no specific structured techniques clearly match the requirement, exploratory testing should be selected."
+  },
+  "test_plan": {
+    "requirement_id": "PURE-GAMMA-J-0033",
+    "test_cases": [
+      {
+        "id": "TC-17-PURE-GAMMA-J-0033-1",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0033"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory evaluation of first-time user task completion and navigation intuitiveness",
+        "preconditions": "The system is accessible in a clean default state with sample data pre-populated, representing a standard operational setup.",
+        "steps": [
+          "Log into the system as a representative first-time user without receiving prior training or consulting external documentation.",
+          "Attempt to discover and execute common core tasks (such as searching for items, configuring preferences, and completing standard workflows) relying strictly on visible visual cues, interface labels, and built-in affordances.",
+          "Observe navigation flow, count unintended clicks or backtracks, and identify any friction points during task execution."
+        ],
+        "expected_result": "First-time users are able to intuit and successfully complete core operational workflows without encountering blocking UI confusion or needing external guidance."
+      },
+      {
+        "id": "TC-17-PURE-GAMMA-J-0033-2",
+        "requirement_ids": [
+          "PURE-GAMMA-J-0033"
+        ],
+        "technique_used": "exploratory",
+        "title": "Exploratory assessment of UI visual consistency, error feedback, and contextual guidance",
+        "preconditions": "System is deployed and accessible across standard display resolutions.",
+        "steps": [
+          "Explore various modules, data entry forms, dialog boxes, and navigation menus across the entire application interface.",
+          "Intentionally perform common user mistakes during interaction (e.g., leaving mandatory fields blank, entering unexpected characters, or attempting to navigate away with unsaved changes).",
+          "Evaluate the consistency of interface design patterns, button placements, input controls, and contextual inline help across all visited screens."
+        ],
+        "expected_result": "Interface elements maintain consistent layout and interaction patterns across all modules, and clear, actionable feedback is provided when user inputs or actions require correction."
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "6b4535199e1749aab4834ed4e8a49ab1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 817,
+      "completion_tokens": 58
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "d679ea8c336a427f82468932c7eb9495",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 111
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "ec77b648fca2414796cc21e9c60d8476",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1135,
+      "completion_tokens": 126
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "82b6c711487947fe9febcc01519f9557",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "fb9b5fbaf23d4564a668512ad0d7a494",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 86
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "7604d7a34a4646e1aa2543c29ca76c39",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1138,
+      "completion_tokens": 103
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "71ea20a54b734cbfabc66d5c68f6cc9d",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1345,
+      "completion_tokens": 102
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "b795ccda82384bd59a738f210f9ace2e",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1747,
+      "completion_tokens": 77
+    },
+    {
+      "stage": "strategy_selector",
+      "invocation_id": "70d9915927964688a7c1f9b7700238f1",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1102,
+      "completion_tokens": 89
+    },
+    {
+      "stage": "test_generator",
+      "invocation_id": "90e4f9a96e5c4536bd2253a151ab7d7c",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1445,
+      "completion_tokens": 410
+    }
+  ],
+  "final_text": "The system shall be easy to use",
+  "final_requirement": {
+    "requirement_id": "PURE-GAMMA-J-0033",
+    "original_text": "The system shall be easy to use",
+    "refined_text": "The system shall be easy to use",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "I don't know — the document doesn't define this.",
+        "user_confirms_resolved": false
+      }
+    ]
+  },
+  "used_human_override": false,
+  "issues_per_round": [
+    1,
+    1,
+    1
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ]
+  },
+  "total_tokens": 14832
+}

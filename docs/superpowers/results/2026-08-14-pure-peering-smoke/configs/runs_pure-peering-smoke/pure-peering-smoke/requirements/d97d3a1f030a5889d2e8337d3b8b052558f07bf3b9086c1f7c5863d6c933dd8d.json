@@ -1,0 +1,286 @@
+{
+  "requirement": {
+    "id": "PURE-PEERING-0020",
+    "text": "Functional policies are identified and deployed.",
+    "source_doc_id": "pure-peering"
+  },
+  "run_id": "pure-peering-smoke",
+  "outcome": "cap_stopped",
+  "errors": [],
+  "cap_reason": "AI answer policy declines to certify outstanding issues as resolved; stopping at the revision cap rather than generating tests from best-effort text. See ANALYSIS.md, \"Human-in-the-loop answers\".",
+  "classification": {
+    "requirement_id": "PURE-PEERING-0020",
+    "system_type": "other",
+    "rationale": "The requirement concerns functional policies for a CDN peering architecture and backend networking framework. As a backend network service/infrastructure requirement rather than a web application, mobile app, or ML-driven AI system, it is classified as 'other'."
+  },
+  "rounds": [
+    {
+      "revision_number": 1,
+      "text_checked": "Functional policies are identified and deployed.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0020",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Functional policies are identified and deployed.",
+            "explanation": "The requirement is written in passive voice and lacks an actor (who identifies and deploys the policies), as well as the triggers or conditions specifying when or how this process occurs.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0020",
+        "revision_number": 1,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In the requirement 'Functional policies are identified and deployed.', who or what system component is responsible for identifying and deploying the policies, and what specific triggers or conditions initiate this process?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0020",
+        "original_text": "Functional policies are identified and deployed.",
+        "refined_text": "Functional policies are identified and deployed.",
+        "revision_number": 1,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 2,
+      "text_checked": "Functional policies are identified and deployed.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0020",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Functional policies are identified and deployed.",
+            "explanation": "The requirement is written in the passive voice and lacks an explicit actor (identifying which system or role performs the actions), as well as triggers or conditions under which policies must be identified and deployed.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0020-ISSUE-1",
+            "category": "non_atomic",
+            "span": "identified and deployed",
+            "explanation": "The requirement combines two separate behaviors—identifying functional policies and deploying functional policies—which can be independently specified, implemented, and tested.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": {
+        "requirement_id": "PURE-PEERING-0020",
+        "revision_number": 2,
+        "questions": [
+          {
+            "id": "Q1",
+            "issue_id": "ISSUE-1",
+            "issue_category": "incomplete",
+            "question_text": "In the requirement 'Functional policies are identified and deployed.', which specific system or role is responsible for identifying and deploying functional policies, and what triggers or conditions govern when this should happen?"
+          },
+          {
+            "id": "Q2",
+            "issue_id": "PURE-PEERING-0020-ISSUE-1",
+            "issue_category": "non_atomic",
+            "question_text": "The phrase 'identified and deployed' combines two distinct actions. Should identifying functional policies and deploying functional policies be separated into two distinct requirements to allow independent specification, implementation, and testing?"
+          }
+        ]
+      },
+      "answers": [
+        {
+          "question_id": "Q1",
+          "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+          "user_confirms_resolved": false
+        },
+        {
+          "question_id": "Q2",
+          "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+          "user_confirms_resolved": true
+        }
+      ],
+      "rewrite": {
+        "requirement_id": "PURE-PEERING-0020",
+        "original_text": "Functional policies are identified and deployed.",
+        "refined_text": "Functional policies are identified and deployed.",
+        "revision_number": 2,
+        "answers_used": [
+          {
+            "question_id": "Q1",
+            "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+            "user_confirms_resolved": false
+          },
+          {
+            "question_id": "Q2",
+            "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+            "user_confirms_resolved": true
+          }
+        ]
+      },
+      "suppressed_issue_ids": []
+    },
+    {
+      "revision_number": 3,
+      "text_checked": "Functional policies are identified and deployed.",
+      "quality_report": {
+        "requirement_id": "PURE-PEERING-0020",
+        "passed": false,
+        "issues": [
+          {
+            "id": "ISSUE-1",
+            "category": "incomplete",
+            "span": "Functional policies are identified and deployed.",
+            "explanation": "The requirement is missing an actor specifying what component or user performs the actions, as well as the trigger or conditions under which functional policies are to be identified and deployed.",
+            "related_requirement_ids": []
+          },
+          {
+            "id": "PURE-PEERING-0020-ISSUE-2",
+            "category": "non_verifiable",
+            "span": "identified and deployed",
+            "explanation": "The requirement provides no measurable pass/fail criteria or concrete standards to verify whether a functional policy has been successfully identified or deployed.",
+            "related_requirement_ids": []
+          }
+        ]
+      },
+      "turn": null,
+      "answers": [],
+      "rewrite": null,
+      "suppressed_issue_ids": [
+        "PURE-PEERING-0020-ISSUE-1"
+      ]
+    }
+  ],
+  "test_strategy": null,
+  "test_plan": null,
+  "attempts": [
+    {
+      "stage": "classifier",
+      "invocation_id": "2370037e158d47c4915402af13dc7e9b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1420,
+      "completion_tokens": 71
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "ef2b81c9638643a58e4188c5cfe4043b",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1745,
+      "completion_tokens": 80
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "9ed8fd6022be4c9692d79f8e582a4a54",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1149,
+      "completion_tokens": 83
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "5fc8a7ac75b641ecbde53c3976564749",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1372,
+      "completion_tokens": 118
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "4c9bd292b9aa4ccb999f898d578e6b0f",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1745,
+      "completion_tokens": 133
+    },
+    {
+      "stage": "refiner_questioner",
+      "invocation_id": "bcf72b9534ee484a9afcbf294b2043fe",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1238,
+      "completion_tokens": 157
+    },
+    {
+      "stage": "refiner_rewriter",
+      "invocation_id": "3b36c932f9c14fc3ba65e4015d062ca9",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1438,
+      "completion_tokens": 194
+    },
+    {
+      "stage": "quality_checker",
+      "invocation_id": "c66db98e708d40d697536fde63b7be81",
+      "attempt_number": 1,
+      "result": "success",
+      "error_message": null,
+      "prompt_tokens": 1760,
+      "completion_tokens": 143
+    }
+  ],
+  "final_text": "Functional policies are identified and deployed.",
+  "final_requirement": {
+    "requirement_id": "PURE-PEERING-0020",
+    "original_text": "Functional policies are identified and deployed.",
+    "refined_text": "Functional policies are identified and deployed.",
+    "revision_number": 2,
+    "answers_used": [
+      {
+        "question_id": "Q1",
+        "answer_text": "The missing element is not stated anywhere else in the document either; flag it as a genuine gap rather than an omission this answer can fill in -- inventing the missing actor/trigger/condition here would misattribute an assumption to the original requirement.",
+        "user_confirms_resolved": false
+      },
+      {
+        "question_id": "Q2",
+        "answer_text": "Keep this as one requirement. The bundled actions describe a single causal step (one trigger producing one behavior), not two independently testable behaviors -- splitting would fragment one atomic step rather than separate genuinely distinct requirements.",
+        "user_confirms_resolved": true
+      }
+    ]
+  },
+  "used_human_override": true,
+  "issues_per_round": [
+    1,
+    2,
+    2
+  ],
+  "issue_history": {
+    "ISSUE-1": [
+      1,
+      2,
+      3
+    ],
+    "PURE-PEERING-0020-ISSUE-1": [
+      2
+    ],
+    "PURE-PEERING-0020-ISSUE-2": [
+      3
+    ]
+  },
+  "total_tokens": 12846
+}
