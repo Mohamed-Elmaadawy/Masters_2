@@ -32,6 +32,9 @@ defaults:
   output_mode: text
 
 # No per-stage overrides -- every stage uses `defaults` (groq/llama-3.3-70b-versatile).
+# consistency_checker_refined/dependency_mapper_refined (S3, "phase the pipeline" --
+# design/DESIGN_NOTES.md) added 2026-08-16: the second, post-refinement document
+# analysis, same defaults as their non-refined siblings.
 stages:
   classifier: {}
   quality_checker: {}
@@ -41,6 +44,8 @@ stages:
   test_generator: {}
   consistency_checker: {}
   dependency_mapper: {}
+  consistency_checker_refined: {}
+  dependency_mapper_refined: {}
 
 prompts:
   consistency_checker: example_prompts/consistency_checker.txt
@@ -51,3 +56,5 @@ prompts:
   refiner_rewriter: example_prompts/refiner_rewriter.txt
   strategy_selector: example_prompts/strategy_selector.txt
   test_generator: example_prompts/test_generator.txt
+  consistency_checker_refined: example_prompts/consistency_checker_refined.txt
+  dependency_mapper_refined: example_prompts/dependency_mapper_refined.txt

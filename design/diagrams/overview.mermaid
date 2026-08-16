@@ -4,7 +4,7 @@
 %% The whole project in one picture. For any real detail, see the other eleven diagrams in design/diagrams/ -- this one is deliberately too small to debug from.
 flowchart TD
     IN["Requirement document (JSON)<br/>+ run config (YAML)"]
-    DOC["Document-level checks<br/><i>consistency · dependencies<br/>2 stages, once per document</i>"]
+    DOC["Document-level checks<br/><i>consistency · dependencies<br/>4 stages, once per document</i>"]
     REQ["Per-requirement pipeline<br/><i>classify → check quality →<br/>refine (loop) → select strategy → generate tests<br/>6 stages, repeated for every requirement</i>"]
     HUM["Human<br/><i>answers refiner questions ·<br/>decides at the revision cap</i>"]
     LLM["LLM providers<br/><i>Gemini · Groq</i>"]

@@ -31,7 +31,10 @@ from typing import Callable, Literal, Optional
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from design.schemas import ALL_STAGES, NonEmptyStr, OutputMode, RunMetadata, StageConfig, prompt_fingerprint
+from design.schemas import (
+    ALL_STAGES, NonEmptyStr, OutputMode, RunMetadata, SCHEMA_VERSION_1_2_STAGES,
+    StageConfig, prompt_fingerprint,
+)
 from orchestrator.pipeline import Throttle, atomic_write_text
 from orchestrator.providers.capabilities import supports_output_mode
 
@@ -220,12 +223,31 @@ class ResolvedRunConfig(BaseModel):
 
     @model_validator(mode="after")
     def _stages_cover_exactly_all_stages(self) -> "ResolvedRunConfig":
-        given, expected = set(self.stages), set(ALL_STAGES)
-        if missing := sorted(expected - given):
+        """Accepts either the current ten-stage ALL_STAGES (any config `resolve_run_config`
+        produces today) or the frozen legacy eight-stage set (S3, "phase the
+        pipeline" -- every real run_config.json under docs/superpowers/results/
+        predates the two refined-phase stages). `ResolvedRunConfig` has no
+        `schema_version` field of its own to branch on the way `RunMetadata` does
+        (design/schemas.py) -- it never needed one before S3 -- so this checks the
+        SHAPE of `stages` directly instead. This is what makes a pre-S3
+        run_config.json still loadable for inspection via `read_resolved_run_config`;
+        `orchestrator/cli.py`'s `_do_resume` is what actually refuses to RESUME one,
+        with an explicit message, before any adapter is built -- loading and resuming
+        are deliberately two different gates. See design/DESIGN_NOTES.md, "S3
+        implemented", the "Historical schema compatibility" follow-up entry.
+        """
+        given = set(self.stages)
+        current = set(ALL_STAGES)
+        if given == current or given == SCHEMA_VERSION_1_2_STAGES:
+            return self
+        # Neither shape matches -- report against whichever candidate is closer, so
+        # the message names a real problem instead of just restating both full sets.
+        target = current if len(given ^ current) <= len(given ^ SCHEMA_VERSION_1_2_STAGES) \
+            else SCHEMA_VERSION_1_2_STAGES
+        if missing := sorted(target - given):
             raise ValueError(f"stages is missing an entry for: {missing}")
-        if unknown := sorted(given - expected):
-            raise ValueError(f"stages contains unknown stage name(s): {unknown}")
-        return self
+        raise ValueError(
+            f"stages contains unknown stage name(s): {sorted(given - target)}")
 
     @model_validator(mode="after")
     def _rate_limits_match_resolved_models_exactly(self) -> "ResolvedRunConfig":

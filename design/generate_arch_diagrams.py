@@ -281,6 +281,16 @@ STAGE_WIRING: list[tuple[str, str, str, str, str, str]] = [
      "CheckConsistencyFn", "ConsistencyReport", "consistency_checker.txt"),
     ("dependency_mapper", "map_dependencies", "make_map_dependencies_fn",
      "MapDependenciesFn", "DependencyReport", "dependency_mapper.txt"),
+    # S3 ("phase the pipeline"): the second, post-refinement document analysis phase.
+    # Same factories/Protocols/output models as their non-refined siblings above --
+    # only the StageFns field, ALL_STAGES key, and prompt file are genuinely distinct
+    # (own resolved config, own prompt_hash provenance; see StageFns's docstring for
+    # why these are real, independently-configurable slots, not a re-run under a
+    # different label).
+    ("consistency_checker_refined", "check_consistency_refined", "make_check_consistency_fn",
+     "CheckConsistencyFn", "ConsistencyReport", "consistency_checker_refined.txt"),
+    ("dependency_mapper_refined", "map_dependencies_refined", "make_map_dependencies_fn",
+     "MapDependenciesFn", "DependencyReport", "dependency_mapper_refined.txt"),
     ("classifier", "classify", "make_classify_fn",
      "ClassifyFn", "Classification", "classifier.txt"),
     ("quality_checker", "check_quality", "make_check_quality_fn",
@@ -295,7 +305,8 @@ STAGE_WIRING: list[tuple[str, str, str, str, str, str]] = [
      "GenerateTestsFn", "TestPlan", "test_generator.txt"),
 ]
 
-DOC_LEVEL_STAGES = {"consistency_checker", "dependency_mapper"}
+DOC_LEVEL_STAGES = {"consistency_checker", "dependency_mapper",
+                   "consistency_checker_refined", "dependency_mapper_refined"}
 PROMPT_DIR = REPO_ROOT / "orchestrator" / "example_prompts"
 
 
@@ -309,11 +320,19 @@ def validate_stage_wiring() -> None:
             f"  declared: {declared_keys}\n  ALL_STAGES: {list(schemas.ALL_STAGES)}\n"
             "Add/rename/reorder the row, do not edit the diagram.")
 
-    real_fields = [f.name for f in dataclasses.fields(stage_fns_mod.StageFns)]
-    if [row[1] for row in STAGE_WIRING] != real_fields:
+    # Set equality, not sequence equality: StageFns's own field ORDER is constrained by
+    # Python dataclass rules (every field with a default -- check_consistency_refined/
+    # map_dependencies_refined, S3's optional refined-phase callables -- must come after
+    # every field without one), which no longer matches ALL_STAGES's order once a
+    # document-level stage's refined counterpart is optional while every per-requirement
+    # stage stays required. Declaration order isn't behaviourally meaningful for a
+    # dataclass; COVERAGE (every field wired, no extras) is what this check protects.
+    real_fields = {f.name for f in dataclasses.fields(stage_fns_mod.StageFns)}
+    declared_fields = {row[1] for row in STAGE_WIRING}
+    if declared_fields != real_fields:
         raise SystemExit(
-            f"STAGE_WIRING's StageFns fields {[r[1] for r in STAGE_WIRING]} do not match "
-            f"the real StageFns fields {real_fields}.")
+            f"STAGE_WIRING's StageFns fields {sorted(declared_fields)} do not match "
+            f"the real StageFns fields {sorted(real_fields)}.")
 
     for key, field, factory, protocol, model, prompt in STAGE_WIRING:
         if not hasattr(stages_mod, factory):

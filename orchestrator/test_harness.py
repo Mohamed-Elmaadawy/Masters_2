@@ -212,6 +212,24 @@ def test_resume_positions() -> None:
        resume_at(rec(outcome=RunOutcome.COMPLETED, classification=cls, rounds=rounds_refined,
                     test_strategy=strategy, test_plan=plan)) is None)
 
+    # S3 (phased pipeline, design/DESIGN_NOTES.md "System changes... S3"): pass A can
+    # now conclude -- cap decided as "generate anyway" -- before pass B (strategy
+    # selection + test generation) has run, because pass B waits for the second,
+    # post-refinement document analysis. That is a genuinely new, valid intermediate
+    # state: outcome=IN_PROGRESS (pass B hasn't finished the record yet) with
+    # cap_reason already set (the human's decision from pass A). Under the
+    # pre-phasing schema this record could not even be CONSTRUCTED --
+    # RunOutcome.IN_PROGRESS forbade cap_reason outright, because nothing before S3
+    # ever needed the two to coexist (decide_at_cap and stage 3/4 always ran in the
+    # same call). resume_at itself needs no change: STRATEGY_SELECTOR was already the
+    # right answer whenever test_strategy is None and the last round failed -- this
+    # case only needed the schema to allow constructing it in the first place.
+    cap_decided_awaiting_pass_b = rec(
+        outcome=RunOutcome.IN_PROGRESS, classification=cls, rounds=rounds_refined,
+        cap_reason="operator chose to generate anyway")
+    ok("pass-A-concluded-via-cap-generate, awaiting pass B, resumes at STRATEGY_SELECTOR",
+       resume_at(cap_decided_awaiting_pass_b) is PipelineStage.STRATEGY_SELECTOR)
+
 
 def test_stage_fns_typo_is_a_typeerror() -> None:
     """A typo'd field name must be an immediate TypeError, not a silently-skipped key --
@@ -2230,9 +2248,19 @@ def test_run_document_happy_path() -> None:
             "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
             "expected_result": "e"}]}
 
+    # S3 ("phase the pipeline"): check_consistency/map_dependencies are each called
+    # TWICE now -- once for pass 1 (original text), once for pass 2 (refined text,
+    # after pass A concludes for every requirement). Two scripted responses each, not
+    # one -- with only one, the second call pops from an empty Scripted queue, which
+    # `call_document_stage` silently retries and then reports as DEGRADED rather than
+    # crashing. An earlier version of this fixture had exactly that bug: it "passed"
+    # by accident (COMPLETED per-requirement outcomes tolerate a DEGRADED second
+    # phase), without ever really exercising a *successful* second document analysis.
     fns = StageFns(
-        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),
-        map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),
+        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []},
+                                    {"doc_id": DOC.doc_id, "conflicts": []}]),
+        map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []},
+                                   {"doc_id": DOC.doc_id, "dependencies": []}]),
         classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
         check_quality=Scripted([passing_quality(REQ_A.id), passing_quality(REQ_B.id)]),
         refine_questioner=None, refine_rewriter=None,
@@ -2245,6 +2273,11 @@ def test_run_document_happy_path() -> None:
     ok("document outcome is COMPLETED", result.outcome is DocumentOutcome.COMPLETED)
     ok("both requirements completed",
        all(r.outcome.value == "completed" for r in result.requirement_records))
+    ok("S3: the second document analysis also completed (not silently DEGRADED)",
+       result.refined_analysis_outcome is DocumentOutcome.COMPLETED)
+    ok("S3: both generations of reports are kept, neither overwritten",
+       result.consistency_report is not None and result.refined_consistency_report is not None
+       and result.dependency_report is not None and result.refined_dependency_report is not None)
     # Not a schema tautology (RunMetadata._covers_every_stage/StageConfig.prompt_hash
     # already guarantee every stage has a hash on any RunMetadata that constructs at
     # all) -- this instead tests real orchestrator behavior: that the metadata passed
@@ -2253,6 +2286,178 @@ def test_run_document_happy_path() -> None:
     # rebuilt or dropped along the way.
     ok("run_document threads the same metadata object through to the record (scenario 11)",
        result.metadata is metadata)
+
+
+def test_run_document_gates_second_analysis_until_every_requirement_concludes_pass_a() -> None:
+    """S3 review finding 1: a FRESH run_document call (not a resume) must apply the
+    same all-requirements gate resume_document already applies
+    (`_pass_a_concluded`) before running the second document analysis. Without it,
+    one requirement's pass-A failure would still let the second analysis run over a
+    mixture of refined (B) and still-original (A, never even classified) text -- an
+    accident of which requirement happened to fail, not a methodological choice.
+
+    A's classifier exhausts its retries (stays ERROR, still inside pass A); B's
+    classifier and quality check both succeed (concludes pass A cleanly). After one
+    run_document call: neither the second document analysis nor pass B may have run
+    for EITHER requirement, even though B individually finished pass A.
+    """
+    section("S3 -- a fresh run_document call gates the second analysis the same way resume_document does")
+    from orchestrator.pipeline import run_document, resume_document, Throttle
+    from design.schemas import DocumentOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-fresh-gate")
+
+        strategy_fn = Scripted([])  # must never be called
+        generate_fn = Scripted([])  # must never be called
+        fns = StageFns(
+            check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),  # phase 1 only
+            map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),  # phase 1 only
+            classify=Scripted([
+                StageCallFailed("429"), StageCallFailed("429"),  # A exhausts (max_attempts=2)
+                {"requirement_id": REQ_B.id, "system_type": "other", "rationale": "r"},
+            ]),
+            check_quality=Scripted([{"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
+            refine_questioner=None, refine_rewriter=None,
+            select_strategy=strategy_fn, generate_tests=generate_fn)
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+
+        result = run_document(DOC, metadata, fns, human_fns, throttle, max_revisions=3,
+                              run_dir=tmp_path, max_attempts=2, backoff_seconds=lambda a: 0.0)
+
+        by_id = {r.requirement.id: r for r in result.requirement_records}
+        ok("both requirement records are present in the returned document",
+           set(by_id) == {REQ_A.id, REQ_B.id})
+        ok("A stayed in pass A (ERROR, classifier exhausted)",
+           by_id[REQ_A.id].outcome is RunOutcome.ERROR)
+        ok("B concluded pass A cleanly but must NOT have reached pass B",
+           by_id[REQ_B.id].outcome is RunOutcome.IN_PROGRESS
+           and by_id[REQ_B.id].test_strategy is None)
+        ok("the second document analysis was never attempted -- refined_analysis_outcome "
+          "is still IN_PROGRESS, not DEGRADED",
+          result.refined_analysis_outcome is DocumentOutcome.IN_PROGRESS)
+        ok("Strategy Selector was never called", strategy_fn.calls == [])
+        ok("Test Generator was never called", generate_fn.calls == [])
+
+        # A later resume can still continue correctly: A recovers, both requirements
+        # then conclude pass A, the second analysis runs exactly once, pass B runs
+        # for both.
+        recovering_fns = StageFns(
+            check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []}]),  # phase 2
+            map_dependencies=Scripted([{"doc_id": DOC.doc_id, "dependencies": []}]),  # phase 2
+            classify=Scripted([{"requirement_id": REQ_A.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=Scripted([{"requirement_id": REQ_A.id, "passed": True, "issues": []}]),
+            refine_questioner=None, refine_rewriter=None,
+            select_strategy=Scripted([
+                {"requirement_id": REQ_A.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"},
+                {"requirement_id": REQ_B.id, "system_type": "other",
+                 "techniques": ["boundary_value_analysis"], "rationale": "r"}]),
+            generate_tests=Scripted([
+                {"requirement_id": REQ_A.id, "test_cases": [{
+                    "id": f"{test_case_id_prefix(REQ_A.id)}1", "requirement_ids": [REQ_A.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]},
+                {"requirement_id": REQ_B.id, "test_cases": [{
+                    "id": f"{test_case_id_prefix(REQ_B.id)}1", "requirement_ids": [REQ_B.id],
+                    "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+                    "expected_result": "e"}]}]))
+        resumed = resume_document(tmp_path, recovering_fns, human_fns, throttle, max_revisions=3)
+        ok("resume finishes both requirements",
+           all(r.outcome is RunOutcome.COMPLETED for r in resumed.requirement_records))
+        ok("resume runs the second analysis exactly once, to COMPLETED",
+           resumed.refined_analysis_outcome is DocumentOutcome.COMPLETED)
+        ok("nothing left pending", resumed.pending_requirement_ids == [])
+
+
+def test_phased_pipeline_pass_b_sees_refined_analysis_not_original() -> None:
+    """S3 ("phase the pipeline" -- design/DESIGN_NOTES.md): the core guarantee this
+    change exists for. Pass 1's dependency report is empty; pass 2's (scripted to
+    return something different, simulating a dependency the refined text introduced)
+    contains a cycle A<->B. Asserts:
+      - BOTH generations are kept on the record, neither overwriting the other.
+      - refined_cycles reports the cycle pass 2 found, computed from
+        refined_dependency_report -- not from the original (empty) one.
+      - Strategy Selector and Test Generator (pass B) receive the REFINED
+        dependencies, not pass 1's -- the exact staleness bug PURE-THEMAS-R6-P
+        demonstrated (a rewrite's new dependency was invisible to stage 3/4 because
+        they were fed the pre-refinement report).
+      - Quality Checker is called exactly once per requirement (no extra round) --
+        the cycle pass 2 finds is never routed back to the Refiner (constraint 5):
+        refinement (pass A) is already finished by the time pass 2 runs.
+    """
+    section("S3 -- pass B sees the refined document analysis, not the original")
+    from orchestrator.pipeline import run_document, Throttle
+    from design.schemas import DocumentOutcome
+
+    throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+
+    def classification_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other", "rationale": "r"}
+
+    def passing_quality(req_id):
+        return {"requirement_id": req_id, "passed": True, "issues": []}
+
+    def strategy_for(req_id):
+        return {"requirement_id": req_id, "system_type": "other",
+                "techniques": ["boundary_value_analysis"], "rationale": "r"}
+
+    def plan_for(req_id):
+        return {"requirement_id": req_id, "test_cases": [{
+            "id": f"{test_case_id_prefix(req_id)}1", "requirement_ids": [req_id],
+            "technique_used": "boundary_value_analysis", "title": "t", "steps": ["s"],
+            "expected_result": "e"}]}
+
+    quality_fn = Scripted([passing_quality(REQ_A.id), passing_quality(REQ_B.id)])
+    strategy_fn = Scripted([strategy_for(REQ_A.id), strategy_for(REQ_B.id)])
+    generate_fn = Scripted([plan_for(REQ_A.id), plan_for(REQ_B.id)])
+    fns = StageFns(
+        check_consistency=Scripted([{"doc_id": DOC.doc_id, "conflicts": []},
+                                    {"doc_id": DOC.doc_id, "conflicts": []}]),
+        map_dependencies=Scripted([
+            {"doc_id": DOC.doc_id, "dependencies": []},  # pass 1: nothing yet
+            {"doc_id": DOC.doc_id, "dependencies": [     # pass 2: a cycle appeared
+                {"from_requirement_id": REQ_A.id, "to_requirement_id": REQ_B.id, "explanation": "e1"},
+                {"from_requirement_id": REQ_B.id, "to_requirement_id": REQ_A.id, "explanation": "e2"},
+            ]},
+        ]),
+        classify=Scripted([classification_for(REQ_A.id), classification_for(REQ_B.id)]),
+        check_quality=quality_fn, refine_questioner=None, refine_rewriter=None,
+        select_strategy=strategy_fn, generate_tests=generate_fn)
+    human_fns = HumanFns(answer_questions=lambda turn: [], decide_at_cap=lambda rec: (None, None))
+    metadata = make_metadata()
+
+    result = run_document(DOC, metadata, fns, human_fns, throttle, max_revisions=3)
+
+    ok("document outcome (pass 1) is COMPLETED", result.outcome is DocumentOutcome.COMPLETED)
+    ok("refined_analysis_outcome (pass 2) is COMPLETED",
+       result.refined_analysis_outcome is DocumentOutcome.COMPLETED)
+    ok("pass 1's dependency_report has no links (kept, not overwritten)",
+       result.dependency_report.dependencies == [])
+    ok("refined_dependency_report has the cycle pass 2 found",
+       len(result.refined_dependency_report.dependencies) == 2)
+    ok("refined_cycles reports the A<->B cycle",
+       len(result.refined_cycles) == 1 and set(result.refined_cycles[0]) == {REQ_A.id, REQ_B.id})
+
+    ok("Quality Checker ran exactly once per requirement -- no extra round from the "
+      "cycle pass 2 found (constraint 5: reported, never routed back to the Refiner)",
+      len(quality_fn.calls) == 2)
+
+    # dependencies_for matches either side of a link, and both A and B sit on both
+    # ends of this A<->B cycle, so each requirement's filtered view is both links, not
+    # one -- what matters here is non-empty (pass 2's) vs. empty (pass 1's), not the
+    # exact count.
+    strategy_deps = [call[2] for call in strategy_fn.calls]
+    generate_deps = [call[2] for call in generate_fn.calls]
+    ok("Strategy Selector receives the REFINED dependencies (non-empty), not pass 1's "
+      "(empty) -- the staleness bug this whole change exists to fix",
+      all(len(d) == 2 for d in strategy_deps))
+    ok("Test Generator receives the REFINED dependencies too",
+      all(len(d) == 2 for d in generate_deps))
+    ok("both requirements still reached COMPLETED",
+       all(r.outcome is RunOutcome.COMPLETED for r in result.requirement_records))
 
 
 def test_document_context_no_leakage_three_requirements() -> None:
@@ -2485,6 +2690,72 @@ def test_document_context_survives_resume() -> None:
             ok(f"{call[0].id}: relevant_conflicts survives the resume, naming A and B",
                len(call[2]) == 1 and call[2][0].requirement_ids == [REQ_A.id, REQ_B.id])
             ok(f"{call[0].id}: relevant_dependencies survives the resume as []", call[3] == [])
+
+
+def test_resume_gates_second_analysis_until_every_requirement_concludes_pass_a() -> None:
+    """S3 ("phase the pipeline"): the second document analysis must not run until
+    EVERY requirement has concluded pass A -- otherwise it would see some
+    requirements' refined text and others' still-original text, an accident of resume
+    timing rather than a methodological choice (same reasoning
+    retry_document_stage already applies to the FIRST document phase).
+
+    Two requirements: A's classifier call fails (stays IN_PROGRESS/ERROR, still needs
+    pass A); B's classifier and quality check both succeed (concludes pass A cleanly).
+    After one resume_document call: B must NOT have reached pass B (no strategy/test-gen
+    call for it), and refined_analysis_outcome must still be IN_PROGRESS -- not
+    DEGRADED, which would mean the second analysis was attempted and failed, rather
+    than correctly never attempted at all.
+    """
+    section("S3 -- resume does not run the second analysis while any requirement is still in pass A")
+    from orchestrator.pipeline import (
+        write_document_run, resume_document, Throttle,
+    )
+    from design.schemas import ConsistencyReport, DependencyReport, DocumentOutcome, RunOutcome
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        throttle = Throttle(sleep_fn=lambda s: None, now_fn=lambda: FAKE_NOW)
+        metadata = make_metadata(run_id="run-gate-second-analysis")
+
+        # Document phase 1 already completed; no requirement files yet -- both pending,
+        # as if the process crashed right after the document-level stages.
+        partial = DocumentRunRecord(
+            requirement_set=DOC, metadata=metadata, outcome=DocumentOutcome.COMPLETED,
+            consistency_report=ConsistencyReport(doc_id=DOC.doc_id, conflicts=[]),
+            dependency_report=DependencyReport(doc_id=DOC.doc_id, dependencies=[]))
+        write_document_run(tmp_path, partial)
+
+        strategy_fn = Scripted([{"requirement_id": REQ_B.id, "system_type": "other",
+                                 "techniques": ["boundary_value_analysis"], "rationale": "r"}])
+        # check_consistency_refined/map_dependencies_refined deliberately absent
+        # (default None -> would fall back to reusing check_consistency/
+        # map_dependencies, also None here) -- if the gate is broken and the second
+        # analysis is attempted anyway, calling None(...) raises TypeError, caught by
+        # call_document_stage as a generic failure and retried into a DEGRADED
+        # result. That DEGRADED (rather than the correct IN_PROGRESS) is exactly what
+        # the assertion below would catch.
+        fns = StageFns(
+            check_consistency=None, map_dependencies=None,
+            classify=Scripted([StageCallFailed("429"),  # A's classifier fails
+                              {"requirement_id": REQ_B.id, "system_type": "other", "rationale": "r"}]),
+            check_quality=Scripted([{"requirement_id": REQ_B.id, "passed": True, "issues": []}]),
+            refine_questioner=None, refine_rewriter=None,
+            select_strategy=strategy_fn, generate_tests=None)
+        human_fns = HumanFns(answer_questions=lambda t: [], decide_at_cap=lambda r: (None, None))
+
+        result = resume_document(tmp_path, fns, human_fns, throttle, max_revisions=3,
+                                 max_attempts=1, backoff_seconds=lambda a: 0.0)
+
+        by_id = {r.requirement.id: r for r in result.requirement_records}
+        ok("A stayed in pass A (ERROR, classifier failed)",
+           by_id[REQ_A.id].outcome is RunOutcome.ERROR)
+        ok("B concluded pass A cleanly but must NOT have reached pass B",
+           by_id[REQ_B.id].outcome is RunOutcome.IN_PROGRESS
+           and by_id[REQ_B.id].test_strategy is None)
+        ok("the second document analysis was never attempted -- refined_analysis_outcome "
+          "is still IN_PROGRESS, not DEGRADED",
+          result.refined_analysis_outcome is DocumentOutcome.IN_PROGRESS)
+        ok("Strategy Selector was never called for B", strategy_fn.calls == [])
 
 
 def test_document_context_persists_across_refinement_rounds() -> None:
@@ -3927,11 +4198,14 @@ def main() -> int:
               test_max_revisions_must_be_at_least_two,
               test_resumed_cap_generated_then_stopped_strips_stage34,
               test_run_document_happy_path,
+              test_run_document_gates_second_analysis_until_every_requirement_concludes_pass_a,
+              test_phased_pipeline_pass_b_sees_refined_analysis_not_original,
               test_document_context_no_leakage_three_requirements,
               test_document_context_none_vs_empty,
               test_document_context_independent_failure_mirror,
               test_document_context_dependencies_reach_both_stages,
               test_document_context_survives_resume,
+              test_resume_gates_second_analysis_until_every_requirement_concludes_pass_a,
               test_document_context_persists_across_refinement_rounds,
               test_document_stage_retry_allowed_before_any_requirement,
               test_document_stage_retry_allowed_but_fails_before_any_requirement,

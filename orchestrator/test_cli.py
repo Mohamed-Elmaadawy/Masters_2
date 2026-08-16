@@ -144,6 +144,10 @@ def write_input_json(tmp_path: Path, req_id: str = "REQ-1") -> Path:
 
 
 def _happy_path_responses(req_id: str) -> list:
+    """S3 ("phase the pipeline"): 8 calls now, not 6 -- pass A's document analysis (2),
+    classifier + quality checker (2), the SECOND, post-refinement document analysis
+    (2, run_document's phase between pass A and pass B), then strategy selector + test
+    generator (2)."""
     prefix_len = len(req_id)
     test_case_id = f"TC-{prefix_len}-{req_id}-1"
     return [
@@ -152,6 +156,8 @@ def _happy_path_responses(req_id: str) -> list:
         _completion(Classification(requirement_id=req_id, system_type=SystemType.OTHER,
                                    rationale="test rationale")),
         _completion(QualityReport(requirement_id=req_id, passed=True, issues=[])),
+        _completion(ConsistencyReport(doc_id="DOC-1", conflicts=[])),
+        _completion(DependencyReport(doc_id="DOC-1", dependencies=[])),
         _completion(TestStrategy(requirement_id=req_id, system_type=SystemType.OTHER,
                                  techniques=[TestTechnique.EXPLORATORY],
                                  rationale="nothing else fits")),
@@ -263,7 +269,8 @@ def test_happy_path_completes_with_exit_0() -> None:
 
         run_dir = tmp_path / "runs" / "run-happy"
         ok("exit code is EXIT_SUCCESS", code == EXIT_SUCCESS)
-        ok("exactly 6 stage calls made (2 document + 4 per-requirement)", fake.calls == 6)
+        ok("exactly 8 stage calls made (S3: 2 document + 2 per-requirement pass A + "
+          "2 refined document + 2 per-requirement pass B)", fake.calls == 8)
         ok("run_config.json was written", (run_dir / "run_config.json").exists())
         ok("document.json was written", (run_dir / "document.json").exists())
         req_files = list((run_dir / "requirements").glob("*.json"))
@@ -294,6 +301,54 @@ def test_stage_error_exits_1() -> None:
                     human_fns_factory=_human_fns_unused)
 
         ok("exit code is EXIT_STAGE_ERRORS", code == EXIT_STAGE_ERRORS)
+
+
+def test_degraded_refined_analysis_reported_and_exits_1() -> None:
+    """S3 review finding 4: phase 1 completes cleanly but the SECOND, refined
+    document analysis (S3, "phase the pipeline") degrades -- its own
+    DocumentStageError is exactly what _has_stage_errors already counts, so the exit
+    code was already right; the summary previously printed only phase 1's outcome
+    ("Document outcome: completed"), silently mislabeling a DEGRADED phase 2 as if
+    nothing had gone wrong. Both phases must now be printed, accurately, and neither
+    label may call the still-COMPLETED phase 1 or the successfully-generated
+    requirement a failure."""
+    section("a degraded refined analysis is reported in the summary and still exits 1")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        req_id = "REQ-1"
+        config_path = write_config_yaml(tmp_path, run_id="run-degraded-refined",
+                                        retry_overrides={"max_attempts": 1})
+        input_path = write_input_json(tmp_path, req_id=req_id)
+        responses = [
+            _completion(ConsistencyReport(doc_id="DOC-1", conflicts=[])),      # phase 1
+            _completion(DependencyReport(doc_id="DOC-1", dependencies=[])),    # phase 1
+            _completion(Classification(requirement_id=req_id, system_type=SystemType.OTHER,
+                                       rationale="test")),
+            _completion(QualityReport(requirement_id=req_id, passed=True, issues=[])),
+            RuntimeError("consistency checker boom -- simulated permanent failure"),  # phase 2 fails
+            _completion(DependencyReport(doc_id="DOC-1", dependencies=[])),    # phase 2 dep still runs (D1=b)
+            _completion(TestStrategy(requirement_id=req_id, system_type=SystemType.OTHER,
+                                     techniques=[TestTechnique.EXPLORATORY],
+                                     rationale="nothing else fits")),
+            _completion(TestPlan(requirement_id=req_id, test_cases=[TestCase(
+                id=f"TC-{len(req_id)}-{req_id}-1", requirement_ids=[req_id],
+                technique_used=TestTechnique.EXPLORATORY, title="exploratory pass",
+                steps=["do the thing"], expected_result="it works")])),
+        ]
+        fake = FakeAdapter(responses)
+
+        messages: list[str] = []
+        code = _run(["run", str(config_path), str(input_path)],
+                    adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
+                    human_fns_factory=_human_fns_unused, output_fn=messages.append)
+
+        ok("exit code is EXIT_STAGE_ERRORS", code == EXIT_STAGE_ERRORS)
+        ok("original analysis outcome is printed as completed",
+           "Original analysis outcome: completed" in messages)
+        ok("refined analysis outcome is printed as degraded",
+           "Refined analysis outcome: degraded" in messages)
+        ok("the requirement itself still shows completed, not mislabeled as failed",
+           f"  {req_id}: completed" in messages)
 
 
 # ---------------------------------------------------------------------------------
@@ -374,6 +429,11 @@ def test_cap_stopped_alone_does_not_exit_1() -> None:
                                     questions=[question])),                       # round 1 questioner
             _completion(rewrite),                                                # round 1 rewriter
             _completion(failing_report),                                         # round 2 check -> cap
+            # S3: run_document's second document analysis still runs over the refined
+            # set even though this requirement is now terminal (CAP_STOPPED) -- it's a
+            # document-level phase, not gated per requirement.
+            _completion(ConsistencyReport(doc_id="DOC-1", conflicts=[])),
+            _completion(DependencyReport(doc_id="DOC-1", dependencies=[])),
         ]
         fake = FakeAdapter(responses)
 
@@ -387,7 +447,7 @@ def test_cap_stopped_alone_does_not_exit_1() -> None:
                     adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
                     human_fns_factory=human_fns_factory)
 
-        ok("all 7 scripted stage calls were consumed", fake.calls == 7)
+        ok("all 9 scripted stage calls were consumed", fake.calls == 9)
         ok("exit code is EXIT_SUCCESS, not EXIT_STAGE_ERRORS", code == EXIT_SUCCESS)
 
 
@@ -438,6 +498,10 @@ def test_resume_completes_an_eof_interrupted_run() -> None:
         resume_responses = [
             _completion(rewrite),                                                  # round 1 rewriter
             _completion(QualityReport(requirement_id=req_id, passed=True, issues=[])),  # round 2 check
+            # S3: pass A now concludes here, so the second document analysis runs
+            # next, before pass B's strategy selector/test generator.
+            _completion(ConsistencyReport(doc_id="DOC-1", conflicts=[])),
+            _completion(DependencyReport(doc_id="DOC-1", dependencies=[])),
             _completion(TestStrategy(requirement_id=req_id, system_type=SystemType.OTHER,
                                      techniques=[TestTechnique.EXPLORATORY],
                                      rationale="nothing else fits")),
@@ -459,7 +523,7 @@ def test_resume_completes_an_eof_interrupted_run() -> None:
                     human_fns_factory=resume_human_fns_factory)
 
         ok("resume completes (exit 0)", code == EXIT_SUCCESS)
-        ok("all 4 resume-side stage calls were consumed", resume_fake.calls == 4)
+        ok("all 6 resume-side stage calls were consumed", resume_fake.calls == 6)
         record = read_document_run(run_dir)
         ok("requirement outcome is completed",
            record.requirement_records[0].outcome == RunOutcome.COMPLETED)
@@ -534,6 +598,122 @@ def test_resume_mismatched_requirement_file_rejected() -> None:
         code = _run(["resume", str(run_dir)],
                     adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()})
         ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+
+
+def test_resume_pre_s3_legacy_run_rejected_before_any_adapter() -> None:
+    """S3 review finding 2: a run_config.json with only the legacy eight stages (every
+    real run recorded before S3 -- design/DESIGN_NOTES.md's "S3 implemented" entry)
+    must be refused clearly, before any adapter is constructed or any provider is
+    touched, explaining that the run predates the two-phase pipeline. Not a raw
+    "missing stage" validation failure -- orchestrator/config.py's
+    ResolvedRunConfig now loads this shape successfully (for inspection), so the
+    refusal has to be an explicit check in cli.py, not incidental."""
+    section("resuming a pre-S3 (eight-stage) run is refused clearly, before any adapter")
+    from orchestrator.config import RateLimitConfig, ResolvedRunConfig, ResolvedStageConfig, RetryConfig
+    from design.schemas import RunMetadata, SCHEMA_VERSION_1_2_STAGES, StageConfig
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = tmp_path / "runs" / "run-pre-s3"
+
+        legacy_stage = ResolvedStageConfig(
+            provider="gemini", model="gemini-pre-s3", prompt_version="v1",
+            prompt_hash="deadbeef", prompt_path=PROMPTS_DIR / "classifier.txt",
+            temperature=1.0, timeout_seconds=30.0, output_mode=OutputMode.TEXT)
+        legacy_resolved = ResolvedRunConfig(
+            run_id="run-pre-s3", output_dir=run_dir.parent, max_revisions=3,
+            retry=RetryConfig(), rate_limits={"gemini/gemini-pre-s3": RateLimitConfig(
+                requests_per_minute=None, tokens_per_minute=None)},
+            stages={s: legacy_stage for s in SCHEMA_VERSION_1_2_STAGES})
+        write_run_config(run_dir, legacy_resolved)
+
+        # Hand-built, not to_run_metadata (which always stamps the CURRENT
+        # schema_version and would demand the full ten-stage set) -- this fixture is
+        # specifically a schema_version=1.2, eight-stage record, as every real
+        # pre-S3 run actually is.
+        legacy_metadata = RunMetadata(
+            run_id="run-pre-s3", started_at=datetime.now(timezone.utc),
+            stages={s: StageConfig(model="gemini/gemini-pre-s3", prompt_hash="deadbeef",
+                                   prompt_version="v1") for s in SCHEMA_VERSION_1_2_STAGES},
+            schema_version="1.2")
+        requirement_set = RequirementSet(
+            doc_id="DOC-1", requirements=[Requirement(id="REQ-1", text=REQUIREMENT_TEXT)])
+        doc_record = DocumentRunRecord(
+            requirement_set=requirement_set, metadata=legacy_metadata,
+            outcome=DocumentOutcome.COMPLETED,
+            consistency_report=ConsistencyReport(doc_id="DOC-1", conflicts=[]),
+            dependency_report=DependencyReport(doc_id="DOC-1", dependencies=[]))
+        write_document_run(run_dir, doc_record)
+
+        messages: list[str] = []
+        code = _run(["resume", str(run_dir)],
+                    adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()},
+                    output_fn=messages.append)
+
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+        ok("message explains the run predates S3 and names a new run as the fix",
+           any("predates the S3" in m and "Start a new run" in m for m in messages))
+        ok("message shows the actual (eight) vs. current (ten) stage counts",
+           any("8 stage" in m and "10" in m for m in messages))
+
+
+def test_resume_current_config_with_legacy_document_metadata_rejected() -> None:
+    """S3 review follow-up finding 2: the resume refusal above only inspected
+    run_config.json's OWN stage set -- it said nothing about document.json's
+    separately-recorded metadata. A current (ten-stage) run_config.json paired with a
+    legacy (schema_version "1.2", eight-stage) document.json therefore sailed past
+    that guard entirely. Confirmed empirically before fixing: exactly this pairing,
+    with correctly-matching prompt hashes so `_prompt_provenance_mismatches` could not
+    catch it either, reached `adapter_factories[provider]()` -- a spy adapter factory
+    that raises if called was observed to actually be called. cli.py now cross-checks
+    `record.metadata.schema_version`/stages against ALL_STAGES (and against
+    `resolved.stages`) right after loading the document record, before any adapter is
+    touched."""
+    section("a current run_config.json paired with legacy document.json metadata is refused, before any adapter")
+    from orchestrator.config import RateLimitConfig, ResolvedRunConfig, ResolvedStageConfig, RetryConfig
+    from design.schemas import ALL_STAGES, RunMetadata, SCHEMA_VERSION_1_2_STAGES, StageConfig
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = tmp_path / "runs" / "run-config-ahead-of-metadata"
+
+        current_stage = ResolvedStageConfig(
+            provider="gemini", model="gemini-current", prompt_version="v1",
+            prompt_hash="deadbeef", prompt_path=PROMPTS_DIR / "classifier.txt",
+            temperature=1.0, timeout_seconds=30.0, output_mode=OutputMode.TEXT)
+        current_resolved = ResolvedRunConfig(
+            run_id="run-config-ahead-of-metadata", output_dir=run_dir.parent, max_revisions=3,
+            retry=RetryConfig(), rate_limits={"gemini/gemini-current": RateLimitConfig(
+                requests_per_minute=None, tokens_per_minute=None)},
+            stages={s: current_stage for s in ALL_STAGES})
+        write_run_config(run_dir, current_resolved)
+
+        # document.json's metadata is the LEGACY shape -- schema_version "1.2", only
+        # the original eight stages -- while run_config.json (above) is fully current.
+        legacy_metadata = RunMetadata(
+            run_id="run-config-ahead-of-metadata", started_at=datetime.now(timezone.utc),
+            stages={s: StageConfig(model="gemini/gemini-current", prompt_hash="deadbeef",
+                                   prompt_version="v1") for s in SCHEMA_VERSION_1_2_STAGES},
+            schema_version="1.2")
+        requirement_set = RequirementSet(
+            doc_id="DOC-1", requirements=[Requirement(id="REQ-1", text=REQUIREMENT_TEXT)])
+        doc_record = DocumentRunRecord(
+            requirement_set=requirement_set, metadata=legacy_metadata,
+            outcome=DocumentOutcome.COMPLETED,
+            consistency_report=ConsistencyReport(doc_id="DOC-1", conflicts=[]),
+            dependency_report=DependencyReport(doc_id="DOC-1", dependencies=[]))
+        write_document_run(run_dir, doc_record)
+
+        messages: list[str] = []
+        code = _run(["resume", str(run_dir)],
+                    adapter_factories={"gemini": _spy_factory(), "groq": _spy_factory()},
+                    output_fn=messages.append)
+
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+        ok("message names the recorded schema_version and stage count",
+           any("schema_version" in m and "'1.2'" in m and "8 stage" in m for m in messages))
+        ok("message explains the run predates S3 and names a new run as the fix",
+           any("predates the S3" in m and "Start a new run" in m for m in messages))
 
 
 def test_resume_run_config_run_id_mismatch_rejected() -> None:
@@ -727,6 +907,7 @@ ALL_TESTS = [
     test_run_dir_collision_rejected,
     test_happy_path_completes_with_exit_0,
     test_stage_error_exits_1,
+    test_degraded_refined_analysis_reported_and_exits_1,
     test_interrupted_by_eof_exits_130,
     test_cap_stopped_alone_does_not_exit_1,
     test_resume_completes_an_eof_interrupted_run,
@@ -734,6 +915,8 @@ ALL_TESTS = [
     test_resume_prompt_drift_rejected,
     test_resume_prompt_file_deleted_rejected,
     test_resume_mismatched_requirement_file_rejected,
+    test_resume_pre_s3_legacy_run_rejected_before_any_adapter,
+    test_resume_current_config_with_legacy_document_metadata_rejected,
     test_resume_run_config_run_id_mismatch_rejected,
     test_resume_after_completion_makes_no_stage_calls,
     test_label_system_type_records_operator_label,

@@ -6,6 +6,8 @@ flowchart LR
     subgraph configuration__orchestrator_config_py_["configuration (orchestrator/config.py)"]
         cfg_consistency_checker["<b>consistency_checker</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
         cfg_dependency_mapper["<b>dependency_mapper</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
+        cfg_consistency_checker_refined["<b>consistency_checker_refined</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
+        cfg_dependency_mapper_refined["<b>dependency_mapper_refined</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
         cfg_classifier["<b>classifier</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
         cfg_quality_checker["<b>quality_checker</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
         cfg_refiner_questioner["<b>refiner_questioner</b><br/><i>YAML stages: key</i><br/>provider · model ·<br/>temperature · output_mode"]
@@ -16,6 +18,8 @@ flowchart LR
     subgraph prompt_files["prompt files"]
         pr_consistency_checker["example_prompts/<br/>consistency_checker.txt<br/><i>hashed -> prompt_hash</i>"]
         pr_dependency_mapper["example_prompts/<br/>dependency_mapper.txt<br/><i>hashed -> prompt_hash</i>"]
+        pr_consistency_checker_refined["example_prompts/<br/>consistency_checker_refined.txt<br/><i>hashed -> prompt_hash</i>"]
+        pr_dependency_mapper_refined["example_prompts/<br/>dependency_mapper_refined.txt<br/><i>hashed -> prompt_hash</i>"]
         pr_classifier["example_prompts/<br/>classifier.txt<br/><i>hashed -> prompt_hash</i>"]
         pr_quality_checker["example_prompts/<br/>quality_checker.txt<br/><i>hashed -> prompt_hash</i>"]
         pr_refiner_questioner["example_prompts/<br/>refiner_questioner.txt<br/><i>hashed -> prompt_hash</i>"]
@@ -26,6 +30,8 @@ flowchart LR
     subgraph factories__orchestrator_stages_py_["factories (orchestrator/stages.py)"]
         fa_consistency_checker["stages.make_check_consistency_fn"]
         fa_dependency_mapper["stages.make_map_dependencies_fn"]
+        fa_consistency_checker_refined["stages.make_check_consistency_fn"]
+        fa_dependency_mapper_refined["stages.make_map_dependencies_fn"]
         fa_classifier["stages.make_classify_fn"]
         fa_quality_checker["stages.make_check_quality_fn"]
         fa_refiner_questioner["stages.make_refine_questioner_fn"]
@@ -36,6 +42,8 @@ flowchart LR
     subgraph typed_slots__orchestrator_stage_fns_py_["typed slots (orchestrator/stage_fns.py)"]
         fn_consistency_checker["StageFns.check_consistency<br/><i>CheckConsistencyFn</i>"]
         fn_dependency_mapper["StageFns.map_dependencies<br/><i>MapDependenciesFn</i>"]
+        fn_consistency_checker_refined["StageFns.check_consistency_refined<br/><i>CheckConsistencyFn</i>"]
+        fn_dependency_mapper_refined["StageFns.map_dependencies_refined<br/><i>MapDependenciesFn</i>"]
         fn_classifier["StageFns.classify<br/><i>ClassifyFn</i>"]
         fn_quality_checker["StageFns.check_quality<br/><i>CheckQualityFn</i>"]
         fn_refiner_questioner["StageFns.refine_questioner<br/><i>RefineQuestionerFn</i>"]
@@ -46,6 +54,8 @@ flowchart LR
     subgraph output_models__design_schemas_py_["output models (design/schemas.py)"]
         out_consistency_checker["schemas.ConsistencyReport"]
         out_dependency_mapper["schemas.DependencyReport"]
+        out_consistency_checker_refined["schemas.ConsistencyReport"]
+        out_dependency_mapper_refined["schemas.DependencyReport"]
         out_classifier["schemas.Classification"]
         out_quality_checker["schemas.QualityReport"]
         out_refiner_questioner["schemas.RefinerTurn"]
@@ -64,6 +74,14 @@ flowchart LR
     pr_dependency_mapper -->|"prompt template"| fa_dependency_mapper
     fa_dependency_mapper -->|"closure"| fn_dependency_mapper
     fn_dependency_mapper -->|"raw dict -> model_validate"| out_dependency_mapper
+    cfg_consistency_checker_refined -->|"ResolvedStageConfig"| fa_consistency_checker_refined
+    pr_consistency_checker_refined -->|"prompt template"| fa_consistency_checker_refined
+    fa_consistency_checker_refined -->|"closure"| fn_consistency_checker_refined
+    fn_consistency_checker_refined -->|"raw dict -> model_validate"| out_consistency_checker_refined
+    cfg_dependency_mapper_refined -->|"ResolvedStageConfig"| fa_dependency_mapper_refined
+    pr_dependency_mapper_refined -->|"prompt template"| fa_dependency_mapper_refined
+    fa_dependency_mapper_refined -->|"closure"| fn_dependency_mapper_refined
+    fn_dependency_mapper_refined -->|"raw dict -> model_validate"| out_dependency_mapper_refined
     cfg_classifier -->|"ResolvedStageConfig"| fa_classifier
     pr_classifier -->|"prompt template"| fa_classifier
     fa_classifier -->|"closure"| fn_classifier
@@ -90,6 +108,8 @@ flowchart LR
     fn_test_generator -->|"raw dict -> model_validate"| out_test_generator
     fa_consistency_checker --> ADAPT
     fa_dependency_mapper --> ADAPT
+    fa_consistency_checker_refined --> ADAPT
+    fa_dependency_mapper_refined --> ADAPT
     fa_classifier --> ADAPT
     fa_quality_checker --> ADAPT
     fa_refiner_questioner --> ADAPT
@@ -98,6 +118,8 @@ flowchart LR
     fa_test_generator --> ADAPT
     fn_consistency_checker --> CS
     fn_dependency_mapper --> CS
+    fn_consistency_checker_refined --> CS
+    fn_dependency_mapper_refined --> CS
     fn_classifier --> CS
     fn_quality_checker --> CS
     fn_refiner_questioner --> CS
@@ -106,12 +128,12 @@ flowchart LR
     fn_test_generator --> CS
 
     classDef schema fill:#e8eaf6,stroke:#3f51b5,color:#1a237e
-    class out_consistency_checker,out_dependency_mapper,out_classifier,out_quality_checker,out_refiner_questioner,out_refiner_rewriter,out_strategy_selector,out_test_generator schema
+    class out_consistency_checker,out_dependency_mapper,out_consistency_checker_refined,out_dependency_mapper_refined,out_classifier,out_quality_checker,out_refiner_questioner,out_refiner_rewriter,out_strategy_selector,out_test_generator schema
     classDef doc fill:#e0f2f1,stroke:#00897b,color:#004d40
-    class cfg_consistency_checker,fa_consistency_checker,fn_consistency_checker,cfg_dependency_mapper,fa_dependency_mapper,fn_dependency_mapper doc
+    class cfg_consistency_checker,fa_consistency_checker,fn_consistency_checker,cfg_dependency_mapper,fa_dependency_mapper,fn_dependency_mapper,cfg_consistency_checker_refined,fa_consistency_checker_refined,fn_consistency_checker_refined,cfg_dependency_mapper_refined,fa_dependency_mapper_refined,fn_dependency_mapper_refined doc
     classDef req fill:#fff8e1,stroke:#f9a825,color:#e65100
     class cfg_classifier,fa_classifier,fn_classifier,cfg_quality_checker,fa_quality_checker,fn_quality_checker,cfg_refiner_questioner,fa_refiner_questioner,fn_refiner_questioner,cfg_refiner_rewriter,fa_refiner_rewriter,fn_refiner_rewriter,cfg_strategy_selector,fa_strategy_selector,fn_strategy_selector,cfg_test_generator,fa_test_generator,fn_test_generator,CS req
     classDef provider fill:#f3e5f5,stroke:#8e24aa,color:#4a148c
     class ADAPT provider
     classDef io fill:#e1f5fe,stroke:#0277bd,color:#01579b
-    class pr_consistency_checker,pr_dependency_mapper,pr_classifier,pr_quality_checker,pr_refiner_questioner,pr_refiner_rewriter,pr_strategy_selector,pr_test_generator io
+    class pr_consistency_checker,pr_dependency_mapper,pr_consistency_checker_refined,pr_dependency_mapper_refined,pr_classifier,pr_quality_checker,pr_refiner_questioner,pr_refiner_rewriter,pr_strategy_selector,pr_test_generator io

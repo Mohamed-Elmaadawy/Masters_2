@@ -63,6 +63,10 @@ stages:
   test_generator: {}
   consistency_checker: {}
   dependency_mapper: {}
+  # S3 ("phase the pipeline" -- design/DESIGN_NOTES.md): the second, post-refinement
+  # document analysis. Same stages, same defaults -- no separate override needed.
+  consistency_checker_refined: {}
+  dependency_mapper_refined: {}
 
 # Required, exactly one entry per stage -- a file path, never a hand-typed hash. Paths
 # are resolved relative to this YAML file's own directory.
@@ -75,3 +79,5 @@ prompts:
   refiner_rewriter: example_prompts/refiner_rewriter.txt
   strategy_selector: example_prompts/strategy_selector.txt
   test_generator: example_prompts/test_generator.txt
+  consistency_checker_refined: example_prompts/consistency_checker_refined.txt
+  dependency_mapper_refined: example_prompts/dependency_mapper_refined.txt

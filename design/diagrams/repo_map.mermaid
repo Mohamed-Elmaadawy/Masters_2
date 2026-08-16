@@ -15,7 +15,7 @@ flowchart LR
         f_design_SCHEMA_AUDIT_CHECKLIST_md["<b>SCHEMA_AUDIT_CHECKLIST.md</b><br/><i>the eight lenses used to find schema gaps</i>"]
         f_design_DIAGRAMS_md["<b>DIAGRAMS.md</b><br/><i>index of all 13 diagrams</i>"]
     end
-    subgraph orchestrator_____runtime_layer__the_code_that_actually_runs____34_files["orchestrator/ -- runtime layer: the code that actually runs -- 34 files"]
+    subgraph orchestrator_____runtime_layer__the_code_that_actually_runs____36_files["orchestrator/ -- runtime layer: the code that actually runs -- 36 files"]
         f_orchestrator_pipeline_py["<b>pipeline.py</b><br/><i><b>control flow.</b> stage sequencing, retry,<br/>revision cap, resume, persistence</i>"]
         f_orchestrator_stage_fns_py["<b>stage_fns.py</b><br/><i>the typed slots: StageFns · HumanFns ·<br/>10 Protocols · the 3 stage_fn exceptions</i>"]
         f_orchestrator_stages_py["<b>stages.py</b><br/><i>the 8 real stage functions: prompt rendering,<br/>JSON extraction, provider call</i>"]
@@ -43,23 +43,23 @@ flowchart LR
     end
     f_CLAUDE_md["<b>CLAUDE.md</b><br/><i>project conventions and rules learned the hard way</i>"]
     f_requirements_txt["<b>requirements.txt</b><br/><i>pinned deps: pydantic>=2.1 · requests · pyyaml</i>"]
-    dir_root{"<b>repo root</b><br/><i>Masters_2</i><br/>13 top-level entries"}
+    dir_root{"<b>repo root</b><br/><i>Masters_2</i><br/>15 top-level entries"}
     dir_design_diagrams{"<b>design/diagrams/</b><br/><i>the 11 generated .mermaid files -- never hand-edited</i><br/>13 files"}
-    dir_orchestrator_example_prompts{"<b>orchestrator/example_prompts/</b><br/><i>8 prompt templates, one per stage</i><br/>8 files"}
-    dir_datasets{"<b>datasets/</b><br/><i>evaluation corpora, reserved for the evaluation phase</i><br/>21 files"}
+    dir_orchestrator_example_prompts{"<b>orchestrator/example_prompts/</b><br/><i>8 prompt templates, one per stage</i><br/>10 files"}
+    dir_datasets{"<b>datasets/</b><br/><i>evaluation corpora, reserved for the evaluation phase</i><br/>216 files"}
     dir_datasets_requirements_xml{"<b>datasets/requirements-xml/</b><br/><i>18 requirement documents (XML)</i><br/>18 files"}
-    dir_docs{"<b>docs/</b><br/><i>plans and design specs</i><br/>42 files"}
-    dir_docs_superpowers_plans{"<b>docs/superpowers/plans/</b><br/><i>work plans, incl. the first-real-run checklist</i><br/>4 files"}
+    dir_docs{"<b>docs/</b><br/><i>plans and design specs</i><br/>313 files"}
+    dir_docs_superpowers_plans{"<b>docs/superpowers/plans/</b><br/><i>work plans, incl. the first-real-run checklist</i><br/>12 files"}
     dir_docs_superpowers_specs{"<b>docs/superpowers/specs/</b><br/><i>design specs for the orchestrator changes</i><br/>3 files"}
     dir_papers{"<b>papers/</b><br/><i>reference literature (PDF), optional</i><br/>73 files"}
-    PROMPTS["<b>example_prompts/*.txt</b><br/><i>one per stage</i><br/>8 files"]
+    PROMPTS["<b>example_prompts/*.txt</b><br/><i>one per stage</i><br/>10 files"]
     MERM["<b>design/diagrams/*.mermaid</b><br/><i>generated, never hand-edited</i><br/>13 files"]
 
     dir_root --> f_CLAUDE_md
     dir_root --> f_requirements_txt
     dir_root --> design_____schema_layer___all_diagram_generation____24_files
     dir_design --> dir_design_diagrams
-    dir_root --> orchestrator_____runtime_layer__the_code_that_actually_runs____34_files
+    dir_root --> orchestrator_____runtime_layer__the_code_that_actually_runs____36_files
     dir_orchestrator --> orchestrator_providers_____one_adapter_per_LLM_provider____6_files
     dir_orchestrator --> dir_orchestrator_example_prompts
     dir_root --> dir_datasets

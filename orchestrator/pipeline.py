@@ -26,7 +26,7 @@ from design.schemas import (
     DocumentStageAttempt, DocumentStageError, FailureKind, Issue, PipelineStage,
     QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn,
     Requirement, RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome,
-    StageAttempt, StageConfig, StageError, TestPlan, TestStrategy,
+    StageAttempt, StageConfig, StageError, TERMINAL_OUTCOMES, TestPlan, TestStrategy,
 )
 
 # StageCallResult/StageCallFailed/StageCallFatal/StageFns/HumanFns moved to
@@ -623,10 +623,30 @@ def run_document_stages(
     throttle: Throttle,
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    *,
+    consistency_stage: DocumentStage = DocumentStage.CONSISTENCY_CHECKER,
+    dependency_stage: DocumentStage = DocumentStage.DEPENDENCY_MAPPER,
 ) -> tuple[Optional[ConsistencyReport], Optional[DependencyReport],
            list[DocumentStageError], list[DocumentStageAttempt]]:
     """Runs the two document-level stages independently -- one failing must not stop
-    the other from running (contract item 8, D1=b)."""
+    the other from running (contract item 8, D1=b).
+
+    consistency_stage/dependency_stage (S3, "phase the pipeline" -- design/
+    DESIGN_NOTES.md) default to the original, once-per-document pair; run_document's
+    second, post-refinement phase calls this again with
+    CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED instead, over the refined
+    RequirementSet, and with stage_fns.check_consistency_refined/
+    map_dependencies_refined (falling back to check_consistency/map_dependencies if a
+    caller left those unset -- see StageFns's own docstring) as the callables. Which
+    stage identity is used is also which stage_configs entry supplies the model name
+    for DocumentStageError/DocumentStageAttempt, so the two phases' provenance can
+    never be confused for one another.
+    """
+    check_consistency_fn = stage_fns.check_consistency_refined or stage_fns.check_consistency \
+        if consistency_stage is DocumentStage.CONSISTENCY_CHECKER_REFINED else stage_fns.check_consistency
+    map_dependencies_fn = stage_fns.map_dependencies_refined or stage_fns.map_dependencies \
+        if dependency_stage is DocumentStage.DEPENDENCY_MAPPER_REFINED else stage_fns.map_dependencies
+
     errors: list[DocumentStageError] = []
     attempts: list[DocumentStageAttempt] = []
     known_ids = _known_requirement_ids(requirement_set)
@@ -635,28 +655,28 @@ def run_document_stages(
     consistency_invocation_id = uuid.uuid4().hex
     try:
         consistency_report = call_document_stage(
-            stage_fns.check_consistency, (requirement_set,), ConsistencyReport,
-            DocumentStage.CONSISTENCY_CHECKER, consistency_invocation_id,
-            stage_configs[DocumentStage.CONSISTENCY_CHECKER.value].model, throttle, attempts,
+            check_consistency_fn, (requirement_set,), ConsistencyReport,
+            consistency_stage, consistency_invocation_id,
+            stage_configs[consistency_stage.value].model, throttle, attempts,
             requirement_set.doc_id, max_attempts, backoff_seconds,
             extra_check=_consistency_extra_check(known_ids))
     except StageFailed as f:
         errors.append(DocumentStageError(
-            stage=DocumentStage.CONSISTENCY_CHECKER, invocation_id=consistency_invocation_id,
+            stage=consistency_stage, invocation_id=consistency_invocation_id,
             kind=f.kind, message=f.message, retry_count=f.retry_count))
 
     dependency_report: Optional[DependencyReport] = None
     dependency_invocation_id = uuid.uuid4().hex
     try:
         dependency_report = call_document_stage(
-            stage_fns.map_dependencies, (requirement_set,), DependencyReport,
-            DocumentStage.DEPENDENCY_MAPPER, dependency_invocation_id,
-            stage_configs[DocumentStage.DEPENDENCY_MAPPER.value].model, throttle, attempts,
+            map_dependencies_fn, (requirement_set,), DependencyReport,
+            dependency_stage, dependency_invocation_id,
+            stage_configs[dependency_stage.value].model, throttle, attempts,
             requirement_set.doc_id, max_attempts, backoff_seconds,
             extra_check=_dependency_extra_check(known_ids))
     except StageFailed as f:
         errors.append(DocumentStageError(
-            stage=DocumentStage.DEPENDENCY_MAPPER, invocation_id=dependency_invocation_id,
+            stage=dependency_stage, invocation_id=dependency_invocation_id,
             kind=f.kind, message=f.message, retry_count=f.retry_count))
 
     return consistency_report, dependency_report, errors, attempts
@@ -986,7 +1006,18 @@ def _run_refine_loop(
         pending_round = None
 
 
-def run_requirement(
+# The four PipelineStage positions pass A is responsible for -- classifier through the
+# revision-cap decision. Anything else means pass A already concluded (needs pass B, or
+# is already terminal). Shared by run_requirement_pass_a's own entry guard and by
+# run_document/resume_document's per-requirement routing, so the two can never define
+# "still needs pass A" differently.
+PASS_A_STAGES = frozenset({
+    PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER,
+    PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER,
+})
+
+
+def run_requirement_pass_a(
     record: RequirementRunRecord,
     requirement_set: RequirementSet,
     consistency_report: Optional[ConsistencyReport],
@@ -1000,23 +1031,32 @@ def run_requirement(
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
     checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
 ) -> RequirementRunRecord:
-    """The full per-requirement pipeline: classifier, quality-check/refine loop
-    (delegated to _run_refine_loop), the revision cap, strategy selector, test
-    generator. Resumable: resume_at(record) says where to pick up, and every stage
+    """Pass A (S3, "phase the pipeline" -- design/DESIGN_NOTES.md): classifier,
+    quality-check/refine loop (delegated to _run_refine_loop), and the revision-cap
+    decision. Stops there -- strategy selection and test generation are
+    run_requirement_pass_b's job, run later, once the second, post-refinement document
+    analysis exists. Resumable exactly like the original single-call run_requirement
+    was: resume_at(record) says where to pick up within pass A, and every stage
     already done is skipped.
 
-    consistency_report/dependency_report (Task 11 threads them through from
-    run_document_stages) are filtered to this requirement's own conflicts/dependencies
-    once, below, and handed to the Quality Checker, Strategy Selector, and Test
-    Generator -- never the whole report (see
-    docs/superpowers/specs/2026-08-08-document-context-wiring-design.md). A report of
-    None (the document-level stage failed) stays None after filtering -- it is not the
-    same thing as a report that ran and found nothing for this requirement ([]).
+    Returns a record that is either genuinely terminal (CAP_STOPPED, or ERROR from a
+    failed stage call) or still RunOutcome.IN_PROGRESS -- possibly with cap_reason
+    already set, if the human just chose "generate anyway" -- waiting for pass B.
+    IN_PROGRESS no longer forbids cap_reason for exactly this reason (see
+    design/DESIGN_NOTES.md, "System changes... S3"): before phasing, the cap decision
+    and stage 3/4 always ran inside the same call, so the two never needed to coexist
+    on a non-terminal record.
+
+    consistency_report/dependency_report are pass A's inputs, UNCHANGED by S3: still
+    the original, pre-refinement document analysis (see run_document's docstring for
+    where the refined pair goes instead -- only pass B sees it). Filtered to this
+    requirement's own conflicts/dependencies once, below, exactly as the pre-phasing
+    run_requirement did.
 
     checkpoint (2026-08-09), if given, is threaded into _run_refine_loop (see its own
     docstring) and called again here, directly, right before human_fns.decide_at_cap --
-    the second and last point in this whole call graph that can block on a terminal and
-    raise EOFError/KeyboardInterrupt. At that point `record` is already the complete,
+    the point in this call graph that can block on a terminal and raise EOFError/
+    KeyboardInterrupt. At that point `record` is already the complete,
     just-returned-from-_run_refine_loop record (the capped round already appended), so
     no snapshot construction is needed here the way it was inside the loop.
     """
@@ -1034,9 +1074,38 @@ def run_requirement(
             "CAP_STOPPED both require a round with a rewrite to exist"
         )
 
-    stage = resume_at(record)
-    if stage is None:
+    # cap_reason set means the human already decided "generate anyway" -- pass A is
+    # concluded regardless of what resume_at says next. resume_at has no notion of
+    # that decision: it reasons purely from rounds/turn/rewrite, and the round the cap
+    # fired on can leave `turn`/`rewrite` looking exactly like a genuinely unfinished
+    # round -- _run_refine_loop's own cap check fires as soon as that round's quality
+    # check fails, before that round's own questioner is ever called, so `turn` is
+    # still None even though refinement is genuinely over. Without this check,
+    # resume_at would send an already-cap-decided record BACK into the refine loop,
+    # asking the questioner again after the human already chose to stop refining --
+    # found by running orchestrator/test_harness.py::test_revision_cap's CAP_GENERATED
+    # case through run_requirement end to end, not by inspection.
+    if record.cap_reason is not None:
         return record
+    stage = resume_at(record)
+    if stage not in PASS_A_STAGES:
+        # Already past pass A (terminal, or waiting on pass B) -- nothing to do here.
+        return record
+
+    # A resumed record can arrive here with outcome=ERROR from an earlier failed
+    # attempt at this same stage (e.g. the Classifier hit a rate limit last time).
+    # Reset optimistically to IN_PROGRESS before retrying: every return path below
+    # that finds a NEW failure sets "outcome": "error" explicitly, so nothing is lost
+    # if this retry fails too -- but without this reset, a retry that SUCCEEDS all the
+    # way through pass A would still carry the stale ERROR forward (nothing else in
+    # this function ever touches `outcome` on the success path), which in turn makes
+    # `_pass_a_concluded` (outcome must be exactly IN_PROGRESS) wrongly report this
+    # requirement as still unconcluded even though its fields show pass A is done.
+    # Found by orchestrator/test_harness.py::test_error_resume_finish once
+    # run_document's own pass-A-completion gate (this task's finding 1) started
+    # actually exercising this resume path end to end, not by inspection.
+    if record.outcome is RunOutcome.ERROR:
+        record = record.model_copy(update={"outcome": RunOutcome.IN_PROGRESS})
 
     req = record.requirement
     relevant_conflicts = (
@@ -1064,26 +1133,15 @@ def run_requirement(
                 "attempts": [a.model_dump(mode="json") for a in attempts]})
         record = record.model_copy(update={"classification": classification, "attempts": attempts})
 
-    # Only CLASSIFIER/QUALITY_CHECKER/REFINER_QUESTIONER/REFINER_REWRITER positions need
-    # the refine loop at all -- STRATEGY_SELECTOR and TEST_GENERATOR mean the loop
-    # already finished (the last round passed, or the cap already fired on an earlier
-    # call to this function) and calling it again would try to start a phantom next
-    # round: the last round has no rewrite in that case (a passed round never gets one
-    # -- RefinementRound rejects it), so `rounds[-1].rewrite.refined_text` would raise
-    # AttributeError. This was a real bug in the initial draft -- caught because it is
-    # exactly the resume path Task 11 depends on, not because any of the four scenario
-    # tests below exercise it.
-    if stage in (PipelineStage.CLASSIFIER, PipelineStage.QUALITY_CHECKER,
-                PipelineStage.REFINER_QUESTIONER, PipelineStage.REFINER_REWRITER):
-        record, refine_error = _run_refine_loop(
-            record, relevant_conflicts, relevant_dependencies, stage_fns, human_fns,
-            throttle, max_revisions, stage_configs, max_attempts, backoff_seconds,
-            known_requirement_ids=known_requirement_ids, checkpoint=checkpoint)
-        if refine_error is not None:
-            errors = list(record.errors) + [refine_error]
-            return RequirementRunRecord.model_validate(
-                {**record.model_dump(mode="json"), "outcome": "error",
-                 "errors": [e.model_dump(mode="json") for e in errors]})
+    record, refine_error = _run_refine_loop(
+        record, relevant_conflicts, relevant_dependencies, stage_fns, human_fns,
+        throttle, max_revisions, stage_configs, max_attempts, backoff_seconds,
+        known_requirement_ids=known_requirement_ids, checkpoint=checkpoint)
+    if refine_error is not None:
+        errors = list(record.errors) + [refine_error]
+        return RequirementRunRecord.model_validate(
+            {**record.model_dump(mode="json"), "outcome": "error",
+             "errors": [e.model_dump(mode="json") for e in errors]})
 
     last_round = record.rounds[-1]
     if not last_round.quality_report.passed:
@@ -1098,29 +1156,112 @@ def run_requirement(
             raise ValueError("decide_at_cap returned an empty cap_reason")
         if outcome is RunOutcome.CAP_STOPPED:
             # This decision can be re-asked on a resumed record (e.g. an earlier call
-            # chose CAP_GENERATED, then the Strategy Selector or Test Generator failed,
-            # and the human now says stop instead of retrying). CAP_STOPPED's own schema
-            # rule forbids test_strategy/test_plan and forbids errors naming those two
-            # stages -- "the human stopped before stage 3" -- so a stop decision made
-            # AFTER stage 3/4 already ran (or failed) must retroactively discard that
-            # work, not just relabel the outcome. Stripping is a safe no-op on a record
-            # that never got that far in the first place.
+            # chose CAP_GENERATED, then pass B's Strategy Selector or Test Generator
+            # failed, and the human now says stop instead of retrying). CAP_STOPPED's
+            # own schema rule forbids test_strategy/test_plan and forbids errors naming
+            # those two stages -- "the human stopped before stage 3" -- so a stop
+            # decision made AFTER stage 3/4 already ran (or failed) must retroactively
+            # discard that work, not just relabel the outcome. Stripping is a safe
+            # no-op on a record that never got that far in the first place.
             surviving_errors = [e for e in record.errors if e.stage not in (
                 PipelineStage.STRATEGY_SELECTOR, PipelineStage.TEST_GENERATOR)]
             return RequirementRunRecord.model_validate(
                 {**record.model_dump(mode="json"), "outcome": outcome.value,
                  "cap_reason": cap_reason, "test_strategy": None, "test_plan": None,
                  "errors": [e.model_dump(mode="json") for e in surviving_errors]})
+        # "Generate anyway": record the decision, but do NOT finalize the outcome yet.
+        # RunOutcome.CAP_GENERATED requires test_strategy/test_plan (_OUTCOME_RULES),
+        # neither of which exists until pass B runs -- this record stays IN_PROGRESS,
+        # with cap_reason set, until then.
         record = record.model_copy(update={"cap_reason": cap_reason})
-        final_outcome = RunOutcome.CAP_GENERATED
-    else:
-        final_outcome = RunOutcome.COMPLETED
+
+    return record
+
+
+def run_requirement_pass_b(
+    record: RequirementRunRecord,
+    requirement_set: RequirementSet,
+    refined_dependency_report: Optional[DependencyReport],
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    stage_configs: dict,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
+) -> RequirementRunRecord:
+    """Pass B (S3): strategy selection and test generation, fed by the SECOND,
+    post-refinement document analysis -- not the one pass A saw (see run_document's
+    docstring for where that comes from). Only called once pass A has concluded for
+    this requirement; CAP_STOPPED records from pass A never reach here -- see
+    run_document/resume_document, which route on RunOutcome/resume_at before calling
+    this.
+
+    human_fns IS needed here, despite pass B having no interaction point of its own:
+    the pre-S3 design re-asks decide_at_cap on EVERY call reaching an already-capped
+    record whose stage 3/4 work has not yet succeeded, uniformly, whether that is the
+    first time the cap fired or a later resume after the Strategy Selector/Test
+    Generator failed -- letting the human change their mind given the new failure
+    ("chose to generate anyway" earlier, now says stop). See
+    orchestrator/test_harness.py::test_resumed_cap_generated_then_stopped_strips_stage34,
+    which this must keep passing. Detected here by cap_reason already being set AND
+    outcome=ERROR (a prior pass-B stage call failed) -- a FRESH cap-generate decision,
+    handed straight from run_requirement_pass_a, has outcome=IN_PROGRESS, not ERROR,
+    and must not be asked about a second time immediately.
+
+    refined_dependency_report is filtered to this requirement's own dependencies here,
+    the same way pass A filtered the original report -- relevant_conflicts is
+    Quality-Checker-only (quality-checking is pass A's job, already finished), so
+    nothing here needs the refined consistency report at all; it exists on
+    DocumentRunRecord purely as a reportable result (see run_document).
+    """
+    if record.cap_reason is not None and record.outcome is RunOutcome.ERROR:
+        if checkpoint is not None:
+            checkpoint(record)
+        outcome, cap_reason = human_fns.decide_at_cap(record)
+        if outcome not in (RunOutcome.CAP_GENERATED, RunOutcome.CAP_STOPPED):
+            raise ValueError(
+                f"decide_at_cap returned {outcome!r}, must be CAP_GENERATED or CAP_STOPPED")
+        if not cap_reason:
+            raise ValueError("decide_at_cap returned an empty cap_reason")
+        if outcome is RunOutcome.CAP_STOPPED:
+            # Same stripping as run_requirement_pass_a's matching branch: a stop
+            # decision made after stage 3/4 already ran (or failed) must retroactively
+            # discard that work, not just relabel the outcome.
+            surviving_errors = [e for e in record.errors if e.stage not in (
+                PipelineStage.STRATEGY_SELECTOR, PipelineStage.TEST_GENERATOR)]
+            return RequirementRunRecord.model_validate(
+                {**record.model_dump(mode="json"), "outcome": outcome.value,
+                 "cap_reason": cap_reason, "test_strategy": None, "test_plan": None,
+                 "errors": [e.model_dump(mode="json") for e in surviving_errors]})
+        # Still "generate anyway" -- re-affirm cap_reason (the human may have reworded
+        # it) and fall through to retry whichever of stage 3/4 failed.
+        record = record.model_copy(update={"cap_reason": cap_reason})
+
+    # cap_reason set overrides whatever resume_at says (see run_requirement_pass_a's
+    # matching comment): a cap-decided record with test_plan already set is finished
+    # and falls through the guard below by test_strategy/test_plan already being
+    # present, same as any other resumed pass-B record.
+    if record.cap_reason is None:
+        stage = resume_at(record)
+        if stage not in (PipelineStage.STRATEGY_SELECTOR, PipelineStage.TEST_GENERATOR):
+            # Already finished (or, defensively, not actually past pass A) -- nothing
+            # to do.
+            return record
+
+    req = record.requirement
+    relevant_dependencies = (
+        refined_dependency_report.dependencies_for(req.id)
+        if refined_dependency_report is not None else None)
+    known_requirement_ids = _known_requirement_ids(requirement_set)
+    final_outcome = RunOutcome.CAP_GENERATED if record.cap_reason else RunOutcome.COMPLETED
 
     # Contract item 2 / gap 1: stages 3/4 take a plain Requirement whose text is
-    # whichever text stages 1-2c actually settled on. record.final_text is safe to read
-    # here specifically -- not in general (see design/ORCHESTRATOR_CONTRACT.md item 2)
-    # -- because the refine loop above has just finished (passed or capped), so `rounds`
-    # is guaranteed non-empty and its last entry is exactly what was checked/rewritten.
+    # whichever text pass A settled on. record.final_text is safe to read here
+    # specifically -- not in general (see design/ORCHESTRATOR_CONTRACT.md item 2) --
+    # because pass A has already concluded for this record (guaranteed by the resume_at
+    # check above), so `rounds` is non-empty and its last entry is exactly what was
+    # checked/rewritten.
     current = Requirement(id=req.id, text=record.final_text, source_doc_id=req.source_doc_id)
 
     # Contract item 6: "nothing else is redone." resume_at can send us here with
@@ -1174,6 +1315,78 @@ def run_requirement(
         {**record.model_dump(mode="json"), "outcome": final_outcome.value})
 
 
+def run_requirement(
+    record: RequirementRunRecord,
+    requirement_set: RequirementSet,
+    consistency_report: Optional[ConsistencyReport],
+    dependency_report: Optional[DependencyReport],
+    stage_fns: StageFns,
+    human_fns: HumanFns,
+    throttle: Throttle,
+    max_revisions: int,
+    stage_configs: dict,
+    max_attempts: int = 3,
+    backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
+    checkpoint: Optional[Callable[[RequirementRunRecord], None]] = None,
+) -> RequirementRunRecord:
+    """Convenience wrapper, preserved after S3 ("phase the pipeline") for callers that
+    exercise one requirement's per-stage mechanics in isolation from the two-phase
+    DOCUMENT split -- classifier/strategy/test-generator retry and resume behavior,
+    document-context (None vs []) wiring, and similar, none of which are about whether
+    pass B sees a refined document analysis. Runs pass A, then -- unless it already
+    ended terminally or in error -- pass B immediately, reusing the SAME
+    consistency_report/dependency_report for both (i.e., simulates the pre-S3
+    single-pass behavior exactly).
+
+    NOT used by run_document/resume_document (see their own docstrings) -- those
+    genuinely run the second document analysis between pass A and pass B, on the
+    refined texts, which this wrapper does not do. Use run_requirement_pass_a/
+    run_requirement_pass_b directly for anything that needs to observe or control that
+    distinction.
+    """
+    record = run_requirement_pass_a(
+        record, requirement_set, consistency_report, dependency_report, stage_fns,
+        human_fns, throttle, max_revisions, stage_configs, max_attempts, backoff_seconds,
+        checkpoint)
+    # CAP_STOPPED (or, in principle, any other terminal outcome) needs no further work.
+    # Otherwise, _pass_a_concluded rather than a bare outcome check: an ERROR record
+    # can mean pass A itself failed (stop -- still needs pass A on a future call) or
+    # that an EARLIER pass-B attempt failed on an already-cap-decided record (must
+    # still reach pass B, which re-asks decide_at_cap itself -- see
+    # run_requirement_pass_b's docstring). A bare `outcome is RunOutcome.ERROR` check
+    # cannot tell those two apart.
+    if record.outcome in TERMINAL_OUTCOMES or not _pass_a_concluded(record):
+        return record
+    return run_requirement_pass_b(
+        record, requirement_set, dependency_report, stage_fns, human_fns, throttle,
+        stage_configs, max_attempts, backoff_seconds, checkpoint)
+
+
+def _refined_requirement_set(
+    requirement_set: RequirementSet, pass_a_records: list[RequirementRunRecord],
+) -> RequirementSet:
+    """Builds the RequirementSet the second document analysis runs over: every
+    requirement's text, as pass A left it (RequirementRunRecord.final_text already
+    handles every case -- clean, refined, capped, or erroring before any rewrite --
+    falling back to the original text when nothing changed it). Same doc_id/ordering
+    as the original set; only the text can differ.
+
+    Includes requirements pass A ended terminally (CAP_STOPPED, ERROR) too, not just
+    ones still headed for pass B -- a CAP_STOPPED or ERRORed requirement's text is
+    still part of the document and can still conflict with or depend on a sibling that
+    IS headed for pass B, so excluding it would show the second analysis an
+    incomplete document.
+    """
+    by_id = {r.requirement.id: r for r in pass_a_records}
+    return RequirementSet(
+        doc_id=requirement_set.doc_id,
+        requirements=[
+            Requirement(id=req.id, text=by_id[req.id].final_text, source_doc_id=req.source_doc_id)
+            for req in requirement_set.requirements
+        ],
+    )
+
+
 def run_document(
     requirement_set: RequirementSet,
     metadata: RunMetadata,
@@ -1185,19 +1398,44 @@ def run_document(
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> DocumentRunRecord:
-    """Runs the whole pipeline for one document: consistency/dependency checks (D1=b:
-    continue DEGRADED if either fails independently), then every requirement in order.
-    Writes to run_dir incrementally if given (D2b) -- document.json first, then one
-    requirement file at a time, so an interruption leaves a resumable partial run.
+    """Runs the whole pipeline for one document, phased (S3, "phase the pipeline" --
+    design/DESIGN_NOTES.md, option B under Known Limitation 7):
+
+      1. Document analysis, pass 1: consistency/dependency checks on the ORIGINAL text
+         (D1=b: continue DEGRADED if either fails independently) -- unchanged from
+         before phasing.
+      2. Pass A, every requirement: classifier, quality-check/refine, revision-cap
+         decision (run_requirement_pass_a). Fed by pass 1's reports, exactly as the
+         pre-phasing single-pass design was.
+      3. Document analysis, pass 2: the SAME two stages, re-run on the REFINED text
+         (_refined_requirement_set, built from every pass-A record's final_text) --
+         under CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED, a genuinely
+         distinct DocumentStage pair, not a re-run of pass 1 under the original one.
+         Both generations of reports are kept on the record; neither overwrites the
+         other (the diff between them is a reportable result).
+      4. Pass B, every requirement not already terminal (CAP_STOPPED/ERROR skip this):
+         strategy selection and test generation (run_requirement_pass_b), fed by pass
+         2's reports -- NOT pass 1's. This is the only thing that changes for strategy
+         selection/test generation; pass A's own inputs are untouched.
+
+    A cycle pass 2 finds is reported (DocumentRunRecord.refined_cycles), never routed
+    back to the Refiner -- refinement (pass A) is already finished by the time pass 2
+    runs (constraint 5, S3).
+
+    Writes to run_dir incrementally if given (D2b) -- document.json after each of the
+    four steps above, then one requirement file at a time within pass A/pass B, so an
+    interruption leaves a resumable partial run at any point.
 
     checkpoint_fn (2026-08-09), when run_dir is given, is write_requirement_run itself,
-    partially bound to run_dir -- passed into run_requirement so an in-progress
+    partially bound to run_dir -- passed into run_requirement_pass_a so an in-progress
     requirement's state reaches disk right before either human-interaction point, not
     only after the requirement fully finishes. Without this, an EOFError/
     KeyboardInterrupt from a terminal HumanFns implementation (orchestrator/
     human_cli.py) mid-requirement loses that requirement's progress entirely -- nothing
     about it was ever written -- rather than leaving a resumable partial round. See
-    _run_refine_loop's docstring for the resume path this makes possible.
+    _run_refine_loop's docstring for the resume path this makes possible. Pass B has no
+    human-interaction point, so it needs no checkpoint of its own -- writing the record
+    after each requirement (below) is already enough to make it resumable.
     """
     consistency_report, dependency_report, doc_errors, doc_attempts = run_document_stages(
         requirement_set, metadata.stages, stage_fns, throttle, max_attempts, backoff_seconds)
@@ -1214,17 +1452,59 @@ def run_document(
 
     checkpoint_fn = (lambda rec: write_requirement_run(run_dir, rec)) if run_dir is not None else None
 
-    requirement_records = []
+    pass_a_records = []
     for req in requirement_set.requirements:
-        req_record = run_requirement(
+        req_record = run_requirement_pass_a(
             RequirementRunRecord(requirement=req, run_id=metadata.run_id), requirement_set,
             consistency_report, dependency_report, stage_fns, human_fns, throttle,
             max_revisions, metadata.stages, max_attempts, backoff_seconds, checkpoint_fn)
-        requirement_records.append(req_record)
+        pass_a_records.append(req_record)
         if run_dir is not None:
             write_requirement_run(run_dir, req_record)
 
-    return record.model_copy(update={"requirement_records": requirement_records})
+    # Same all-requirements gate resume_document applies (_pass_a_concluded): if any
+    # requirement is still stuck in pass A (e.g. its Classifier failed and stays
+    # ERROR), the second document analysis must not run over a mixture of refined and
+    # still-original text -- an accident of which requirement happened to fail, not a
+    # methodological choice. Return the partial record as-is; a later resume finishes
+    # pass A for whatever is left, then proceeds to the second analysis and pass B
+    # itself (resume_document already implements exactly that).
+    if not all(_pass_a_concluded(r) for r in pass_a_records):
+        return record.model_copy(update={"requirement_records": pass_a_records})
+
+    refined_requirement_set = _refined_requirement_set(requirement_set, pass_a_records)
+    refined_consistency_report, refined_dependency_report, refined_doc_errors, refined_doc_attempts = \
+        run_document_stages(
+            refined_requirement_set, metadata.stages, stage_fns, throttle, max_attempts, backoff_seconds,
+            consistency_stage=DocumentStage.CONSISTENCY_CHECKER_REFINED,
+            dependency_stage=DocumentStage.DEPENDENCY_MAPPER_REFINED)
+    refined_analysis_outcome = (
+        DocumentOutcome.COMPLETED
+        if refined_consistency_report is not None and refined_dependency_report is not None
+        else DocumentOutcome.DEGRADED)
+    record = record.model_copy(update={
+        "refined_consistency_report": refined_consistency_report,
+        "refined_dependency_report": refined_dependency_report,
+        "refined_analysis_outcome": refined_analysis_outcome,
+        "errors": record.errors + refined_doc_errors,
+        "attempts": record.attempts + refined_doc_attempts,
+    })
+    if run_dir is not None:
+        write_document_run(run_dir, record)
+
+    final_records = []
+    for req_record in pass_a_records:
+        if req_record.outcome in TERMINAL_OUTCOMES or req_record.outcome is RunOutcome.ERROR:
+            final_records.append(req_record)
+            continue
+        final_record = run_requirement_pass_b(
+            req_record, requirement_set, refined_dependency_report, stage_fns, human_fns,
+            throttle, metadata.stages, max_attempts, backoff_seconds, checkpoint_fn)
+        final_records.append(final_record)
+        if run_dir is not None:
+            write_requirement_run(run_dir, final_record)
+
+    return record.model_copy(update={"requirement_records": final_records})
 
 
 def retry_document_stage(
@@ -1258,6 +1538,16 @@ def retry_document_stage(
     discarded), the moment any requirement record exists for this run. Recovering a
     failed document-level stage after that point requires starting a new run.
     """
+    # S3 ("phase the pipeline"): CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED
+    # are not supported here -- this function predates the second document-analysis
+    # phase and was never extended to it. A plain dict lookup below would raise a
+    # confusing KeyError for either; this raises a clear, explicit error instead.
+    if stage not in (DocumentStage.CONSISTENCY_CHECKER, DocumentStage.DEPENDENCY_MAPPER):
+        raise ValueError(
+            f"retry_document_stage does not support {stage.value!r} -- only the "
+            f"original {DocumentStage.CONSISTENCY_CHECKER.value!r}/"
+            f"{DocumentStage.DEPENDENCY_MAPPER.value!r} pair")
+
     record = read_document_run(run_dir)
     if record.requirement_records:
         raise ValueError(
@@ -1301,6 +1591,30 @@ def retry_document_stage(
     return record
 
 
+def _pass_a_concluded(record: RequirementRunRecord) -> bool:
+    """True once a requirement will not be sent through run_requirement_pass_a again
+    on this resume: already terminal (COMPLETED/CAP_GENERATED/CAP_STOPPED), or
+    IN_PROGRESS with resume_at pointing past pass A (STRATEGY_SELECTOR/TEST_GENERATOR).
+
+    Deliberately False for outcome=ERROR whenever resume_at still lands inside pass A
+    (e.g. the Classifier failed) -- that record still needs pass A, on a future
+    resume, before the second document analysis may run over its (still original)
+    text. Mirrors retry_document_stage's own reasoning for the FIRST document phase:
+    every requirement must see the same document context, so the second phase must
+    not run while any requirement's pass-A status is still unsettled.
+
+    cap_reason set is checked before resume_at, not folded into it: same reasoning as
+    run_requirement_pass_a's matching guard -- a just-capped round can leave
+    resume_at pointing back inside pass A even though the cap decision has already
+    concluded it.
+    """
+    if record.outcome in TERMINAL_OUTCOMES:
+        return True
+    if record.cap_reason is not None:
+        return True
+    return record.outcome is RunOutcome.IN_PROGRESS and resume_at(record) not in PASS_A_STAGES
+
+
 def resume_document(
     run_dir: Path,
     stage_fns: StageFns,
@@ -1310,34 +1624,90 @@ def resume_document(
     max_attempts: int = 3,
     backoff_seconds: Callable[[int], float] = lambda attempt: 2.0 ** attempt,
 ) -> DocumentRunRecord:
-    """A resume pass: read the document from disk, process everything in
-    pending_requirement_ids (no record at all, or IN_PROGRESS/ERROR), starting each at
-    its derived resume_at position. A requirement that never had a file gets a fresh
-    IN_PROGRESS record; one that errored gets its existing record continued in place.
+    """A resume pass, phase-aware (S3, "phase the pipeline" -- design/DESIGN_NOTES.md):
+    finishes whatever is incomplete, in the same three steps run_document runs fresh --
+    pass A for every requirement still needing it, then the second document analysis
+    (once, and only once every requirement has concluded pass A -- see
+    _pass_a_concluded -- and only if it has not already run:
+    refined_analysis_outcome stays DocumentOutcome.IN_PROGRESS until then), then pass B
+    for every requirement not yet terminal. A resume that only needs to finish pass B
+    does exactly that and nothing else; one that only needs a few more pass-A
+    requirements does not run the second document analysis prematurely, or at all,
+    until they are all through it.
 
-    Threads the same write_requirement_run-backed checkpoint into run_requirement that
-    run_document does (see run_document's docstring) -- a resume that itself gets
-    interrupted again mid-requirement must be just as resumable as the first attempt.
+    A requirement that never had a file gets a fresh IN_PROGRESS record; one that
+    errored gets its existing record continued in place -- same as before phasing.
+
+    Threads the same write_requirement_run-backed checkpoint into
+    run_requirement_pass_a that run_document does (see run_document's docstring) -- a
+    resume that itself gets interrupted again mid-requirement must be just as
+    resumable as the first attempt.
     """
     record = read_document_run(run_dir)
-    pending = set(record.pending_requirement_ids)
     by_id = {r.requirement.id: r for r in record.requirement_records}
     checkpoint_fn = lambda rec: write_requirement_run(run_dir, rec)
 
-    updated_records = []
+    # Step 1: pass A for every requirement not yet past it.
+    pass_a_records = []
     for req in record.requirement_set.requirements:
-        if req.id not in pending:
-            updated_records.append(by_id[req.id])
-            continue
         base = by_id.get(req.id) or RequirementRunRecord(requirement=req, run_id=record.metadata.run_id)
-        updated = run_requirement(
+        if _pass_a_concluded(base):
+            pass_a_records.append(base)
+            continue
+        updated = run_requirement_pass_a(
             base, record.requirement_set, record.consistency_report, record.dependency_report,
             stage_fns, human_fns, throttle, max_revisions, record.metadata.stages,
             max_attempts, backoff_seconds, checkpoint_fn)
-        updated_records.append(updated)
+        pass_a_records.append(updated)
         write_requirement_run(run_dir, updated)
 
-    return record.model_copy(update={"requirement_records": updated_records})
+    record = record.model_copy(update={"requirement_records": pass_a_records})
+
+    # Step 2: the second document analysis -- only once every requirement has
+    # concluded pass A, and only if it has not already run.
+    if (record.refined_analysis_outcome is DocumentOutcome.IN_PROGRESS
+            and all(_pass_a_concluded(r) for r in pass_a_records)):
+        refined_requirement_set = _refined_requirement_set(record.requirement_set, pass_a_records)
+        refined_consistency_report, refined_dependency_report, refined_doc_errors, refined_doc_attempts = \
+            run_document_stages(
+                refined_requirement_set, record.metadata.stages, stage_fns, throttle,
+                max_attempts, backoff_seconds,
+                consistency_stage=DocumentStage.CONSISTENCY_CHECKER_REFINED,
+                dependency_stage=DocumentStage.DEPENDENCY_MAPPER_REFINED)
+        refined_analysis_outcome = (
+            DocumentOutcome.COMPLETED
+            if refined_consistency_report is not None and refined_dependency_report is not None
+            else DocumentOutcome.DEGRADED)
+        record = record.model_copy(update={
+            "refined_consistency_report": refined_consistency_report,
+            "refined_dependency_report": refined_dependency_report,
+            "refined_analysis_outcome": refined_analysis_outcome,
+            "errors": record.errors + refined_doc_errors,
+            "attempts": record.attempts + refined_doc_attempts,
+        })
+        write_document_run(run_dir, record)
+
+    # Step 3: pass B for every requirement not yet terminal -- covers both "still
+    # IN_PROGRESS, awaiting pass B" and "ERROR from a failed pass-B stage call last
+    # time" (pending_requirement_ids' own definition). Only meaningful once the second
+    # analysis exists; run_requirement_pass_b's own resume_at guard no-ops harmlessly
+    # on a record still genuinely in pass A, so no separate check is needed here for
+    # that case -- it cannot happen anyway once step 2's gate has passed.
+    if record.refined_analysis_outcome is not DocumentOutcome.IN_PROGRESS:
+        final_records = []
+        for req_record in record.requirement_records:
+            if req_record.outcome in TERMINAL_OUTCOMES:
+                final_records.append(req_record)
+                continue
+            updated = run_requirement_pass_b(
+                req_record, record.requirement_set, record.refined_dependency_report,
+                stage_fns, human_fns, throttle, record.metadata.stages, max_attempts,
+                backoff_seconds, checkpoint_fn)
+            final_records.append(updated)
+            write_requirement_run(run_dir, updated)
+        record = record.model_copy(update={"requirement_records": final_records})
+
+    return record
 
 
 def atomic_write_text(path: Path, text: str) -> None:

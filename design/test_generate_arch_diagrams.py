@@ -135,10 +135,15 @@ def test_stage_wiring_columns_track_the_real_objects() -> None:
     section("validate_stage_wiring -- the declaration agrees with reality right now")
     ok("column 1 == ALL_STAGES",
        [r[0] for r in ga.STAGE_WIRING] == list(schemas.ALL_STAGES))
-    ok("column 2 == StageFns fields",
-       [r[1] for r in ga.STAGE_WIRING]
-       == [f.name for f in dataclasses.fields(ga.stage_fns_mod.StageFns)])
-    ok("all eight prompt files exist",
+    # Set equality, not sequence: StageFns's field order and ALL_STAGES's order no
+    # longer coincide once a document-level stage's refined counterpart is optional
+    # (dataclass rules put it after every required field) -- see
+    # validate_stage_wiring's own comment. Order isn't behaviourally meaningful here;
+    # coverage is what this pins.
+    ok("column 2 == StageFns fields (set, not sequence)",
+       {r[1] for r in ga.STAGE_WIRING}
+       == {f.name for f in dataclasses.fields(ga.stage_fns_mod.StageFns)})
+    ok("all ten prompt files exist",
        all((ga.PROMPT_DIR / r[5]).is_file() for r in ga.STAGE_WIRING))
 
 

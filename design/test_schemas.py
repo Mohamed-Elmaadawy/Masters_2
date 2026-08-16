@@ -24,7 +24,9 @@ Three layers, each catching what the others cannot:
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -35,8 +37,9 @@ from design.schemas import (
     DocumentStageError, FailureKind, Issue, IssueCategory, OutputMode, PipelineStage,
     QualityReport, RefinedRequirement, RefinementRound, RefinerAnswer, RefinerTurn,
     Requirement, RequirementRunRecord, RequirementSet, RunMetadata, RunOutcome,
-    StageAttempt, StageConfig, StageError, SystemType, TestCase, TestPlan, TestStrategy,
-    TestTechnique, fields_carrying_requirement_id, prompt_fingerprint,
+    SCHEMA_VERSION_1_2_STAGES, StageAttempt, StageConfig, StageError, SystemType,
+    TestCase, TestPlan, TestStrategy, TestTechnique, fields_carrying_requirement_id,
+    prompt_fingerprint,
 )
 from design.schemas import _DOCUMENT_OUTCOME_RULES, _OUTCOME_RULES
 
@@ -836,6 +839,44 @@ def test_gap3_document_record() -> None:
             checked += 1
     print(f"    ({checked} rules enumerated from _DOCUMENT_OUTCOME_RULES)")
 
+    # COMPLETED-requires-both-reports is no longer expressed on _DOCUMENT_OUTCOME_RULES
+    # itself (S3, "phase the pipeline" -- the same table now describes phase 1 AND
+    # phase 2, so it can no longer hardcode phase-1 field names) -- checked directly by
+    # construction here instead, since the self-enumerating loop above can no longer
+    # discover it by reading the table.
+    rejects("doc COMPLETED missing consistency_report",
+            lambda: doc(outcome=DocumentOutcome.COMPLETED, dependency_report=DEP))
+    rejects("doc COMPLETED missing dependency_report",
+            lambda: doc(outcome=DocumentOutcome.COMPLETED, consistency_report=CONS))
+
+    # S3: phase 2 (refined_analysis_outcome) is checked by the SAME generic mechanism,
+    # against its OWN pair of fields -- not phase 1's.
+    accepts("refined_analysis_outcome=completed with both refined reports",
+            lambda: doc(refined_consistency_report=CONS, refined_dependency_report=DEP,
+                        refined_analysis_outcome=DocumentOutcome.COMPLETED))
+    rejects("refined_analysis_outcome=completed missing refined_consistency_report",
+            lambda: doc(refined_dependency_report=DEP,
+                        refined_analysis_outcome=DocumentOutcome.COMPLETED))
+    rejects("refined_analysis_outcome=completed missing refined_dependency_report",
+            lambda: doc(refined_consistency_report=CONS,
+                        refined_analysis_outcome=DocumentOutcome.COMPLETED))
+    rejects("refined_analysis_outcome=degraded with both refined reports present",
+            lambda: doc(refined_consistency_report=CONS, refined_dependency_report=DEP,
+                        refined_analysis_outcome=DocumentOutcome.DEGRADED,
+                        errors=[failed_document_stage(
+                            DocumentStage.CONSISTENCY_CHECKER_REFINED, "inv-refined-1")[0]],
+                        attempts=failed_document_stage(
+                            DocumentStage.CONSISTENCY_CHECKER_REFINED, "inv-refined-1")[1]))
+    accepts("phase 1 completed while phase 2 hasn't run yet (refined_analysis_outcome default)",
+            lambda: doc(outcome=DocumentOutcome.COMPLETED, consistency_report=CONS,
+                        dependency_report=DEP))
+    ok("refined_analysis_outcome defaults to IN_PROGRESS",
+       doc(outcome=DocumentOutcome.COMPLETED, consistency_report=CONS,
+           dependency_report=DEP).refined_analysis_outcome is DocumentOutcome.IN_PROGRESS)
+    ok("refined_cycles is empty before the second analysis has run",
+       doc(outcome=DocumentOutcome.COMPLETED, consistency_report=CONS,
+           dependency_report=DEP).refined_cycles == [])
+
     rejects("DEGRADED without the non-failed stage's report",
             lambda: doc(outcome=DocumentOutcome.DEGRADED, errors=[CE], attempts=CE_ATTEMPTS))
     # `errors` is a log of failed attempts, not current state -- so a stage that failed
@@ -912,7 +953,12 @@ def test_gap4_provenance() -> None:
        prompt_fingerprint(text) != prompt_fingerprint(text + "."))
     ok("temperature defaults to 1.0", STAGES["classifier"].temperature == 1.0)
     ok("output_mode defaults to TEXT", STAGES["classifier"].output_mode == OutputMode.TEXT)
-    ok("schema_version defaults to 1.2", META.schema_version == "1.2")
+    # S3 (2026-08-16): bumped 1.2 -> 1.3 -- ALL_STAGES grew from eight stages to ten
+    # (CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED). See
+    # RunMetadata.schema_version's own history comment and
+    # test_schema_version_1_2_accepts_legacy_eight_stage_metadata below for the
+    # backward-compatibility half of this change.
+    ok("schema_version defaults to 1.3", META.schema_version == "1.3")
 
     mixed = {**STAGES, "test_generator": StageConfig(
         model="llama-3.3-70b-versatile", prompt_hash=prompt_fingerprint("gen prompt"),
@@ -937,6 +983,77 @@ def test_gap4_provenance() -> None:
     b = RunMetadata(run_id="b", started_at=datetime.now(timezone.utc), stages=edited)
     drifted = [s for s in ALL_STAGES if META.stages[s].prompt_hash != b.stages[s].prompt_hash]
     ok("forgotten version bump is visible via hash", drifted == ["quality_checker"])
+
+
+def test_schema_version_1_2_legacy_compatibility() -> None:
+    """S3 review finding 2: ALL_STAGES grew from eight stages to ten
+    (CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED), but every real run
+    recorded before S3 (every file under docs/superpowers/results/) is schema_version
+    "1.2" with exactly the original eight stages -- unlike the two earlier version
+    bumps (schema_version's own history comment: "no real run predates either bump"),
+    this one has real historical data to keep readable, not just a label to bump."""
+    section("schema_version 1.2 legacy compatibility (S3)")
+
+    legacy_stages = {s: StageConfig(model="gemini-2.0-flash",
+                                    prompt_hash=prompt_fingerprint(f"prompt for {s}"),
+                                    prompt_version="v1")
+                    for s in SCHEMA_VERSION_1_2_STAGES}
+    accepts("synthetic schema_version=1.2 metadata with exactly the legacy eight stages",
+            lambda: RunMetadata(run_id="legacy-run", started_at=datetime.now(timezone.utc),
+                                stages=legacy_stages, schema_version="1.2"))
+    rejects("schema_version=1.2 metadata missing one of the legacy eight stages",
+            lambda: RunMetadata(
+                run_id="legacy-run", started_at=datetime.now(timezone.utc),
+                stages={k: v for k, v in legacy_stages.items() if k != "classifier"},
+                schema_version="1.2"))
+    rejects("schema_version=1.2 metadata carrying a refined-phase stage is rejected, "
+           "not silently accepted -- a 1.2 record never configured those two stages, "
+           "so one appearing is a real inconsistency, not forward-compatible data",
+            lambda: RunMetadata(run_id="legacy-run", started_at=datetime.now(timezone.utc),
+                                stages={**legacy_stages, "consistency_checker_refined":
+                                       legacy_stages["classifier"]}, schema_version="1.2"))
+    rejects("schema_version=1.3 (current) metadata with only the legacy eight stages "
+           "is rejected -- new metadata must cover the full current ALL_STAGES",
+            lambda: RunMetadata(run_id="new-run", started_at=datetime.now(timezone.utc),
+                                stages=legacy_stages, schema_version="1.3"))
+    accepts("schema_version=1.3 metadata covering all ten current stages",
+            lambda: RunMetadata(run_id="new-run", started_at=datetime.now(timezone.utc),
+                                stages=STAGES, schema_version="1.3"))
+
+    # S3 review follow-up: an earlier version of _covers_every_stage treated "1.2" as
+    # the only legacy version and EVERY OTHER STRING as current-and-therefore-checked-
+    # against-ALL_STAGES -- so a record claiming an unsupported, malformed, earlier,
+    # or future version validated successfully as long as it happened to list the
+    # current ten stages. Confirmed empirically before fixing: schema_version="9.9"
+    # with the full ten-stage set validated cleanly under the old code. Only "1.2" and
+    # CURRENT_SCHEMA_VERSION are real, recognized versions; everything else must be
+    # rejected outright, never silently interpreted as one of them.
+    for bogus_version in ("1.1", "1.4", "9.9", "not-a-version"):
+        rejects(f"schema_version={bogus_version!r} (unsupported/unrecognized) is "
+               "rejected even with the full current ten-stage set -- not silently "
+               "interpreted as the current version",
+                lambda v=bogus_version: RunMetadata(
+                    run_id="unsupported-run", started_at=datetime.now(timezone.utc),
+                    stages=STAGES, schema_version=v))
+
+    # The real thing, not just a synthetic fixture: every actual pre-S3 run on disk
+    # must still load, with the two new fields absent/default -- nothing invented.
+    import glob
+    real_files = glob.glob("docs/superpowers/results/**/document.json", recursive=True)
+    ok("at least one real pre-S3 document.json exists to check against",
+       len(real_files) > 0)
+    for path in real_files[:1]:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        ok(f"real pre-S3 record schema_version is 1.2 ({path})",
+           raw["metadata"]["schema_version"] == "1.2")
+        loaded = DocumentRunRecord.model_validate(raw)
+        ok(f"real pre-S3 record loads cleanly under the current schema ({path})", True)
+        ok(f"no fabricated refined-phase report on a legacy record ({path})",
+           loaded.refined_consistency_report is None and loaded.refined_dependency_report is None)
+        ok(f"refined_analysis_outcome defaults to IN_PROGRESS on a legacy record ({path})",
+           loaded.refined_analysis_outcome is DocumentOutcome.IN_PROGRESS)
+        ok(f"legacy metadata still carries exactly the original eight stages ({path})",
+           set(loaded.metadata.stages) == SCHEMA_VERSION_1_2_STAGES)
 
 
 def test_cross_field_agreement() -> None:
@@ -1485,10 +1602,25 @@ def test_rule_table_anchors() -> None:
     ok("CAP_STOPPED forbids a test_plan", "test_plan" in cap_stop.forbidden)
     ok("CAP_STOPPED forbids a test_strategy", "test_strategy" in cap_stop.forbidden)
     ok("ERROR requires at least one error", "errors" in req[RunOutcome.ERROR].non_empty)
-    ok("IN_PROGRESS forbids cap_reason", "cap_reason" in req[RunOutcome.IN_PROGRESS].forbidden)
+    # Changed under S3 ("phase the pipeline", design/DESIGN_NOTES.md): IN_PROGRESS no
+    # longer forbids cap_reason. Pass B (strategy selection + test generation) now
+    # waits for the second document analysis, so a requirement can have its cap
+    # decision already made ("generate anyway") while still IN_PROGRESS, pending pass
+    # B -- see orchestrator/test_harness.py::test_resume_positions's
+    # cap_decided_awaiting_pass_b case, which could not even be constructed before
+    # this rule changed.
+    ok("IN_PROGRESS no longer forbids cap_reason",
+       "cap_reason" not in req[RunOutcome.IN_PROGRESS].forbidden)
+    ok("IN_PROGRESS record with cap_reason set now constructs cleanly",
+       rec(outcome=RunOutcome.IN_PROGRESS, classification=CLS,
+           rounds=[mk_round(1, T0, issues=[VAGUE])],
+           cap_reason="operator chose to generate anyway").outcome is RunOutcome.IN_PROGRESS)
 
-    ok("document COMPLETED requires both reports",
-       {"consistency_report", "dependency_report"} <= set(docr[DocumentOutcome.COMPLETED].required))
+    # "document COMPLETED requires both reports" is no longer a _DOCUMENT_OUTCOME_RULES
+    # table shape (S3 -- see that table's own comment for why); its anchor now lives in
+    # test_gap3_document_record as direct construction tests ("doc COMPLETED missing
+    # consistency_report"/"...missing dependency_report"), since the table can no
+    # longer name phase-specific fields.
     ok("document DEGRADED requires errors", "errors" in docr[DocumentOutcome.DEGRADED].non_empty)
     ok("document IN_PROGRESS stays unconstrained (mid-run writes)",
        not (docr[DocumentOutcome.IN_PROGRESS].required
@@ -1568,6 +1700,7 @@ def main() -> int:
                test_errors_agree_with_attempts, test_attempts_are_source_of_truth_for_tokens,
                test_gap5_refinement_trajectory,
                test_gap3_document_record, test_gap4_provenance,
+               test_schema_version_1_2_legacy_compatibility,
                test_cross_field_agreement, test_duplicate_keys,
                test_denormalised_fields_agree, test_technique_eligibility,
                test_references_resolve, test_gap6_issue_identity,

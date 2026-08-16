@@ -4232,3 +4232,330 @@ support: the three named signatures, run over pdfplumber's text, do not turn up 
 themas-shaped case. Re-scan if a different or better `.doc`/PDF text extraction is ever
 built, since that would check a path closer to (though still not identical to) the one
 that actually damaged `1998 - themas.xml`.
+
+## S3 implemented -- the pipeline is phased, option B under Known Limitation 7 (2026-08-16)
+
+Full implementation of S3 (`docs/superpowers/plans/2026-08-15-system-changes-before-freeze.md`),
+resolving Known Limitation 7's staleness problem the way option B proposed: document-level
+analysis now runs twice, once on the original text and once on the refined text, with
+strategy selection and test generation fed by the second (refined) run, never the first.
+Built on a branch (`task-4-phase-pipeline`), suites kept green throughout.
+
+**Schema changes.** `DocumentStage` gains `CONSISTENCY_CHECKER_REFINED`/
+`DEPENDENCY_MAPPER_REFINED` -- genuinely distinct stage identities, not the original two
+reused under a different label, so `DocumentStageError`/`DocumentStageAttempt` can always
+say which generation of analysis a failure or a call belongs to.
+`DocumentRunRecord` gains `refined_consistency_report`/`refined_dependency_report`
+(never overwriting `consistency_report`/`dependency_report` -- the diff between the two
+generations is itself a reportable result) and `refined_analysis_outcome`
+(`DocumentOutcome`, same three states, describing only the second phase; defaults
+`IN_PROGRESS`, meaning "hasn't run yet"). `DocumentOutcome`'s docstring is corrected: it
+now says explicitly that it describes only phase 1, not "the document-level phase" as a
+whole, since that phrase is no longer singular. A new computed field,
+`refined_cycles`, exposes `refined_dependency_report.find_cycles()` directly --
+constraint 5's "reported, not routed to the Refiner" needs no stored field at all, since
+`find_cycles()` is already deterministic on data already persisted; storing a snapshot
+would be exactly the "two fields that must agree" pattern this project keeps finding bugs
+in. `RunOutcome.IN_PROGRESS` no longer forbids `cap_reason` -- pass A can now conclude
+with the cap decision already made ("generate anyway") while the record stays IN_PROGRESS,
+because pass B (strategy selection + test generation) hasn't run yet; before phasing,
+`decide_at_cap` and stage 3/4 always ran in the same call, so the two fields never needed
+to coexist on a non-terminal record. `pending_requirement_ids`'s docstring is amended: the
+field's own definition ("has this requirement's whole lifecycle concluded") did not need
+to change, but "pending" is no longer one thing -- a caller must additionally ask which
+phase a pending requirement needs, which only `orchestrator.pipeline.resume_at`'s return
+value (bucketed into pass-A vs. pass-B stages) and `refined_analysis_outcome` can answer.
+
+**`orchestrator/pipeline.py` control flow.** `run_requirement` split into
+`run_requirement_pass_a` (classifier, quality-check/refine loop, revision-cap decision)
+and `run_requirement_pass_b` (strategy selection, test generation) -- the natural
+boundary `resume_at` already expressed structurally (`STRATEGY_SELECTOR`/`TEST_GENERATOR`
+vs. the four earlier stages, now named `PASS_A_STAGES`). `run_document_stages` gained
+`consistency_stage`/`dependency_stage` keyword parameters (default: the original pair),
+so the exact same function runs both phases -- called once by `run_document`/
+`resume_document` for the original text, and again for `_refined_requirement_set`
+(every requirement's `final_text`, including CAP_STOPPED/ERROR ones -- their text is
+still part of the document and can still conflict with or depend on a sibling headed for
+pass B). `run_document`: doc analysis (1) -> pass A for every requirement (2) -> doc
+analysis on the refined set, both generations of reports kept, `refined_analysis_outcome`
+set (3) -> pass B for every non-terminal requirement (4). `resume_document`: the same four
+steps, each skipped if already done -- pass A only for requirements not yet past it
+(`_pass_a_concluded`), the second analysis only once `_pass_a_concluded` is true for
+*every* requirement and only if it has not already run (`refined_analysis_outcome` still
+`IN_PROGRESS`), pass B only for requirements not yet terminal. `retry_document_stage` was
+NOT extended to the refined stages (out of scope for S3) -- it now raises a clear
+`ValueError` naming the unsupported stage instead of a confusing `KeyError` from its
+internal dispatch dict.
+
+**A real bug found by running the existing suite, not by inspection.** `resume_at`
+reasons purely from `rounds`/`turn`/`rewrite` and has no notion of "the cap decision was
+already made" -- the round the cap fires on can leave `turn` still `None` (the cap check
+in `_run_refine_loop` fires before that round's own questioner is ever called), which
+`resume_at` reads identically to a genuinely unfinished round. Without an explicit
+override, an already-cap-decided record would be sent BACK into the refine loop by
+`run_requirement_pass_a`'s entry guard, asking the questioner again after the human
+already chose to stop refining -- caught by `orchestrator/test_harness.py::test_revision_cap`'s
+CAP_GENERATED case, run end to end through the new split, not by reading the code. Fixed
+by checking `record.cap_reason is not None` BEFORE consulting `resume_at` at both of
+pass A's and pass B's entry points (and in `_pass_a_concluded`), a strictly cheaper and
+more reliable check than trying to teach `resume_at` about a decision it was never
+designed to know.
+
+**Preserved, not silently dropped: re-asking the cap decision on a resumed pass-B
+failure.** The pre-S3 design let the human change their mind on ANY resume of an
+already-capped record whose stage 3/4 work had not yet succeeded (documented at
+`orchestrator/test_harness.py::test_resumed_cap_generated_then_stopped_strips_stage34`
+and its own commentary: "an earlier call chose CAP_GENERATED, then the Strategy
+Selector or Test Generator failed, and the human now says stop instead of retrying").
+Phasing nearly dropped this by accident -- `run_requirement_pass_b` was written with no
+`human_fns` parameter at all ("pass B has no human-interaction point"), which is false
+for exactly this resumed-after-failure case. Fixed: `run_requirement_pass_b` takes
+`human_fns` after all, and re-invokes `decide_at_cap` when (and only when) `cap_reason`
+is already set AND `outcome is RunOutcome.ERROR` -- a prior pass-B stage call failed on
+an already-cap-decided record. A fresh cap-generate decision handed straight from pass A
+has `outcome=IN_PROGRESS`, not `ERROR`, so it is not asked about a second time
+immediately.
+
+**`StageFns` gains two genuinely independent, optional fields** --
+`check_consistency_refined`/`map_dependencies_refined` -- rather than reusing
+`check_consistency`/`map_dependencies` for both phases. The reuse alternative was
+tried first and rejected: `orchestrator/stages.py`'s factories build one closure per
+call, with the model/prompt baked in at construction time, so reusing the phase-1
+closure for phase 2 would mean an operator's YAML override for
+`consistency_checker_refined` was validated but silently never actually applied --
+exactly the "config accepted, not honored" shape this project's rules warn against.
+Defaulting both new fields to `None` (with `orchestrator/pipeline.py` falling back to
+`stage_fns.check_consistency`/`map_dependencies` when unset) meant the ~60 existing
+`StageFns(...)` fixtures across `orchestrator/test_harness.py` that predate S3 and never
+exercise the two-phase document flow needed no changes at all; only
+`orchestrator/cli.py`'s `_build_stage_fns` (the real, production wiring) sets both
+explicitly, from the refined stages' own resolved config. Two new prompt files,
+`orchestrator/example_prompts/consistency_checker_refined.txt`/
+`dependency_mapper_refined.txt`, are byte-identical copies of their siblings (no prompt
+content decision was made -- same analysis, same instructions, just a second
+independently-hashed, independently-configurable file, per S3's "distinct phase, not a
+re-run" framing applied to prompt provenance too).
+
+**`design/generate_arch_diagrams.py`'s `validate_stage_wiring` needed a real loosening,
+not just new rows.** `STAGE_WIRING`'s declared field-name column was checked against
+`StageFns`'s fields in DECLARATION ORDER, which used to coincide with `ALL_STAGES`'
+order by construction. It no longer can: Python requires every dataclass field with a
+default to follow every field without one, so the two new optional fields must sit at
+the very END of `StageFns`, while `ALL_STAGES` (enum-derived) puts their stage keys
+right after their non-refined siblings. Declaration order isn't behaviourally meaningful
+for a dataclass -- the check was changed from sequence equality to set equality
+(coverage: every field wired, no extras), which is what the check was actually protecting.
+`design/test_generate_arch_diagrams.py`'s matching anchor test was updated the same way.
+
+**Tests.** `orchestrator/test_harness.py::test_resume_positions` updated FIRST per S3's
+own instruction (constructed the new `cap_decided_awaiting_pass_b` case, confirmed it
+failed with a `ValidationError` under the unmodified schema, then made the schema change
+that turned it green) -- `docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`'s
+Task 4 names this test specifically because the resume spec drifted once before.
+`test_run_document_happy_path`'s own fixture had a latent, pre-existing bug once phasing
+existed: `check_consistency`/`map_dependencies` each had exactly one scripted response,
+so the second (phase 2) call popped from an empty queue, which `call_document_stage`'s
+retry logic silently absorbed into a DEGRADED second phase -- the test's own assertions
+never noticed, because a DEGRADED second phase doesn't block per-requirement COMPLETED
+outcomes (D1=b's policy, correctly, applied to the new phase too). Fixed by giving both
+two responses and asserting `refined_analysis_outcome is COMPLETED` explicitly, so a
+silently-degraded second phase now fails the test that exists to prove it succeeded.
+Two new tests, both mutation-tested (broke the guarantee on purpose, confirmed the
+suite went red, reverted): `test_phased_pipeline_pass_b_sees_refined_analysis_not_original`
+(the core guarantee -- pass 2 is scripted to find a dependency cycle pass 1 didn't have;
+Strategy Selector/Test Generator receive it, Quality Checker is never called a second
+time proving the cycle is never routed to the Refiner) and
+`test_resume_gates_second_analysis_until_every_requirement_concludes_pass_a` (one
+requirement still stuck in pass A after a resume; the second analysis must stay
+`IN_PROGRESS`, not run and DEGRADE, and pass B must not run for the OTHER requirement
+either, even though it individually finished pass A cleanly).
+
+Suites after this change: schemas 336, generate_diagrams 13, arch diagrams 88, harness
+480, CLI 55, stages 163, stage_fns 67, config 95, rotation 18 -- all green.
+
+**Not done, deliberately out of scope for S3:** `retry_document_stage` extended to the
+refined stages (no task asked for it; the new `ValueError` at least fails clearly rather
+than with a raw `KeyError` if someone tries); auditing every pre-existing document-stage
+test fixture in `orchestrator/test_harness.py` for under-provisioned Scripted mocks that
+now silently retry-then-degrade through phase 2 rather than genuinely exercising it --
+the ones inspected either don't assert anything about phase 2 (so remain correct, just
+slightly wasteful) or were the one (`test_run_document_happy_path`) that did and is now
+fixed. Revisit if a future change needs to trust phase 2 succeeding in one of those
+fixtures specifically.
+
+## S3 review fixes -- fresh-run gate, legacy schema compatibility, active configs, CLI summary (2026-08-16)
+
+An independent review of the uncommitted S3 work (still on `task-4-phase-pipeline`, not
+committed) found four real gaps -- each verified empirically before fixing, not assumed.
+
+**1. `run_document` had no fresh-run equivalent of `resume_document`'s all-requirements
+gate.** `resume_document` already required `_pass_a_concluded(record)` for EVERY
+requirement before running the second document analysis; `run_document` ran it
+unconditionally after one pass-A sweep, so a document where one requirement's pass A
+genuinely failed (stays `ERROR`) would still run the second analysis over a mixture of
+that requirement's original text and its siblings' refined text -- an accident of which
+requirement happened to fail, not the methodological choice the gate exists to enforce
+elsewhere. Fixed: `run_document` now applies the exact same
+`all(_pass_a_concluded(r) for r in pass_a_records)` check and returns the partial record
+(both requirement records included, `refined_analysis_outcome` still `IN_PROGRESS`) when
+it fails; a later `resume_document` call finishes pass A for whatever is left and then
+proceeds through the second analysis and pass B itself, unchanged.
+
+**A second, independent bug surfaced by actually exercising this gate, not by
+inspection.** `orchestrator/test_harness.py::test_error_resume_finish` (an existing,
+previously-green test -- a single requirement whose Classifier fails, then a resume with
+working stage fns) started failing once the new gate made `resume_document`'s pass-A
+retry path genuinely exercised end to end for the first time under S3. Root cause:
+`run_requirement_pass_a` never reset a stale `outcome=ERROR` (carried in from an earlier
+failed attempt at the SAME stage) back to `IN_PROGRESS` on a successful retry -- neither
+the clean-pass fall-through nor the cap-generate branch ever touched `outcome`, so a
+requirement that failed once and then fully succeeded on retry still carried `ERROR`
+forward. This is invisible when `run_requirement_pass_b` runs immediately afterward in
+the same call (its own final line always explicitly sets the finished outcome, so the
+stale value gets overwritten anyway) -- but `_pass_a_concluded` requires `outcome is
+RunOutcome.IN_PROGRESS` before consulting `resume_at`, so it wrongly read a
+successfully-recovered-but-stale-ERROR record as "still not concluded," which blocked the
+new gate (finding 1) from ever passing for a document that had ever needed a retry. Fixed
+by resetting `record.outcome` to `IN_PROGRESS` the moment `run_requirement_pass_a` is
+about to retry a record that arrived with `outcome=ERROR` -- every failure path already
+sets `"outcome": "error"` explicitly if the retry fails again, so nothing is lost.
+
+Both fixes verified with a new test,
+`test_run_document_gates_second_analysis_until_every_requirement_concludes_pass_a`
+(two requirements, one's Classifier exhausts, one concludes cleanly; asserts neither the
+second analysis nor pass B ran for either, then that a follow-up resume finishes
+correctly) -- mutation-tested (the gate condition replaced with `False`, confirmed the
+new test's four assertions go red, reverted).
+
+**2. `ALL_STAGES` grew from eight stages to ten, but every real run recorded before S3
+is schema_version "1.2" with exactly the original eight** -- confirmed empirically, not
+assumed: loading `docs/superpowers/results/2026-08-10-first-real-run/groq/document.json`
+(a real file) through the current `DocumentRunRecord` failed outright before this fix,
+naming the two refined stages as "missing config for." Historical
+`docs/superpowers/results/` files are evidence for the thesis and are never edited to
+match a later pipeline -- the schema has to meet them where they are.
+
+Fixed with the smallest explicit versioned mechanism available at each layer:
+- `design.schemas.RunMetadata.schema_version` bumped 1.2 -> 1.3 (documented inline
+  alongside the 1.0->1.1 and 1.1->1.2 history, which explicitly noted "no real run
+  predates either bump" -- this one is different, and says so).
+  `_covers_every_stage` now branches: `schema_version == "1.2"` is checked against a
+  new frozen constant, `SCHEMA_VERSION_1_2_STAGES` (the exact original eight, a literal,
+  never to be derived from any enum again -- it must stay fixed regardless of how
+  `ALL_STAGES` keeps growing); anything else is checked against the current
+  `ALL_STAGES`. A legacy record loads with `refined_consistency_report`/
+  `refined_dependency_report` absent and `refined_analysis_outcome` at its
+  `IN_PROGRESS` default -- nothing invented, both fields are already optional/defaulted
+  for exactly this reason.
+- `orchestrator.config.ResolvedRunConfig` has no `schema_version` field of its own (it
+  never needed one before S3), so `_stages_cover_exactly_all_stages` checks the SHAPE of
+  `stages` directly: current `ALL_STAGES` or the same frozen legacy eight-stage set.
+  This is deliberately a *read* concession only -- it makes a pre-S3 `run_config.json`
+  loadable via `read_resolved_run_config` for inspection, nothing more.
+- **Loading and resuming are two different gates.** `orchestrator/cli.py`'s
+  `_do_resume` now explicitly checks `set(resolved.stages) != set(ALL_STAGES)`
+  immediately after loading (before `read_document_run`, before any adapter is
+  constructed, before any provider is touched) and refuses with a message naming the
+  actual vs. current stage counts and saying plainly that a new run is required. Without
+  this second check, the loosened `ResolvedRunConfig` validator alone would have let a
+  legacy run silently attempt to resume THROUGH the phased pipeline -- pass B fed a
+  refined dependency report that was never computed, or a second document analysis run
+  against a schema_version that never expected one.
+
+Tests: `design.test_schemas::test_schema_version_1_2_legacy_compatibility` (synthetic
+1.2/eight-stage and 1.3/ten-stage fixtures in both directions, plus loading a REAL file
+from `docs/superpowers/results/` and asserting no fabricated refined-phase data appears
+on it) and `orchestrator.test_cli::test_resume_pre_s3_legacy_run_rejected_before_any_adapter`
+(a hand-built legacy `ResolvedRunConfig`/`RunMetadata` pair, resumed with spy adapter
+factories that raise if ever called -- confirming the refusal happens before any
+adapter is touched, not just eventually).
+
+**3. Three active, reusable YAML configs under `orchestrator/`** (`example_run_config.yaml`,
+`runs_gemini.yaml`, `runs_groq.yaml` -- reusable templates an operator re-runs, distinct
+from the FROZEN, already-executed `docs/superpowers/results/**/run_config.json` files,
+which are left untouched) failed `resolve_run_config` the moment `RunConfig`'s exact
+ten-stage coverage check applied to their eight-stage `prompts`/`stages` sections --
+confirmed by actually resolving each one before touching anything. Fixed by adding
+`consistency_checker_refined`/`dependency_mapper_refined` to all three, pointed at the
+already-existing copied prompt files (no new prompt content). Guarded by a new test,
+`orchestrator.test_config::test_active_yaml_configs_resolve_with_all_ten_stages`, which
+loads and resolves all three and asserts full `ALL_STAGES` coverage -- so this cannot
+silently go stale again the next time a stage is added.
+
+**4. `orchestrator/cli.py`'s `_print_summary` printed only the original document
+analysis's outcome.** A run where phase 1 completed but the second (refined) analysis
+degraded could print "Document outcome: completed" while returning the stage-error exit
+code (a DEGRADED phase records a real `DocumentStageError`, which `_has_stage_errors`
+already counts) -- correct exit code, misleading explanation. Fixed: the line is now two
+lines, "Original analysis outcome: ..." and "Refined analysis outcome: ...", neither
+mislabeling a DEGRADED phase as a failure (DEGRADED is a real, valid, non-terminal
+outcome under D1=b, reported as data). New test,
+`orchestrator.test_cli::test_degraded_refined_analysis_reported_and_exits_1`: phase 1
+completes, phase 2's Consistency Checker call fails permanently, dependency mapper
+still runs (D1=b) and the requirement itself still reaches COMPLETED -- asserts both
+summary lines are accurate and the requirement is not mislabeled as failed alongside
+the correct exit code.
+
+Suites after these fixes: schemas 347, generate_diagrams 13, arch diagrams 88, harness
+489, CLI 62, stages 163, stage_fns 67, config 101, rotation 18 -- all green. `git diff
+--check` reports only pre-existing CRLF-normalization notices (this repo's own line-
+ending convention), no real whitespace or conflict-marker issues. No historical
+`docs/superpowers/results/` file was modified; no API call was made (all four fixes and
+their tests run entirely against scripted/synthetic fixtures). Not yet committed --
+reported for review first, per instruction.
+
+## S3 review fixes, round 2 -- explicit schema-version allow-list, document-metadata resume check (2026-08-16)
+
+A second independent review of the still-uncommitted S3 work found two more real gaps
+in round 1's own legacy-compatibility fix, both confirmed empirically before fixing.
+
+**1. `_covers_every_stage` silently accepted any unrecognized `schema_version`.** Round
+1's fix branched "if `schema_version == '1.2'`, use the legacy set; else, use current
+`ALL_STAGES`" -- so `schema_version="9.9"` (or `"1.1"`, `"1.4"`, a typo) fell into the
+`else` and validated successfully as long as it happened to list the current ten stages.
+Confirmed by constructing exactly that record before touching anything: it validated.
+Fixed with an explicit allow-list instead of an else-branch: only `"1.2"` (legacy,
+checked against `SCHEMA_VERSION_1_2_STAGES`) and a newly-named `CURRENT_SCHEMA_VERSION`
+constant (`"1.3"`, checked against `ALL_STAGES`) are recognized; anything else raises,
+naming both supported versions. `CURRENT_SCHEMA_VERSION` replaces the bare `"1.3"`
+literal in both the field default and the validator -- the exact "two things that must
+agree" shape CLAUDE.md warns about, since a future bump that updated one and forgot the
+other would reopen this same hole under the new version string. The comment at
+`SCHEMA_VERSION_1_2_STAGES`'s definition already says what the NEXT bump needs (a new
+frozen constant, `CURRENT_SCHEMA_VERSION` moved to the new string, a new branch) --
+unchanged, still accurate. Tests: four new `rejects()` cases in
+`design.test_schemas::test_schema_version_1_2_legacy_compatibility` for `"1.1"`, `"1.4"`,
+`"9.9"`, and `"not-a-version"`, all with the full current ten-stage set (proving the
+rejection is about the version string itself, not a stage-count mismatch).
+
+**2. `_do_resume` checked only `run_config.json`'s stage set, never
+`document.json`'s.** Round 1's resume-refusal gate (`set(resolved.stages) != set
+(ALL_STAGES)`) inspects `ResolvedRunConfig` alone. `DocumentRunRecord.metadata` is a
+SEPARATE file, loaded later (`read_document_run`), and nothing compared its
+`schema_version`/stages against either the current pipeline or against
+`run_config.json`'s own stages. Confirmed by reproducing exactly this pairing -- a
+current (ten-stage) `run_config.json` next to a legacy (schema_version "1.2",
+eight-stage) `document.json`, with matching prompt hashes so `_prompt_provenance_mismatches`
+could not catch it either -- and observing a spy adapter factory (raises if called) get
+called. The run genuinely reached `adapter_factories[provider]()` before this fix.
+
+Fixed with two checks added to `_do_resume`, right after `read_document_run`, both
+before any adapter is constructed: (a) `record.metadata.schema_version !=
+CURRENT_SCHEMA_VERSION or set(record.metadata.stages) != set(ALL_STAGES)` -- the
+document-side twin of round 1's config-side check, refusing with a message naming the
+recorded version/stage-count and saying a new run is required; (b) `set(resolved.stages)
+!= set(record.metadata.stages)` -- config and metadata can each independently look
+current while still disagreeing with EACH OTHER (can't happen from normal use today,
+since `ALL_STAGES` is one global set, but a run_dir assembled from two otherwise-valid
+files should not be trusted to agree just because each individually passes). New test,
+`orchestrator.test_cli::test_resume_current_config_with_legacy_document_metadata_rejected`,
+reproduces the exact pairing that was confirmed broken, with spy adapter factories, and
+asserts `EXIT_CONFIG_ERROR` with a message naming the recorded version and stage count --
+mutation-tested (the new gate replaced with `if False`, confirmed the test's assertions
+went red, reverted).
+
+Suites after these fixes: schemas 351, generate_diagrams 13, arch diagrams 88, harness
+489, CLI 65, stages 163, stage_fns 67, config 101, rotation 18 -- all green. `git diff
+--check` clean (pre-existing CRLF notices only). No historical
+`docs/superpowers/results/` file modified; no API call made. Not committed -- reported
+for review first.

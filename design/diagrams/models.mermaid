@@ -47,6 +47,8 @@ classDiagram
         <<enumeration>>
         consistency_checker
         dependency_mapper
+        consistency_checker_refined
+        dependency_mapper_refined
     }
     class FailureKind {
         <<enumeration>>
@@ -251,9 +253,13 @@ classDiagram
         +list~DocumentStageError~ errors
         +Optional~ConsistencyReport~ consistency_report
         +Optional~DependencyReport~ dependency_report
+        +Optional~ConsistencyReport~ refined_consistency_report
+        +Optional~DependencyReport~ refined_dependency_report
+        +DocumentOutcome refined_analysis_outcome
         +list~RequirementRunRecord~ requirement_records
         +list~DocumentStageAttempt~ attempts
         +list~str~ pending_requirement_ids $computed$
+        +list~list~str~~ refined_cycles $computed$
         +int document_stage_tokens $computed$
     }
 
@@ -262,10 +268,13 @@ classDiagram
     ConsistencyReport "1..*" *-- ConsistencyConflict : conflicts
     DependencyReport "1..*" *-- DependencyLink : dependencies
     DocumentRunRecord "1" *-- ConsistencyReport : consistency_report
+    DocumentRunRecord "1" *-- ConsistencyReport : refined_consistency_report
     DocumentRunRecord "1" *-- DependencyReport : dependency_report
+    DocumentRunRecord "1" *-- DependencyReport : refined_dependency_report
     DocumentRunRecord "1" *-- RequirementSet : requirement_set
     DocumentRunRecord "1" *-- RunMetadata : metadata
     DocumentRunRecord "1" --> DocumentOutcome : outcome
+    DocumentRunRecord "1" --> DocumentOutcome : refined_analysis_outcome
     DocumentRunRecord "1..*" *-- DocumentStageAttempt : attempts
     DocumentRunRecord "1..*" *-- DocumentStageError : errors
     DocumentRunRecord "1..*" *-- RequirementRunRecord : requirement_records

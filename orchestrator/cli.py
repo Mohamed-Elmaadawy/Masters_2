@@ -54,7 +54,10 @@ from typing import Callable, Optional
 import yaml
 from pydantic import ValidationError
 
-from design.schemas import RequirementSet, RunOutcome, SystemType, prompt_fingerprint
+from design.schemas import (
+    ALL_STAGES, CURRENT_SCHEMA_VERSION, RequirementSet, RunOutcome, SystemType,
+    prompt_fingerprint,
+)
 from orchestrator.config import (
     ResolvedRunConfig, load_run_config, read_resolved_run_config, resolve_run_config,
     retry_args, run_dir_for, throttle_from, to_run_metadata, write_run_config,
@@ -141,6 +144,18 @@ def _build_stage_fns(resolved: ResolvedRunConfig, adapters: dict[str, ProviderAd
         generate_tests=make_generate_tests_fn(
             adapters[stages["test_generator"].provider], stages["test_generator"],
             stages["test_generator"].prompt_path.read_text()),
+        # S3 ("phase the pipeline" -- design/DESIGN_NOTES.md): the second document
+        # analysis phase's own callables, built from their own resolved config exactly
+        # like every other stage above -- never a re-run of check_consistency/
+        # map_dependencies under a different label (see StageFns's own docstring).
+        check_consistency_refined=make_check_consistency_fn(
+            adapters[stages["consistency_checker_refined"].provider],
+            stages["consistency_checker_refined"],
+            stages["consistency_checker_refined"].prompt_path.read_text()),
+        map_dependencies_refined=make_map_dependencies_fn(
+            adapters[stages["dependency_mapper_refined"].provider],
+            stages["dependency_mapper_refined"],
+            stages["dependency_mapper_refined"].prompt_path.read_text()),
     )
 
 
@@ -154,9 +169,19 @@ def _has_stage_errors(record: DocumentRunRecord) -> bool:
 
 
 def _print_summary(record: DocumentRunRecord, output_fn: Callable[[str], None]) -> None:
+    # S3 review finding 4: the original ("Document outcome") and refined document
+    # analyses (S3, "phase the pipeline" -- design/DESIGN_NOTES.md) are two
+    # INDEPENDENT phases with two independent outcomes -- printing only the first let
+    # a run with phase 1 COMPLETED but phase 2 DEGRADED print "Document outcome:
+    # completed" while still returning the stage-error exit code (a DEGRADED phase
+    # records a DocumentStageError, which _has_stage_errors already counts), with
+    # nothing in the summary explaining why. Both are named explicitly now, and
+    # neither label calls a DEGRADED phase a failure -- DEGRADED is a real, valid,
+    # non-terminal-error outcome (D1=b), reported as data, not as "failed".
     total_tokens = record.document_stage_tokens + sum(
         r.total_tokens for r in record.requirement_records)
-    output_fn(f"Document outcome: {record.outcome.value}")
+    output_fn(f"Original analysis outcome: {record.outcome.value}")
+    output_fn(f"Refined analysis outcome: {record.refined_analysis_outcome.value}")
     for req_record in record.requirement_records:
         output_fn(f"  {req_record.requirement.id}: {req_record.outcome.value}"
                   f"{f' ({len(req_record.errors)} error(s))' if req_record.errors else ''}")
@@ -286,6 +311,23 @@ def _do_resume(
 ) -> int:
     try:
         resolved = read_resolved_run_config(run_dir)
+
+        # S3 ("phase the pipeline"): a run_config.json with only the legacy
+        # eight-stage set (orchestrator/config.py's ResolvedRunConfig now loads that
+        # shape for inspection -- see its own docstring) predates the two-phase
+        # pipeline entirely. Resuming it would run PipelineStage/DocumentStage code
+        # that never accounted for a second document analysis, against a record whose
+        # own schema_version ("1.2") never expected one either. Refused here,
+        # explicitly, before any adapter is constructed or any provider is touched --
+        # the run needs to be started fresh, not continued.
+        if set(resolved.stages) != set(ALL_STAGES):
+            output_fn(
+                f"Refusing to resume {run_dir}: this run's config has "
+                f"{len(resolved.stages)} stage(s) ({sorted(resolved.stages)}), not the "
+                f"current {len(ALL_STAGES)} -- it predates the S3 two-phase pipeline "
+                "(design/DESIGN_NOTES.md). Start a new run instead of resuming this one.")
+            return EXIT_CONFIG_ERROR
+
         # Loads document.json + every requirements/*.json and re-runs
         # DocumentRunRecord's full validator suite, including the run_id agreement check
         # (design/schemas.py's _outcome_matches_contents) -- the existing mechanism
@@ -293,6 +335,41 @@ def _do_resume(
         # run directory holding files from more than one run fails to load, here,
         # before any adapter is constructed.
         record = read_document_run(run_dir)
+
+        # Mirrors the run_config.json check above, applied to the SEPARATELY loaded
+        # document.json -- read_resolved_run_config's own stage set says nothing about
+        # what's actually recorded in the document, so a current (ten-stage)
+        # run_config.json paired with a legacy (schema_version "1.2", eight-stage)
+        # document.json would sail past the earlier check entirely and only fail
+        # later, confusingly, once refined-stage configuration was actually accessed
+        # deep inside run_document/resume_document -- confirmed by reproducing exactly
+        # that pairing and watching it reach adapter construction before this check
+        # was added. Both the version label AND the stage set are checked (not just
+        # one): a tampered or hand-edited document.json could carry a
+        # schema_version string that disagrees with what its own `stages` dict
+        # actually shows.
+        if (record.metadata.schema_version != CURRENT_SCHEMA_VERSION
+                or set(record.metadata.stages) != set(ALL_STAGES)):
+            output_fn(
+                f"Refusing to resume {run_dir}: this run's recorded metadata is "
+                f"schema_version {record.metadata.schema_version!r} with "
+                f"{len(record.metadata.stages)} stage(s), not the current "
+                f"{CURRENT_SCHEMA_VERSION!r} with {len(ALL_STAGES)} -- it predates the "
+                "S3 two-phase pipeline (design/DESIGN_NOTES.md). Start a new run "
+                "instead of resuming this one.")
+            return EXIT_CONFIG_ERROR
+
+        # Config and metadata can each independently pass the two checks above (both
+        # current, both ten stages) while still disagreeing with EACH OTHER on which
+        # ten -- ALL_STAGES is one global set today, so this cannot fire from normal
+        # use, but a run_dir assembled from two otherwise-valid-looking files must not
+        # be trusted to agree just because each individually looks current.
+        if set(resolved.stages) != set(record.metadata.stages):
+            output_fn(
+                f"Refusing to resume {run_dir}: run_config.json's stages "
+                f"({sorted(resolved.stages)}) disagree with document.json's recorded "
+                f"stages ({sorted(record.metadata.stages)}).")
+            return EXIT_CONFIG_ERROR
 
         # DocumentRunRecord's own validators only check that requirement_records agree
         # with metadata.run_id -- they never compare against the run_id inside a

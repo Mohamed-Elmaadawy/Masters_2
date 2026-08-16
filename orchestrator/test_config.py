@@ -449,6 +449,24 @@ def test_no_field_looks_key_shaped() -> None:
                not any(s in name.lower() for s in suspicious))
 
 
+def test_active_yaml_configs_resolve_with_all_ten_stages() -> None:
+    """S3 review finding 3: the three active, reusable YAML configs under
+    orchestrator/ (not historical results under docs/superpowers/results/, which
+    describe what actually ran and are never edited to match a later pipeline) must
+    keep resolving now that ALL_STAGES has grown to ten -- resolve_run_config's
+    per-stage loop and RunConfig's exact-coverage check would otherwise reject them
+    for missing consistency_checker_refined/dependency_mapper_refined the moment
+    anyone tried to actually use one. Guards against silently going stale again."""
+    section("active YAML configs (example_run_config/runs_gemini/runs_groq) resolve cleanly")
+    repo_root = Path(__file__).resolve().parent.parent
+    for name in ("example_run_config.yaml", "runs_gemini.yaml", "runs_groq.yaml"):
+        path = repo_root / "orchestrator" / name
+        config = load_run_config(path)
+        resolved = resolve_run_config(config, path)
+        ok(f"{name} resolves", isinstance(resolved, ResolvedRunConfig))
+        ok(f"{name} covers all ten current stages", set(resolved.stages) == set(ALL_STAGES))
+
+
 def main() -> int:
     print("=" * 72)
     print("orchestrator/config.py regression")
@@ -466,6 +484,7 @@ def main() -> int:
         test_run_id_path_traversal_is_rejected,
         test_run_dir_for_defends_even_if_the_field_validator_is_bypassed,
         test_no_field_looks_key_shaped,
+        test_active_yaml_configs_resolve_with_all_ten_stages,
     ):
         fn()
     print("\n" + "=" * 72)

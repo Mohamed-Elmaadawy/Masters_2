@@ -713,9 +713,22 @@ class PipelineStage(str, Enum):
 
 
 class DocumentStage(str, Enum):
-    """Stages that run once per document, before per-requirement processing begins."""
+    """Document-level stages -- run over the whole RequirementSet at once, never
+    per-requirement. CONSISTENCY_CHECKER/DEPENDENCY_MAPPER run once, before
+    per-requirement processing begins, on the ORIGINAL text.
+
+    CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED (S3, "phase the pipeline" --
+    design/DESIGN_NOTES.md) are a SECOND, later phase: the same two stages, re-run on
+    the REFINED text, after every requirement has finished pass A (classify,
+    quality-check, refine) and before pass B (strategy selection, test generation)
+    starts. Distinct enum members, not a re-run under the original two -- so a
+    DocumentStageError/DocumentStageAttempt can always say which generation of
+    analysis it belongs to, and DocumentRunRecord can hold both reports without one
+    silently overwriting the other."""
     CONSISTENCY_CHECKER = "consistency_checker"
     DEPENDENCY_MAPPER = "dependency_mapper"
+    CONSISTENCY_CHECKER_REFINED = "consistency_checker_refined"
+    DEPENDENCY_MAPPER_REFINED = "dependency_mapper_refined"
 
 
 class FailureKind(str, Enum):
@@ -1084,11 +1097,16 @@ class _OutcomeRule(NamedTuple):
 
 
 _OUTCOME_RULES: dict[RunOutcome, _OutcomeRule] = {
-    # Nothing has necessarily happened yet, so almost nothing is required. An
-    # in-progress run has neither failed nor reached a cap.
-    RunOutcome.IN_PROGRESS: _OutcomeRule(
-        forbidden=("cap_reason",),
-    ),
+    # Nothing has necessarily happened yet, so almost nothing is required.
+    # cap_reason is deliberately NOT forbidden here (changed under S3, "phase the
+    # pipeline" -- design/DESIGN_NOTES.md): a requirement can now have its cap decision
+    # already made (the human already chose "generate anyway" in pass A) while the
+    # record stays IN_PROGRESS because pass B (strategy selection + test generation)
+    # has not run yet -- it waits for the second, post-refinement document analysis.
+    # Before S3, decide_at_cap and stage 3/4 always ran within the same call, so
+    # cap_reason and "not yet finished" never coexisted; phasing makes that a real,
+    # persisted, resumable state, not a contradiction.
+    RunOutcome.IN_PROGRESS: _OutcomeRule(),
     # Converged: the last quality check must actually have passed, and stages 3/4 ran.
     # `final_requirement` is not in `required` because a requirement that was clean on
     # the first pass legitimately has none. That is only true while nothing refined it,
@@ -1539,8 +1557,19 @@ class RequirementRunRecord(BaseModel):
 # ---------------------------------------------------------------------------
 
 class DocumentOutcome(str, Enum):
-    """Describes the *document-level stage phase only* (Consistency Checker and
-    Dependency Mapper), which finishes before per-requirement processing begins.
+    """Describes ONE document-level analysis phase: the Consistency Checker and
+    Dependency Mapper running once, together, over one text. This field specifically
+    describes the FIRST phase (on the original text), which still finishes before
+    per-requirement processing begins -- that part remains true.
+
+    S3 ("phase the pipeline" -- design/DESIGN_NOTES.md) added a SECOND such phase: the
+    same two stages re-run, later, on the REFINED text, after pass A (classify,
+    quality-check, refine) concludes for every requirement and before pass B (strategy
+    selection, test generation) begins. That second phase is tracked by its own field,
+    `DocumentRunRecord.refined_analysis_outcome` (same three states, same meaning, just
+    describing the other phase) -- NOT by this one. Before S3, "the document-level
+    phase" and "this field" were the same thing; they no longer are, and a reader
+    should not assume "document-level analysis is over" from this field alone.
 
     It deliberately says nothing about whether every requirement has been processed.
     That would be a second, independent axis -- the same mistake `HUMAN_OVERRIDE` would
@@ -1557,10 +1586,19 @@ _DOCUMENT_OUTCOME_RULES: dict[DocumentOutcome, _OutcomeRule] = {
     # not run yet" is a real state that must be writable to disk mid-run (decision D2b
     # writes incrementally). Forcing DEGRADED the moment an error appears would make
     # DEGRADED reachable before the phase is over, i.e. not terminal.
+    #
+    # required/forbidden/non_empty here are deliberately phase-agnostic (no field
+    # names): which fields COMPLETED/DEGRADED require is derived at check time from
+    # whichever stage_reports mapping the caller passes in (see
+    # _document_phase_outcome_matches_contents), so this ONE table describes both
+    # phase 1's `outcome` and phase 2's `refined_analysis_outcome` without repeating
+    # itself or risking the two definitions drifting apart -- there used to be a risk
+    # here: an earlier version hardcoded `required=("consistency_report",
+    # "dependency_report")` directly on this table, which would have silently checked
+    # phase 1's fields even when validating phase 2's outcome. Presence/absence of the
+    # phase's OWN two reports is checked generically below instead.
     DocumentOutcome.IN_PROGRESS: _OutcomeRule(),
-    DocumentOutcome.COMPLETED: _OutcomeRule(
-        required=("consistency_report", "dependency_report"),
-    ),
+    DocumentOutcome.COMPLETED: _OutcomeRule(),
     DocumentOutcome.DEGRADED: _OutcomeRule(
         non_empty=("errors",),
     ),
@@ -1570,11 +1608,59 @@ _DOCUMENT_OUTCOME_RULES: dict[DocumentOutcome, _OutcomeRule] = {
 }
 
 
-# Which report each document-level stage is responsible for producing.
+# Which report each document-level stage is responsible for producing. Two separate
+# mappings, not one covering all four DocumentStage members: phase 1's outcome
+# (`outcome`) and phase 2's (`refined_analysis_outcome`) are each checked against only
+# their OWN pair of stages/fields (see _document_phase_outcome_matches_contents) --
+# folding all four into one mapping would make phase 1's DEGRADED check also demand an
+# explanation for phase 2's reports, which are legitimately still None whenever phase 2
+# has not run yet.
 _DOCUMENT_STAGE_REPORTS: dict[DocumentStage, str] = {
     DocumentStage.CONSISTENCY_CHECKER: "consistency_report",
     DocumentStage.DEPENDENCY_MAPPER: "dependency_report",
 }
+_REFINED_DOCUMENT_STAGE_REPORTS: dict[DocumentStage, str] = {
+    DocumentStage.CONSISTENCY_CHECKER_REFINED: "refined_consistency_report",
+    DocumentStage.DEPENDENCY_MAPPER_REFINED: "refined_dependency_report",
+}
+
+
+def _document_phase_outcome_matches_contents(
+    record: "DocumentRunRecord", outcome: DocumentOutcome, stage_reports: dict[DocumentStage, str],
+    phase_label: str,
+) -> None:
+    """Shared by phase 1 (`outcome`/_DOCUMENT_STAGE_REPORTS) and phase 2
+    (`refined_analysis_outcome`/_REFINED_DOCUMENT_STAGE_REPORTS) -- same rule, applied
+    to each phase's own pair of stages/fields only, never both at once (see the mapping
+    comment above for why that scoping matters)."""
+    _apply_outcome_rule(record, outcome.value, _DOCUMENT_OUTCOME_RULES[outcome])
+    if outcome is DocumentOutcome.COMPLETED:
+        for stage, field in stage_reports.items():
+            if getattr(record, field) is None:
+                raise ValueError(f"{phase_label} outcome=completed requires {field}")
+    failed: set[DocumentStage] = {err.stage for err in record.errors}
+
+    # `errors` is a LOG OF FAILED ATTEMPTS, not a statement of current state. A stage
+    # may therefore hold both an error (it failed once) and a report (a later retry
+    # succeeded) -- that is precisely what makes retrying one document-level stage
+    # possible without either erasing the failure or re-running the whole document.
+    #
+    # The mirror rule still holds, and is what keeps the log honest: a stage with no
+    # report must have a recorded failure explaining its absence.
+    if outcome is DocumentOutcome.DEGRADED:
+        missing = [f for s, f in stage_reports.items() if getattr(record, f) is None]
+        if not missing:
+            raise ValueError(
+                f"{phase_label} outcome=degraded but both reports are present -- a "
+                "phase whose stages all eventually succeeded is completed, even if "
+                "they failed on an earlier attempt"
+            )
+        for stage, field in stage_reports.items():
+            if getattr(record, field) is None and stage not in failed:
+                raise ValueError(
+                    f"{field} is missing but {stage.value} has no recorded failure "
+                    "explaining why"
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -1586,6 +1672,27 @@ _DOCUMENT_STAGE_REPORTS: dict[DocumentStage, str] = {
 ALL_STAGES: tuple[str, ...] = (
     tuple(s.value for s in DocumentStage) + tuple(s.value for s in PipelineStage)
 )
+
+# The exact stage set schema_version "1.2" (and earlier) required, frozen as a literal
+# rather than derived from any enum -- unlike ALL_STAGES, this must NEVER change again,
+# because it is what makes a pre-S3 RunMetadata (every real run recorded before S3
+# landed, see docs/superpowers/results/) still validate as what it actually is: an
+# eight-stage record, not a ten-stage one with two entries silently missing. See
+# RunMetadata.schema_version's history comment and _covers_every_stage below.
+SCHEMA_VERSION_1_2_STAGES: frozenset[str] = frozenset({
+    "consistency_checker", "dependency_mapper", "classifier", "quality_checker",
+    "refiner_questioner", "refiner_rewriter", "strategy_selector", "test_generator",
+})
+
+# Named, not repeated as a bare "1.3" literal in both the field default below and
+# _covers_every_stage's branch -- exactly the "two things that must agree" pattern
+# CLAUDE.md warns about; a future bump that updated one and forgot the other would
+# silently start accepting the CURRENT ten-stage set under a version string
+# _covers_every_stage no longer recognizes as current. The next bump (whenever
+# ALL_STAGES next changes) needs: a new frozen SCHEMA_VERSION_x_y_STAGES constant for
+# what "1.3" meant at the time, this constant moved to the new version string, and a
+# new branch in _covers_every_stage -- mirroring exactly how "1.2" was preserved here.
+CURRENT_SCHEMA_VERSION: str = "1.3"
 
 
 def prompt_fingerprint(prompt_text: str) -> str:
@@ -1651,7 +1758,19 @@ class RunMetadata(BaseModel):
     # the record shapes apart. See
     # docs/superpowers/specs/2026-08-08-per-attempt-observability-design.md and
     # DESIGN_NOTES.md.
-    schema_version: NonEmptyStr = "1.2"
+    # 1.2 -> 1.3 (2026-08-16, S3 "phase the pipeline"): DocumentStage gained
+    # CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED, so ALL_STAGES grew from
+    # eight entries to ten. UNLIKE the earlier two bumps, real runs DO predate this one
+    # (every run under docs/superpowers/results/ is schema_version "1.2", eight
+    # stages) -- there is something to preserve this time, not just a version label to
+    # bump. _covers_every_stage below recognizes EXACTLY "1.2" (checked against the
+    # frozen SCHEMA_VERSION_1_2_STAGES set) and EXACTLY CURRENT_SCHEMA_VERSION/"1.3"
+    # (checked against the current ALL_STAGES) -- any other value ("1.1", "1.4",
+    # "9.9", a typo) is rejected outright, not interpreted as either. A pre-S3 record
+    # therefore still loads as what it actually is -- eight stages, no refined-phase
+    # config, nothing invented -- while an unsupported or malformed version string
+    # fails loudly instead of silently being checked against the wrong stage set.
+    schema_version: NonEmptyStr = CURRENT_SCHEMA_VERSION
 
     @model_validator(mode="after")
     def _started_at_is_timezone_aware(self) -> "RunMetadata":
@@ -1673,7 +1792,23 @@ class RunMetadata(BaseModel):
 
     @model_validator(mode="after")
     def _covers_every_stage(self) -> "RunMetadata":
-        given, expected = set(self.stages), set(ALL_STAGES)
+        # Explicit allow-list, not "1.2 is legacy, anything else is current" -- an
+        # earlier version of this check treated every OTHER string ("1.1", "1.4",
+        # "9.9", a typo) as current-and-therefore-checked-against-ALL_STAGES, which
+        # meant a record claiming an unsupported or made-up version validated
+        # successfully as long as it happened to list the current ten stages. Only
+        # the two versions this code actually knows how to interpret are accepted;
+        # everything else is rejected outright, never guessed at.
+        if self.schema_version == "1.2":
+            expected = SCHEMA_VERSION_1_2_STAGES
+        elif self.schema_version == CURRENT_SCHEMA_VERSION:
+            expected = set(ALL_STAGES)
+        else:
+            raise ValueError(
+                f"schema_version {self.schema_version!r} is not supported -- only "
+                f"'1.2' (legacy, eight stages) and {CURRENT_SCHEMA_VERSION!r} "
+                f"(current, {len(ALL_STAGES)} stages) are recognized")
+        given = set(self.stages)
         if missing := sorted(expected - given):
             raise ValueError(f"stages is missing config for: {missing}")
         if unknown := sorted(given - expected):
@@ -1713,6 +1848,19 @@ class DocumentRunRecord(BaseModel):
     errors: list[DocumentStageError] = Field(default_factory=list)
     consistency_report: Optional[ConsistencyReport] = None
     dependency_report: Optional[DependencyReport] = None
+    # S3 ("phase the pipeline" -- design/DESIGN_NOTES.md): a SECOND generation of both
+    # reports, produced by CONSISTENCY_CHECKER_REFINED/DEPENDENCY_MAPPER_REFINED on the
+    # REFINED requirement texts, after every requirement finishes pass A and before pass
+    # B runs. Kept as separate fields, never overwriting consistency_report/
+    # dependency_report above -- the diff between the two generations is itself a
+    # reportable result (did refinement introduce or resolve a conflict/dependency?),
+    # and overwriting the original would destroy it. refined_analysis_outcome mirrors
+    # `outcome`'s own three-state shape (IN_PROGRESS/COMPLETED/DEGRADED) but describes
+    # ONLY this second phase; defaults to IN_PROGRESS, meaning "hasn't run yet", which
+    # is accurate for every record until pass A concludes for every requirement.
+    refined_consistency_report: Optional[ConsistencyReport] = None
+    refined_dependency_report: Optional[DependencyReport] = None
+    refined_analysis_outcome: DocumentOutcome = DocumentOutcome.IN_PROGRESS
     requirement_records: list[RequirementRunRecord] = Field(default_factory=list)
     # The complete log of every call_document_stage() attempt, success or failure --
     # source of truth for token totals (see document_stage_tokens) and for what each
@@ -1734,39 +1882,19 @@ class DocumentRunRecord(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def _refined_analysis_outcome_matches_contents(self) -> "DocumentRunRecord":
+        """Same rule as _outcome_matches_contents below, applied to phase 2's own
+        outcome/reports. A separate validator, not folded into that one, so the two
+        phases can never accidentally cross-check each other's fields -- see
+        _document_phase_outcome_matches_contents's docstring."""
+        _document_phase_outcome_matches_contents(
+            self, self.refined_analysis_outcome, _REFINED_DOCUMENT_STAGE_REPORTS, "phase 2")
+        return self
+
+    @model_validator(mode="after")
     def _outcome_matches_contents(self) -> "DocumentRunRecord":
-        o = self.outcome
-        _apply_outcome_rule(self, o.value, _DOCUMENT_OUTCOME_RULES[o])
-
-        # Duplicates are now allowed (see `errors` field docstring above) -- this set is
-        # still needed for the DEGRADED "a missing report must have a recorded failure
-        # explaining it" check just below, which only cares which stages failed at all.
-        failed: set[DocumentStage] = {err.stage for err in self.errors}
-
-        # `errors` is a LOG OF FAILED ATTEMPTS, not a statement of current state. A
-        # stage may therefore hold both an error (it failed once) and a report (a later
-        # retry succeeded) -- that is precisely what makes retrying one document-level
-        # stage possible without either erasing the failure or re-running the whole
-        # document. An earlier version treated `errors` as current state and rejected
-        # that combination; see DESIGN_NOTES.md for why the meaning changed.
-        #
-        # The mirror rule still holds, and is what keeps the log honest: a stage with no
-        # report must have a recorded failure explaining its absence.
-        if o is DocumentOutcome.DEGRADED:
-            missing = [f for s, f in _DOCUMENT_STAGE_REPORTS.items()
-                       if getattr(self, f) is None]
-            if not missing:
-                raise ValueError(
-                    "outcome=degraded but both reports are present -- a document whose "
-                    "stages all eventually succeeded is completed, even if they failed "
-                    "on an earlier attempt"
-                )
-            for stage, field in _DOCUMENT_STAGE_REPORTS.items():
-                if getattr(self, field) is None and stage not in failed:
-                    raise ValueError(
-                        f"{field} is missing but the {stage.value} has no recorded "
-                        "failure explaining why"
-                    )
+        _document_phase_outcome_matches_contents(
+            self, self.outcome, _DOCUMENT_STAGE_REPORTS, "phase 1")
 
         # One record per requirement, and it must be the requirement the set declares.
         # The `Requirement` duplication between the set and each record file is
@@ -1815,7 +1943,8 @@ class DocumentRunRecord(BaseModel):
         known = {r.id for r in self.requirement_set.requirements}
         doc_id = self.requirement_set.doc_id
 
-        for name in ("consistency_report", "dependency_report"):
+        for name in ("consistency_report", "dependency_report",
+                    "refined_consistency_report", "refined_dependency_report"):
             report = getattr(self, name)
             if report is not None and doc_id is not None and report.doc_id is not None:
                 if report.doc_id != doc_id:
@@ -1835,6 +1964,12 @@ class DocumentRunRecord(BaseModel):
         if self.dependency_report is not None:
             for d in self.dependency_report.dependencies:
                 check([d.from_requirement_id, d.to_requirement_id], "dependency link")
+        if self.refined_consistency_report is not None:
+            for c in self.refined_consistency_report.conflicts:
+                check(c.requirement_ids, "refined_consistency_report conflict")
+        if self.refined_dependency_report is not None:
+            for d in self.refined_dependency_report.dependencies:
+                check([d.from_requirement_id, d.to_requirement_id], "refined dependency link")
         for rec in self.requirement_records:
             for rnd in rec.rounds:
                 for issue in rnd.quality_report.issues:
@@ -1863,12 +1998,40 @@ class DocumentRunRecord(BaseModel):
     #
     # Derived rather than stored so it cannot disagree with the records actually
     # present -- the whole point when recovering an interrupted run.
+    #
+    # S3 revisit ("phase the pipeline"): this still correctly means "has this
+    # requirement's WHOLE lifecycle concluded" (a requirement mid pass A, or done with
+    # pass A and waiting on the second document analysis / pass B, is correctly still
+    # pending either way) -- the definition itself did not need to change. What DID
+    # change is that "pending" is no longer one thing: the orchestrator (not this
+    # field) must additionally ask, per pending record, WHICH phase it needs next
+    # (`orchestrator.pipeline.resume_at`'s return value already distinguishes pass-A
+    # stages from pass-B stages), and whether the second document analysis itself has
+    # run yet (`refined_analysis_outcome`) -- neither of which this single list can
+    # express. Callers that used to treat "pending" as "needs pass A" must not
+    # continue to assume that.
     @computed_field
     @property
     def pending_requirement_ids(self) -> list[str]:
         finished = {r.requirement.id for r in self.requirement_records
                     if r.outcome in TERMINAL_OUTCOMES}
         return [r.id for r in self.requirement_set.requirements if r.id not in finished]
+
+    # S3, constraint 5 ("a cycle found by the second analysis is reported, not routed
+    # back to the Refiner -- refinement is finished by then"). Computed, not stored:
+    # find_cycles() is already a deterministic method on DependencyReport, so storing a
+    # snapshot alongside it would be exactly the "two fields that must agree" pattern
+    # CLAUDE.md warns against -- this can never drift from refined_dependency_report
+    # because it IS refined_dependency_report, read differently. Empty before the
+    # second analysis has run (refined_dependency_report is still None) or if it found
+    # no cycles -- both cases correctly report "nothing to record" without a caller
+    # needing to check refined_analysis_outcome first.
+    @computed_field
+    @property
+    def refined_cycles(self) -> list[list[str]]:
+        if self.refined_dependency_report is None:
+            return []
+        return self.refined_dependency_report.find_cycles()
 
     # Deliberately NOT named total_tokens. Under D2b, requirement_records arrives
     # empty in the on-disk document.json and is only populated after assembly from

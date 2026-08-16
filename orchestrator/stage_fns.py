@@ -152,6 +152,19 @@ class StageFns:
     (or raises StageCallFailed / StageCallFatal). orchestrator/test_harness.py wires in
     scripted fixtures; orchestrator/stages.py (next phase) wires in real LLM calls.
 
+    check_consistency_refined/map_dependencies_refined (S3, "phase the pipeline" --
+    design/DESIGN_NOTES.md) are the SECOND document-analysis phase's own callables --
+    genuinely independent closures (own ResolvedStageConfig, own prompt), not a re-run
+    of check_consistency/map_dependencies under a different label. Optional, defaulting
+    to None: orchestrator/pipeline.py's run_document/resume_document fall back to
+    reusing check_consistency/map_dependencies when a caller leaves these unset, so the
+    ~60 existing StageFns(...) fixtures across this test suite that predate S3 and never
+    exercise the two-phase document flow do not need updating. orchestrator/cli.py's
+    _build_stage_fns (the real, production wiring) always sets both explicitly, built
+    from the refined stages' own resolved config -- so a real run's refined-phase model/
+    prompt is never silently substituted by its phase-1 sibling's, only test fixtures
+    that don't care are allowed that shortcut.
+
     refine_questioner/refine_rewriter were one field (refine) until 2026-08-08: two
     calls with different inputs/outputs (Requirement, QualityReport -> RefinerTurn;
     requirement + RefinerAnswer[] -> RefinedRequirement) shared one callable, one
@@ -188,6 +201,8 @@ class StageFns:
     refine_rewriter: RefineRewriterFn
     select_strategy: SelectStrategyFn
     generate_tests: GenerateTestsFn
+    check_consistency_refined: Optional[CheckConsistencyFn] = None
+    map_dependencies_refined: Optional[MapDependenciesFn] = None
 
 
 @dataclass(frozen=True)

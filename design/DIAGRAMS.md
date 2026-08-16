@@ -128,22 +128,36 @@ test suites, with `pydantic` / `requests` / `pyyaml` drawn as third-party leaves
 reading off it: `design/` never imports `orchestrator/`.
 
 ### `stage_wiring.mermaid`
-The eight stages end to end, one row each: YAML config key → prompt file →
+The ten stages end to end, one row each: YAML config key → prompt file →
 `stages.py` factory → `StageFns` field and its Protocol → output model in `schemas.py`,
 with every row converging on `ProviderAdapter.complete()` below and
-`call_stage`/`call_document_stage` above.
+`call_stage`/`call_document_stage` above. Eight per-requirement/original-document
+stages plus two (S3, "phase the pipeline" — `CONSISTENCY_CHECKER_REFINED`/
+`DEPENDENCY_MAPPER_REFINED`) for the second, post-refinement document analysis —
+same factories/Protocols/output models as their non-refined siblings, but genuinely
+distinct `StageFns` fields and `ALL_STAGES` keys, each with its own resolved config
+and prompt file (`consistency_checker_refined.txt`/`dependency_mapper_refined.txt`).
 
-*Declared rows, every cell checked* against the real `ALL_STAGES`, `StageFns` fields,
-`stages.py` factories, Protocol classes, schema models and prompt files on disk. A ninth
-stage anywhere — including a `make_*_fn` in `stages.py` that no row references — fails
-the build until its row is added.
+*Declared rows, every cell checked* against the real `ALL_STAGES`, `StageFns` fields
+(set equality, not row order — see `generate_arch_diagrams.py`'s `validate_stage_wiring`
+for why `StageFns`'s two optional refined-phase fields can't share the same
+declaration order as `ALL_STAGES`), `stages.py` factories, Protocol classes, schema
+models and prompt files on disk. An eleventh stage anywhere — including a `make_*_fn`
+in `stages.py` that no row references — fails the build until its row is added.
 
 ### `runtime.mermaid`
 The orchestrator's call graph, `python -m orchestrator.cli` to disk: config load and
 resolve, adapter construction, `StageFns`/`HumanFns` assembly, `run_document` →
 `run_document_stages` / `run_requirement` → `_run_refine_loop`, the incremental writes,
 and the two entry points that exist but have **no CLI wiring in v1**
-(`resume_document`, `retry_document_stage`).
+(`resume_document`, `retry_document_stage`). `run_document`'s real, phased body (S3)
+calls `run_document_stages` twice (original text, then refined) and
+`run_requirement_pass_a`/`run_requirement_pass_b`, not the single `run_requirement`
+this diagram names -- `run_requirement` survives only as a compatibility wrapper for
+callers exercising one requirement's stage mechanics in isolation from the two-phase
+document split (see its own docstring in `orchestrator/pipeline.py`); the node name
+here is checked against a real `module.attribute` and still resolves, but no longer
+describes what a real run actually calls.
 
 *Declared, validated by name:* every node names a real `module.attribute`, checked at
 generation time. The **edges are not traced** — a call deleted while both functions
