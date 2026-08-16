@@ -26,6 +26,42 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-17 — Task 5 (S4, human-supplied `NON_ATOMIC` splits) evaluated and deferred, documentation only
+
+**Changed:** `design/DESIGN_NOTES.md` -- new subsection "S4 evaluated and deferred, not
+built" appended after S4's existing "read the frequency count carefully" note. No code,
+schema, or test changed.
+
+**Why:** handover doc Task 5 gates on "Task 3 reports the genuine `NON_ATOMIC` frequency"
+over the frozen evaluation corpus (`datasets/pure-extracted/`, 805 requirements). That
+measurement was scoped in the prior session (script, manual-review split, ~$3/~54min cost
+estimate) but deliberately not run: running the Quality Checker over the held-out
+evaluation set to decide whether to build a feature would let evaluation data shape the
+system under evaluation, the exact contamination the freeze boundary
+(`docs/EVALUATION_PROTOCOL.md`) exists to prevent. The only frequency evidence on hand is
+`1/34` from the project's own design-stage illustrative set, not a sample of the frozen
+corpus -- generalizing it there would be an unverified claim, and using it to close the
+Task 3 gate would be the substitution the handover explicitly guards against. Runtime
+splitting also carries its own cost independent of the frequency number (new schema
+fields, provenance/origin-id scheme, requirement-identity and resume-position changes,
+dependency re-derivation across five call sites) and automatic/model-generated splitting
+stays rejected on correctness grounds regardless of how common the case turns out to be.
+
+**Impact:** documentation only -- no behavioral change. `orchestrator/pipeline.py`,
+`design/schemas.py` unmodified; no new `RunOutcome` member, no `RefinerAnswer` field, no
+original-to-fragment mapping field (the run schema has none). The practical workaround
+(manual pre-pipeline splitting, traceability kept as an operator-maintained external
+sidecar or source-document record, not a pipeline-recorded field) is now the recorded
+standing default for use outside this thesis evaluation only -- it must not be applied to
+the frozen 805-requirement evaluation subset, since splitting there after the freeze
+would change requirement-set membership and every denominator computed against it. During
+the evaluation run, a genuine `NON_ATOMIC` case is left unchanged and reported as a
+documented limitation, not worked around. Provenance-preserving in-pipeline decomposition
+remains an open research gap, to revisit after the evaluation freeze closes, not before.
+No suite re-run needed (no code touched).
+
+---
+
 ## 2026-08-16 — S3 review fixes, round 2: explicit schema-version allow-list, document-metadata resume check
 
 **Changed:** `design/schemas.py` -- new `CURRENT_SCHEMA_VERSION = "1.3"` constant, used

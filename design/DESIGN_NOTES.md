@@ -3996,6 +3996,77 @@ flags in the 2026-08-13 suite were conjunction-splits rather than genuine bundli
 counts will overstate the need. Since S1 precedes everything anyway, the number arrives
 before it is needed; there is no reason to build machinery on n=1.
 
+#### S4 evaluated and deferred, not built (2026-08-17)
+
+**Decision: defer.** Task 5 of the handover (`docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`)
+is not implemented. No runtime `NON_ATOMIC` splitting exists in `orchestrator/pipeline.py`
+or `design/schemas.py`. This is a deliberate stop, scoped and reasoned here so it reads as
+evaluated, not forgotten.
+
+**`1/34` is design-stage evidence, not a held-out measurement, and must not be generalized
+to the evaluation corpus.** Those 34 requirements are the project's own illustrative/spot-check
+set (`requirements_dataset.json` and the behavior-scenario fixtures), assembled while building
+the schema and prompts -- not a sample of the frozen 805-requirement PURE subset in
+`datasets/pure-extracted/`. A frequency measured on the design set says nothing calibrated
+about the held-out set; treating `1/34` as if it were would be exactly the kind of unverified
+claim this file's own house rule ("verify before asserting") warns against.
+
+**The Task 3 frequency gate was not satisfied by substituting this number.** The handover
+doc's Task 5 entry requires "Task 3 reports the genuine `NON_ATOMIC` frequency" over the
+now-extracted, frozen corpus before Task 5 starts. That measurement was scoped (script,
+manual-review split, cost/call-count estimate) but deliberately **not run** -- see next
+paragraph for why -- so the gate remains open, not waived. `1/34` closing it would be the
+substitution the handover explicitly guards against.
+
+**Why the frozen 805 requirements were not scanned before the freeze.** Running the Quality
+Checker over the held-out evaluation corpus specifically to decide whether to build a
+feature is using evaluation data to shape the system under evaluation -- the same
+contamination risk `docs/EVALUATION_PROTOCOL.md`'s freeze boundary exists to prevent, and
+the handover doc's own ground rules say to keep system-change decisions and evaluation
+data apart. A feature-existence decision made by peeking at the frozen set first would
+weaken the study regardless of which way the number came out.
+
+**Reasons the decision does not rest on the frequency number alone:**
+
+- Runtime splitting is substantial machinery for what design-stage evidence suggests is a
+  rare case: new schema fields (`RefinerAnswer` fragments), a provenance/origin-id scheme,
+  requirement-identity changes (`_known_requirement_ids`, `_test_generator_extra_check`),
+  resume-position logic for a requirement set whose membership changes mid-run, and
+  dependency-link re-derivation -- five distinct places to get wrong for one outcome type.
+- Automatic/model-generated splitting stays rejected on its own terms, independent of
+  frequency: a model deciding what counts as one behaviour can silently omit, duplicate, or
+  alter required behaviour with no trace (the case-2 failure mode recorded earlier in this
+  Known Limitation). Nothing about the frequency count changes that risk.
+- Using the frozen corpus itself to justify building the feature would be measuring the
+  wrong thing at the wrong time, independent of what the measurement would show.
+
+**Current practical workaround: manual preprocessing, before the pipeline runs -- an
+operational option outside this thesis evaluation, not something applied to the frozen
+evaluation inputs.** A human identifies a genuinely non-atomic requirement in the source
+SRS and splits it there, with each fragment entering the pipeline as its own requirement.
+Original-to-fragment traceability is kept as an operator-maintained external sidecar or
+source-document record -- not invented or inferred by any pipeline stage, and not a field
+the run schema provides: `RunMetadata`/`RequirementRunRecord` have no
+original-to-fragment mapping today. This is the same "split happens where the document is
+authored" conclusion reached on 2026-08-14, restated as the standing default rather than a
+rejected alternative.
+
+**This workaround must not touch the frozen 805-requirement evaluation subset.** Splitting
+a requirement there after the freeze changes requirement-set membership and every
+per-requirement denominator computed against it -- the same contamination this section
+already rejects scanning for. During the evaluation run itself, a genuine `NON_ATOMIC`
+case is left as-is and reported as a documented limitation of that run's results, not
+worked around.
+
+**Remaining research gap, recorded as future work, not scheduled.** Provenance-preserving
+human decomposition -- an operator-driven split that the pipeline records and traces
+end-to-end (the S4 shape proposed above), rather than one done invisibly before the run
+starts -- remains a real, documented gap. Building it needs: (1) a genuine-frequency
+measurement taken *after* the evaluation freeze closes, over the frozen corpus, without
+that measurement feeding back into system design; and (2) the outcome-axis question (new
+`RunOutcome` member vs. `cap_reason` reuse) already flagged above as unresolved. Revisit
+after the evaluation phase, not before.
+
 ### Declined, with the measurement behind each
 
 These are not deferred on cost or scope. Each was measured, and the measurement is the
