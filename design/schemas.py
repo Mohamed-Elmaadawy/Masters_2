@@ -1183,6 +1183,19 @@ class RequirementRunRecord(BaseModel):
         description="Why the human chose to generate anyway / stop at the revision cap",
     )
     classification: Optional[Classification] = None
+    # The operator's own system-type label, captured for comparison against
+    # classification.system_type -- the Classifier's accuracy has had n=0 since no human
+    # label has ever been collected (design/DESIGN_NOTES.md, "System changes to make
+    # before the evaluation freeze", S2). Deliberately NOT reconciled with
+    # `classification`: no validator requires agreement, because disagreement here is
+    # the measurement, not a bug. Provenance is the two field names themselves -- this
+    # one is always operator-supplied (set out-of-band by
+    # orchestrator/cli.py's `label-system-type` subcommand, never by a stage fn),
+    # `classification.system_type` is always the Classifier's own stage output -- rather
+    # than a separate "who set this" marker, per Known Limitation 9's discussion of this
+    # capture. This is a RECORD, not an override: nothing downstream reads it, and it
+    # cannot change what the pipeline already decided.
+    operator_system_type: Optional[SystemType] = None
     # The refinement trajectory, in order: round 1 checks the original text, each
     # subsequent round checks the previous round's rewrite. Replaces the old parallel
     # quality_reports / refiner_turns / refiner_answers lists (see DESIGN_NOTES.md).

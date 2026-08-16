@@ -1,0 +1,490 @@
+{
+  "doc_id": "dalpiaz-17",
+  "requirements": [
+    {
+      "id": "DALPIAZ-17-0001",
+      "text": "As a site member, I want to describe myself on my own page in a semi-structured way, so that others can learn about me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0002",
+      "text": "As a site member, I want to fill out an application to become a Certified Scrum Practitioner, so that I can earn that designation.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0003",
+      "text": "As a Practitioner, I want to include additional details about me in my profile page, so that I can showcase my experience.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0004",
+      "text": "As a site member, I want to fill out an application to become a Certified Scrum Trainer, so that I can teach CSM and CSPO courses and certify others.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0005",
+      "text": "As a Trainer, I want to include additional details in my profile page about me, so that others can learn about me and decide if I am the right trainer for them.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0006",
+      "text": "As a Practitioner, I want to write an article for the site with a small graphic shown with the article showing my CSP or CST status, so that others know my certifications when reading.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0007",
+      "text": "As a trainer, I want to list my upcoming classes in my profile and include a link to a detailed page about each, so that prospective attendees can find my courses.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0008",
+      "text": "As a site member, I want to view the profiles of other members, so that I can find others I might want to connect with.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0009",
+      "text": "As a site member, I want to search for profiles based on a few fields, so that I can find others I might want to connect with.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0010",
+      "text": "As a site member, I want to mark my profile as private in which case only my name will appear, so that no one can learn things about me I don't want shared.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0011",
+      "text": "As a site member, I want to mark my email address as private even if the rest of my profile is not, so that no one can contact me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0012",
+      "text": "As a site member, I want to send an email to any member via a form, so that we can connect.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0013",
+      "text": "As a site administrator, I want to read practicing and training applications and approve or reject them, so that only applicants who qualify can become CSPs or CSTs.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0014",
+      "text": "As a site administrator, I want to edit any site member profile, so that I can correct problems for members.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0015",
+      "text": "As a site visitor, I want to read current news on the home page, so that I stay current on agile news.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0016",
+      "text": "As a site visitor, I want to access old news that is no longer on the home page, so that I can access things I remember from the past or that others mention to me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0017",
+      "text": "As a site visitor, I want to email news items to the editor, so that they can be considered for publication.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0018",
+      "text": "As a site editor, I want to set the following dates on a news item: Start Publishing Date, Old News Date, Stop Publishing Date, so that articles are published on and through appropriate dates.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0019",
+      "text": "As a site member, I want to subscribe to an RSS feed of news, so that I remain sufficiently and easily informed.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0020",
+      "text": "As a site editor, I want to assign priority numbers to news items, so that I can indicate which articles I want featured most prominently on the site.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0021",
+      "text": "As a site visitor, I want to see a list of all upcoming Certification Courses and can page through them if there are a lot, so that I can choose the best course for me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0022",
+      "text": "As a site visitor, I want to see a list of all upcoming Other Courses and can page through them if necessary, so that I can choose the best course for me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0023",
+      "text": "As a site visitor, I want to see a list of all upcoming Events, so that I can decide if I want to attend any.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0024",
+      "text": "As a trainer, I want to create a new course or event, so that site visitors can see it.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0025",
+      "text": "As a trainer, I want to create an Other Course or Event I am charged a listing fee for that activity, so that I don't list events I don't really intend to hold.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0026",
+      "text": "As a site administrator, I want to create an Other Course or Event that is not charged a listing fee, so that the Scrum Alliance doesn't charge itself for Scrum Gatherings that it puts on.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0027",
+      "text": "As a site administrator, I want to set the listing fee per Other Course or Event, so that we have flexibility on what to charge in the future.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0028",
+      "text": "As a trainer, I want to update one of my existing courses or events, so that it reflects accurate information.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0029",
+      "text": "As a trainer, I want to delete one of my courses or events, so that it's no longer listed if I cancel for some reason.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0030",
+      "text": "As a trainer, I want to copy one of my courses or events, so that I can create a new one.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0031",
+      "text": "As a site admin, I want to delete any course or event, so that I can remove things that will no longer occur.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0032",
+      "text": "As a site editor, I want to update any course or event, so that I can fix things the original author hasn't.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0033",
+      "text": "As a trainer, I want to turn a course into an event or an event into a course, so that I can correctly classify anything that was entered incorrectly.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0034",
+      "text": "As a site visitor, I want to have an advanced search option that lets me fill in a form of search criteria, so that I can quickly find what I am looking for.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0035",
+      "text": "As a site visitor, I want to view a course I can click on the trainer's name and be taken to the trainer's profile, so that I can read more about a trainer before registering for a course.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0036",
+      "text": "As a site visitor, I want to subscribe to an RSS feed of upcoming courses and events, so that I am up to day without having to visit the site.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0037",
+      "text": "As a site visitor, I want to read FAQs, so that I can get quick answers.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0038",
+      "text": "As a site editor, I want to maintain a FAQ section, so that support gets fewer easily answered questions.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0039",
+      "text": "As a site visitor, I want to do a full-text search of the FAQs, so that I can find an answer quickly.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0040",
+      "text": "As a site member, I want to download the latest training material and methodology PDFs, so that I have them.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0041",
+      "text": "As a visitor, I want to download presentations, PDFs, etc. on Scrum, so that I can learn from them or use them.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0042",
+      "text": "As a site member, I want to scroll through a listing of jobs, so that I can see if there any I am interested in.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0043",
+      "text": "As a recruiter, I want to post a help wanted ad, so that I can attract candidates.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0044",
+      "text": "As a site admin, I want to approve each help wanted ad before it gets to the site, so that we're sure of the quality of jobs being listed.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0045",
+      "text": "As a site admin, I want to be emailed whenever a job is submitted, so that I am aware of it and can decide if I want to post it.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0046",
+      "text": "As a site member, I want to subscribe to an RSS feed of jobs available, so that I can read them without visiting the site.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0047",
+      "text": "As a site admin, I want to edit and delete help wanted ads, so that I can correct small problems or make sure each ad complies with site guidelines.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0048",
+      "text": "As a site admin, I want to stop publishing jobs on the site 30 days after being posted, so that jobs that may have been filled aren't still listed when the hiring party forgets to come back and delete the ad.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0049",
+      "text": "As a recruiter, I want to be able to extend an ad for another 30 days by visiting the site and updating the posting, so that my ad remains active.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0050",
+      "text": "As an advertiser, I want to be emailed a reminder seven day before an ad is about to expire, so that I can go extend the ad.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0051",
+      "text": "As a site visitor, I want to read a new article on the front page about once a week, so that I am up on all the latest happenings.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0052",
+      "text": "As the site editor, I want to include a teaser with each article, so that site visitors can decide if they want to read the rest.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0053",
+      "text": "As a site member who has read a teaser on the front page, I want to read the entire article so that I can finish articles that appeal to me.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0054",
+      "text": "As the site editor, I want to add an article to the site, so that the site has plenty of content.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0055",
+      "text": "As a site editor, I want to set start publishing dates, old article date, and stop publishing dates for articles, so that articles appear only during appropriate periods.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0056",
+      "text": "As a site editor, I want to be able to designate whether or not an ever makes the home page, so that the best content is featured most prominently.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0057",
+      "text": "As the site editor, I want to have pretty good control over how the article, so that articles are visually appealing.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0058",
+      "text": "As a site visitor, I want to click the link from the article teaser to take me directly to the body of the article. not to another teaser setup, so that I can easily finish the article.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0059",
+      "text": "As a site editor, I want to be able to indicate whether an article is publicly available or for members only, so that visitors are incentivized to become members.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0060",
+      "text": "As a site visitor, I want to be able to read some of your articles, so that I can learn without first joining the site.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0061",
+      "text": "As a site member, I want to have full access to all articles, so that there is a benefit to being a member.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0062",
+      "text": "As a site visitor, I want to do a full-text search of article body, title, and author name, so that I can find what I want.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0063",
+      "text": "As a site visitor, I want to subscribe to an RSS feed of articles, so that I can read them without visiting the site.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0064",
+      "text": "As a site visitor, I want to post comments about articles, so that others can read them.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0065",
+      "text": "As a site editor, I want to have a prominent area on the home page where I can put special announcements not necessarily news or articles, so that I can give them additional exposure.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0066",
+      "text": "As a site editor, I want to have some flexibility as to where things appear, so that I can accommodate different types of content.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0067",
+      "text": "As a trainer, I want to see the upcoming courses are what I want visitors to notice, so that they register and there's a benefit to my membership.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0068",
+      "text": "As a site visitor, I want to see new content when I come to the site, so that I come back more often.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0069",
+      "text": "As a site visitor, I want to have articles that interest me and are easy to get to, so that I come to the site for my agile news and learning.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0070",
+      "text": "As a site visitor, I want to know as soon as I visit what on earth Scrum is and why it needs an alliance, so that I don't bounce immediately oﬀ the page.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0071",
+      "text": "As a site visitor, I want to know as I glance around the home page what on earth a CSM is and why I'd want to be one, so that I read more.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0072",
+      "text": "As a site visitor, I want to be able to get back to the home page quickly and easily, so that I don't get lost navigating.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0073",
+      "text": "As a site visitor, I want to see a list of the most popular items on the site, so that I am most likely to read the most important or best content.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0074",
+      "text": "As a trainer, I want to be assured that no one can submit the same answers multiple time and skew my results, so that my ratings are accurate.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0075",
+      "text": "As a trainer, I want to be notified about the results of surveys about my classes, so that I can read them.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0076",
+      "text": "As a site admin, I want to see the results for each trainer and averages for the class, so that I can identify any outliers or possible problems.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0077",
+      "text": "As a site visitor, I want to see a trainer's rating, so that I choose a course from an appropriate trainer.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0078",
+      "text": "As a trainer, I want to show my rating up on my profile page, so that site visitors can choose wisely.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0079",
+      "text": "As a site visitor, I want to view a section of the website that teaches me the basics of what Scrum is, so that I can learn that quickly.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0080",
+      "text": "As a site editor, I want to create the content of the What Is Scrum section, so that it's there for visitors.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0081",
+      "text": "As a site visitor, I want to view lists on the site of all Certified Scrum Masters, Practitioners, Trainers, and Certified Scrum Product Owners.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0082",
+      "text": "As a CSM, I want to have my name listed in the registry without becoming a member of the site, so that employers or others can verify my certification.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0083",
+      "text": "As a trainer, I want to load an Excel file into the site, so that the course participants are added to the Scrum Alliance records.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0084",
+      "text": "As a site admin, I want to view all classes in a pending state, so that I can approve any that need to be approved.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0085",
+      "text": "As a site admin, I want to move people in a trainer's class from a pending state to the registry once I have received proof of payment from the trainer.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0086",
+      "text": "As a CSM, I want to be sent an email welcoming me to the Scrum Alliance and with instructions to register or activate my membership once my name has been loaded to the registry.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0087",
+      "text": "As a site editor, I want to edit the content of the email automatically sent to new Certified Scrum Masters and Product Owners, so that I don't need to involve a programmer on simple email edits.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0088",
+      "text": "As a company, I want to join the Scrum Alliance by paying a corporate membership fee, so that I can show the company's support of Scrum.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0089",
+      "text": "As a corporatesponsor, I want to display my logo on a corporate sponsors page, so that others see the company's support of Scrum.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0090",
+      "text": "As a corporatesponsor, I want to make my logo randomly appear on the home page, so that others see the company's support of Scrum.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0091",
+      "text": "As a CSM, I want to be charged a fee once I am approved for Practitioner status, so that my certification status can be activated.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0092",
+      "text": "As a CST, I want to pay an annual fee, so that my CST status is active.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0093",
+      "text": "As a site administrator, I want to set the annual fees for members, Practitioners and Trainers, so that fees can be set without involving a programmer.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0094",
+      "text": "As a member, I want to receive a reminder and a link, so that I can renew my membership.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0095",
+      "text": "As a member, I want to have the system email me a new password or a password reminder since i have short-term memory problems.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0096",
+      "text": "As a trainer, I want to read information of relevance only to trainers, so that the Scrum Alliance can share information with me easily.",
+      "source_doc_id": "dalpiaz-17"
+    },
+    {
+      "id": "DALPIAZ-17-0097",
+      "text": "As a site editor, I want to post information in a trainers-only section, so that only trainers see it.",
+      "source_doc_id": "dalpiaz-17"
+    }
+  ]
+}

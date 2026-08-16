@@ -1,0 +1,68 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-16T07:14:12+00:00",
+  "input_file": "datasets\\promise-nfr\\promise_nfr.arff",
+  "documents": [
+    {
+      "doc_id": "promise-1",
+      "requirements": 28
+    },
+    {
+      "doc_id": "promise-2",
+      "requirements": 40
+    },
+    {
+      "doc_id": "promise-3",
+      "requirements": 80
+    },
+    {
+      "doc_id": "promise-4",
+      "requirements": 55
+    },
+    {
+      "doc_id": "promise-5",
+      "requirements": 73
+    },
+    {
+      "doc_id": "promise-6",
+      "requirements": 74
+    },
+    {
+      "doc_id": "promise-7",
+      "requirements": 23
+    },
+    {
+      "doc_id": "promise-8",
+      "requirements": 93
+    },
+    {
+      "doc_id": "promise-9",
+      "requirements": 24
+    },
+    {
+      "doc_id": "promise-10",
+      "requirements": 53
+    },
+    {
+      "doc_id": "promise-11",
+      "requirements": 13
+    },
+    {
+      "doc_id": "promise-12",
+      "requirements": 22
+    },
+    {
+      "doc_id": "promise-13",
+      "requirements": 19
+    },
+    {
+      "doc_id": "promise-14",
+      "requirements": 16
+    },
+    {
+      "doc_id": "promise-15",
+      "requirements": 12
+    }
+  ],
+  "total_requirements": 625
+}

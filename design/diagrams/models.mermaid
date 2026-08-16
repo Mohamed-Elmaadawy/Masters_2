@@ -219,6 +219,7 @@ classDiagram
         +list~StageError~ errors
         +Optional~str~ cap_reason
         +Optional~Classification~ classification
+        +Optional~SystemType~ operator_system_type
         +list~RefinementRound~ rounds
         +Optional~TestStrategy~ test_strategy
         +Optional~TestPlan~ test_plan
@@ -285,6 +286,7 @@ classDiagram
     RequirementRunRecord "1" *-- TestPlan : test_plan
     RequirementRunRecord "1" *-- TestStrategy : test_strategy
     RequirementRunRecord "1" --> RunOutcome : outcome
+    RequirementRunRecord "1" --> SystemType : operator_system_type
     RequirementRunRecord "1..*" *-- RefinementRound : rounds
     RequirementRunRecord "1..*" *-- StageAttempt : attempts
     RequirementRunRecord "1..*" *-- StageError : errors

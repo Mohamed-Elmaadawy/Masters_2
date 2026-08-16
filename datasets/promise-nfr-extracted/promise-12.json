@@ -1,0 +1,115 @@
+{
+  "doc_id": "promise-12",
+  "requirements": [
+    {
+      "id": "PROMISE-12-0001",
+      "text": "The product shall provide GUI based Monitoring Services.System Administrators shall monitor message exchanges will predict and determine problems and will also provide internal and external support.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0002",
+      "text": "The product shall comply with City of Chicago Application Development Guide Framework.Application Development Framework will provide structured Graphical User Interface.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0003",
+      "text": "The product shall provide Monitoring Services.The product shall be easy for System Administrators and DBAs to use after two weeks of usage.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0004",
+      "text": "The product shall provide Error Tracking Services.The product shall help the System Administrators and DBAs to resolve transaction errors 99% of the time.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0005",
+      "text": "The product shall provide Portals.The product shall help System Administrators to analyze the transactions with ad-hoc reporting and KPIs (Key Performance Indicators)",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0006",
+      "text": "The product shall provide Asynchronous Messaging.The product shall provide asynchronous messaging to enable parallel processing and reduce the overhead in communications",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0007",
+      "text": "The product shall provide Multi-threading and Load Balancing.The product shall provide multi-threading technology as well as load balancing to overcome data load spikes and traffic.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0008",
+      "text": "The product shall process messages within 2 seconds.The product shall have a maximum message processing time of 2 seconds",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0009",
+      "text": "The product shall poll the system for messages every second.The product shall poll the system for new messages at a maximum of every 1 second.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0010",
+      "text": "The product shall provide Dynamic Change Support and Transparent resource addition.The product shall support Transparent Resource addition and Dynamic Change support to provide scalability and avoid service interruptions of more than 1 day.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0011",
+      "text": "The product shall be available 99% of the time. Rationale: To avoid service interruption during busiest customer service response periods. The product shall be available 99.99% of the time for regular business days.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0012",
+      "text": "The product shall be robust.The product shall have fault avoidance based on standards adoption.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0013",
+      "text": "The product shall be robust with fault tolerance.The product shall have fault tolerance by using recovery technique compensatory transaction and routing around failures.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0014",
+      "text": "The product shall be able to process all transactions.The product shall process minimum of 1 million transactions per year.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0015",
+      "text": "The product shall be platform independent.The product shall enable access to any type of development environment and platform.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0016",
+      "text": "The product shall interface CSR and Datastream.The product shall exchange messages between CSR and EAM on a real time basis without any direct interfaces between two systems.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0017",
+      "text": ": The product shall continue to operate during upgrade  change or new resource addition.The product shall be able to continue to operate with no interruption in service due to new resource additions.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0018",
+      "text": "The product shall be updated on a regular basis.The product will have a new major feature introduced every six months and quarterly maintenance releases every six months.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0019",
+      "text": "The product shall operate with every platform.The product shall accommodate any new technology without any change in its architecture.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0020",
+      "text": "The product shall have security.The product shall provide authentication  and authorization.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0021",
+      "text": "The product shall information Security. The product shall enable privacy by encryption WS-Security and Integrity Checking.",
+      "source_doc_id": "promise-12"
+    },
+    {
+      "id": "PROMISE-12-0022",
+      "text": "The product shall have audit capabilities.The product shall store messages for a minimum of one year for audit and transaction tracking purposes.",
+      "source_doc_id": "promise-12"
+    }
+  ]
+}

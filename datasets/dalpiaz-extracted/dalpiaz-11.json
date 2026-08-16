@@ -1,0 +1,285 @@
+{
+  "doc_id": "dalpiaz-11",
+  "requirements": [
+    {
+      "id": "DALPIAZ-11-0001",
+      "text": "As a researcher, I want to be able to view a finding aid for a particular collection/Resource.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0002",
+      "text": "As an Application Administrator, I want to be able to reset a User's password for them.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0003",
+      "text": "As a user, I want backend changes for managing enum lists.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0004",
+      "text": "As an Archivist, I want to import EAD files that were exported by Archon.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0005",
+      "text": "As an Archivist, I want to assign a component unique identifier to a Resource Component.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0006",
+      "text": "As a User , I want to authenticate using LDAP.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0007",
+      "text": "As a migration specialist, I want to store the AT or Archon source record ids in each ASpace record to support data migration integrity testing.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0008",
+      "text": "As an Archivist, I want to associate a standard identifier string with a Subject heading.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0009",
+      "text": "As an Archivist, I want to be able to understand that an error occurred during import and why it might have occurred.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0010",
+      "text": "As an Archivist, I want to import Accessions data in CSV.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0011",
+      "text": "As an Archivist, I want to import Resources from MARCXML records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0012",
+      "text": "As a user, I want frontend changes for managing enum lists.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0013",
+      "text": "As an Authenticated User, I want to get access to links to contextual help.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0014",
+      "text": "As an Archivist, I want to see Dates and Extents displayed in both the read and edit views for Accessions and/or Resources before the list of Subjects.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0015",
+      "text": "As an Archivist, I want to import Agent information from EAC-CPF records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0016",
+      "text": "As a user, I want backend changes to support loading enum value lists from the database.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0017",
+      "text": "As a user, I want backend changes for bulk updating one enum value to another.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0018",
+      "text": "As an Archivist, I want to export agent records as EAC-CPF.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0019",
+      "text": "As an Archivist, I want to import only Agent and Subject information from MARCXML records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0020",
+      "text": "As an Application Administrator, I want to assign Users to an Advanced Data Entry and ensure that the appropriate permissions are enforced.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0021",
+      "text": "As an Application Administrator , I want to be able to configure the help center URL and topic mappings.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0022",
+      "text": "As a user, I want to add additional properties for repositories.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0023",
+      "text": "As an Archivist, I want to add Notes to other record types.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0024",
+      "text": "As an Administrator, I want to create a new User account for someone else.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0025",
+      "text": "As an Archivist, I want to add administrative data about the archival description and finding aid-related data to a top-level Resource.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0026",
+      "text": "As an Archivist, I want to assign a Level of description to a Resource or Resource Component and optionally specify another value if the Level is not in a predefined list.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0027",
+      "text": "As a developer, I want to use a configuration that is not prepackaged within a built version of application.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0028",
+      "text": "As an Archivist, I want to import EAD files that were exported by the Archivists' Toolkit.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0029",
+      "text": "As a systems administrator, I want to be able to control the location of the demo database and I want it to be backed up.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0030",
+      "text": "As an archivist, I want to search within a repository for resource and accession and digital object records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0031",
+      "text": "As an archivist, I want to create and edit a Collection Management subrecord.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0032",
+      "text": "As an Archivist, I want to rearrange the Resource and/or Digital Object hierarchy using keyboard-based navigation.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0033",
+      "text": "As an Archivist, I want to rearrange the resource description hierarchy by dragging an archival object to a different position in the hierarchy.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0034",
+      "text": "As an Archivist, I would like to indicate an Agent is either the creator or source or subject of an Accession or Resource or Resource Component.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0035",
+      "text": "As an Archivist, I want to export a description as EAD.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0036",
+      "text": "As an Archivist, I want to create and edit Event records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0037",
+      "text": "As an Archivist, I want to manage Digital Objects.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0038",
+      "text": "As an Archivist, I want to associate an Instance with a Resource and/or Resource Component.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0039",
+      "text": "As an Archivist, I don't want to inadvertently overwrite someone else's changes to a record that I'm editing.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0040",
+      "text": "As an Archivist, I want to create and edit Rights Management statements.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0041",
+      "text": "As an Archivist, I want to upload an EAD for import from within the frontend application.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0042",
+      "text": "As an Archivist, I want to import EAD data.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0043",
+      "text": "As a Repository Manager , I want to create, update and delete archival descriptions in my repository.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0044",
+      "text": "As a Developer , I want to develop a custom importer.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0045",
+      "text": "As a Basic Data Entry user , I want to create and update basic archival description information.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0046",
+      "text": "As a Repository Manager , I want to create, update and delete any records in my repository.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0047",
+      "text": "As a ReadOnly user , I want to view archival descriptions in my repository.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0048",
+      "text": "As an System Administrator, I want to declare that a user is has the Repository Manager role for a given Repository.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0049",
+      "text": "As an Archivist, I want to specify the Source for a Name Form of an Agent and add new Sources and edit existing Sources.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0050",
+      "text": "As an Archivist, I want to create and edit Agent records.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0051",
+      "text": "As an Archivist, I want to create and edit a Resource record.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0052",
+      "text": "As an Archivist, I want to associate a Subject record with a Resource description.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0053",
+      "text": "As a User, I want to authenticate locally.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0054",
+      "text": "As User, I want to be able to log in.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0055",
+      "text": "As an Archivist, I want to associate an Instance with a Container.",
+      "source_doc_id": "dalpiaz-11"
+    },
+    {
+      "id": "DALPIAZ-11-0056",
+      "text": "As an Archivist, I want to assign Location information to a Container.",
+      "source_doc_id": "dalpiaz-11"
+    }
+  ]
+}

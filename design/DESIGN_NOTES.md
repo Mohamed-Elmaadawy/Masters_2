@@ -3815,3 +3815,420 @@ back); raises the *last* key's failure when every key is exhausted; sticky-index
 (second call starts at the key that succeeded last, first key not retried); empty adapter
 list rejected in `__init__`; `from_env` comma-parsing (whitespace-trimmed, trailing comma
 ignored) and its missing/all-blank-var `RuntimeError` cases.
+
+## System changes to make before the evaluation freeze (2026-08-15)
+
+**Scope of this entry: changes to the system under test only.** How the system will be
+measured -- answer policy, baseline arms, repeat runs, the freeze record -- is deliberately
+*not* here. It lives in `docs/EVALUATION_PROTOCOL.md`. The two are kept apart on purpose:
+everything in this entry must be complete and frozen *before* anything in that document
+executes, and mixing them makes it impossible to show that the system was not tuned during
+evaluation.
+
+**What changed, and it changes the filter.** A full re-evaluation is planned from scratch.
+Every deferral in this section justified by *"it changes the system under test
+mid-evaluation and would invalidate prior runs"* no longer holds -- the prior runs are
+being superseded on purpose, so the freeze point moves forward to whenever the work below
+lands. That argument is retired as of this entry; do not cite it again without checking
+where the freeze point now sits.
+
+The replacement filter, applied to every item below: **can this be added after the frozen
+run without re-spending the API budget and the operator's hand-answering effort?** If no,
+it is built now. If yes, it waits.
+
+### S1 -- Extraction for the reserved corpora
+
+`orchestrator/extract_document.py` reads only the already-JSON-shaped
+`datasets/requirements_dataset.json`. The evaluation corpora are not in that shape: PURE's
+79 documents (`datasets/pure-full/`) are PDF/DOC/HTML, and Dalpiaz, PROMISE NFR and Riaz
+each have their own (`datasets/EVALUATION_DATASETS.md`). Nothing can be evaluated until
+requirements come out of those as `RequirementSet`.
+
+**This does not change pipeline behaviour, but it is frozen at the same point and for the
+same reason:** if extraction changes, the inputs change, and every result computed before
+the change becomes non-comparable.
+
+**One methodological choice inside it that must be recorded here, not decided silently:**
+how requirement boundaries are determined in unstructured documents. That is a decision
+with a threat-to-validity attached, not an implementation detail.
+
+**Fold in the corruption scan.** Known Limitation 5 records `1998 - themas.xml` having
+`<=` flattened to `=` during PDF-to-XML extraction -- `LO = T_LT` is a corrupted
+inequality, not domain notation. The 18-file annotated subset was scanned and the damage
+was confined to that one document; the 79-document corpus has never been parsed by
+anything in this project, so nothing is known there. Scan for the same three signatures
+(`X = Y = Z` comparison chains, `T_LT`-shaped underscore tokens, surviving Unicode math)
+and report per document. Do not repair silently.
+
+**Exclusions carried forward:** `1998 - themas.xml` and `2007-ertms.xml` are marked spent
+for design purposes and must not appear in the evaluation subset.
+
+### S2 -- Capture the operator's system-type label alongside the model's
+
+The Classifier's accuracy currently has **n=0**, because no human label has ever been
+collected. It cannot be reconstructed after a run -- this is a capture decision, and
+missing it means the Classifier's contribution stays unmeasurable for the whole thesis.
+
+Record both labels per requirement, with provenance for who set each. Per Known
+Limitation 2, the audit trail is the only real mitigation this design has, and it degrades
+if provenance is implicit.
+
+**Constraint, from the discussion recorded under Known Limitation 9** ("Should the human
+confirm or override the system type?"): this must not silently become a third blocking
+interaction point in `HumanFns` unless that is separately justified. Capturing a label for
+comparison is not the same as letting the human override the pipeline's label, and only
+the first is being adopted here.
+
+### S3 -- Phase the pipeline
+
+Adopts **option B** under Known Limitation 7, not the advisory post-pass (option A).
+
+Today `run_document_stages` runs the Consistency Checker and Dependency Mapper once, on
+the original text, and `run_requirement` computes `relevant_conflicts` /
+`relevant_dependencies` once from that report and holds them constant through every
+refinement round and into strategy selection and test generation. A rewrite that
+introduces a new conflict or dependency is never seen. This was observed live:
+`PURE-THEMAS-R6-P` was corrected by the operator, the Rewriter applied the fix, and the
+Quality Checker flagged `inconsistent` again in the next round from the stale report --
+the loop terminated only because the operator set `user_confirms_resolved`.
+
+**Target shape:** pass A classifies, quality-checks and refines every requirement;
+document-level analysis re-runs on the refined set; pass B does strategy selection and
+test generation from the fresh reports.
+
+**Four constraints, each one a place this goes wrong:**
+
+1. **Keep both generations of reports -- do not overwrite.** The diff between the initial
+   and final consistency/dependency picture is the frequency number Known Limitation 7 has
+   been asking for. Overwriting destroys a result.
+2. **Update `orchestrator/test_harness.py::test_resume_positions` first.** That executable
+   spec exists precisely because the resume spec drifted once before. Change the test,
+   watch it fail, then make it pass.
+3. **Model the second analysis as a distinct document-stage phase, not a re-run of the
+   first.** The moment a "this analysis is stale, redo it" state is introduced,
+   `resume_document`'s position logic and the terminal `DocumentOutcome` semantics both
+   get complicated. A second phase keeps both simple, and is the reason option C (re-run
+   after every rewrite) stays rejected.
+4. **A cycle found by the second analysis is reported, not routed.**
+   `IssueCategory.CIRCULAR_DEPENDENCY` routes to the Refiner, but refinement is finished by
+   then; routing backwards re-opens a completed phase. Record it as a document-level
+   finding and stop.
+
+**Pass A's inputs are unchanged** -- it still receives the original analysis. Only what
+strategy selection and test generation see is different. Smallest blast radius that still
+fixes the thing.
+
+**Why option B and not option A.** Asked "does your consistency analysis describe the
+refined requirements or the original ones?", the honest answer today is "the original."
+Running the evaluation on the current shape bakes that into every result permanently. The
+post-pass detects; phasing fixes. Option A remains a reasonable fallback if S3 proves
+harder than expected -- it is one extra call per document and still produces the frequency
+number.
+
+### S4 -- Human-supplied fragments for `NON_ATOMIC`
+
+Resolves Known Limitation 8. **Build after S1 supplies a frequency count and after S3 has
+landed.**
+
+**S3 is what dissolves the blocker.** Known Limitation 8 records that a split is not a
+rewrite because it changes requirement-set membership, so both document-level reports
+describe a document that no longer exists. Once S3 re-runs that analysis after
+refinement, that objection is gone -- the second analysis runs on the post-split set. S3
+and S4 are one fix; S4 is only affordable because S3 is happening.
+
+**Proposed shape** -- field names to be confirmed against `design/schemas.py`, not
+assumed:
+
+- The Refiner never splits. The operator may answer a `NON_ATOMIC` question with the
+  split itself: an optional list of fragment texts on `RefinerAnswer`.
+- The requirement terminates with an outcome meaning *split*, distinct from failure. A
+  dedicated `RunOutcome` member is preferred over the earlier proposal of reusing
+  `CAP_STOPPED` with a `cap_reason`, because a split is a success and reporting it as a
+  cap corrupts the outcome counts.
+
+  **This must answer an objection already on record before it is adopted.**
+  `DocumentOutcome`'s own comments reject `HUMAN_OVERRIDE` as a `RunOutcome` member on the
+  grounds that it would be *"a second, independent axis"* -- and "was this requirement
+  split?" is arguably that same shape, orthogonal to whether the requirement converged.
+  That is very likely why the earlier proposal reached for `CAP_STOPPED` plus a reason.
+  Either show why the objection does not apply here (the argument available: a split
+  *terminates* the requirement, so it is on the same axis as `COMPLETED`/`CAP_STOPPED`,
+  unlike an override which annotates a run that continues) or concede it and use the
+  reason-string form. Do not adopt a new member without settling this -- the precedent is
+  explicit and a reviewer of this file will find it.
+
+  Whichever is chosen, `TERMINAL_OUTCOMES` is a `frozenset` that the `_OutcomeRule` table
+  keys off, so a new member must be added there deliberately, with its own
+  required/forbidden field rule. It will not inherit sensible defaults.
+- Between pass A and the second document analysis, the orchestrator materialises
+  fragments with derived ids (`REQ-7.1`, `REQ-7.2`, ...), each recording its origin
+  requirement.
+- Fragments re-enter pass A. **A fragment cannot itself be split** -- one generation only,
+  which is what makes this terminate.
+- `_test_generator_extra_check`'s `known_requirement_ids` extends to derived ids; the
+  origin field preserves traceability back to the requirement as written in the source
+  document.
+- Dependency links naming the original id are resolved by **re-derivation** in the second
+  analysis, not by patching. This is the part that only works because of S3.
+
+**Why this is the simple option.** No model invents anything, no new stage, no new LLM
+call, no similarity heuristic, no accuracy evaluation of its own. The silent-drop failure
+mode (Known Limitation 8, case 2 -- the model returns one clean behaviour and discards the
+others, passing the next check with no trace) disappears entirely, because the operator
+enumerates the fragments rather than the model choosing which to keep.
+
+It also closes the human-channel gap recorded under Known Limitation 8: "this flag is
+correct and cannot be fixed at this level" was previously inexpressible, since
+`user_confirms_resolved: True` means resolved (false here) and `False` re-asks until the
+cap. Supplying the split *is* that answer.
+
+**Costs, stated:**
+
+- Operator effort rises -- fragment texts are typed by hand.
+- Any per-requirement rate now needs an explicit denominator, before or after splitting.
+  State it wherever a rate is reported. (This is a reporting obligation and is repeated in
+  `docs/EVALUATION_PROTOCOL.md`.)
+- One more human decision to carry in the record, including who made it (see S2).
+
+**Read the frequency count carefully before building.** Exactly one genuine `NON_ATOMIC`
+case has appeared in 34 requirements (`LUITEL-R7`), and the detector over-flags -- 2 of 5
+flags in the 2026-08-13 suite were conjunction-splits rather than genuine bundling. Raw
+counts will overstate the need. Since S1 precedes everything anyway, the number arrives
+before it is needed; there is no reason to build machinery on n=1.
+
+### Declined, with the measurement behind each
+
+These are not deferred on cost or scope. Each was measured, and the measurement is the
+reason.
+
+- **Test-case de-duplication** (KL1) -- spanning cases are confirmed reachable
+  (`TC-13-PURE-ERTMS-R7-2`), but an actual duplicate has never been observed, and a
+  false-positive merge silently deletes real coverage. If a number is wanted, emit
+  suspected duplicates as an advisory count and act on nothing.
+- **`refined_text: list[str]` as a general redesign** (KL8) -- superseded by S4, which
+  obtains the same capability from one optional answer field plus the phasing that is
+  happening anyway.
+- **Deterministic undefined-notation pre-pass, and a new `IssueCategory` for it** (KL5) --
+  S9 measured the Quality Checker as *blind* to `LO = T_LT`, not confused by it. There is
+  no wrong flag to correct, and the anchor example turned out to be a corrupted
+  inequality rather than domain notation. Nothing to build.
+- **Hard-real-time / soft `PERFORMANCE` split, and an `EMBEDDED` `SystemType`** (KL3) --
+  `PERFORMANCE` was selected zero times across 34 requirements, including on `LUITEL-R1`
+  where S12's ground truth expected it. A distinction qualifying a technique that is never
+  chosen is unreachable.
+- **Collapsing `SystemType` to `{AI_SYSTEM, OTHER}`** (KL9) -- the 2026-08-13 suite
+  refuted the empirical half: 31 `other`, 2 `mobile`, 1 `ai_system`. The Classifier
+  discriminates. The structural point (three members, one technique pool) stands and is
+  *reported* as a limitation rather than fixed.
+- **Web technique pool** (KL9) -- no web requirements exist in the design corpus, so
+  building it repeats the mistake KL3 stays open for. **Conditional, not closed:** revisit
+  after S1, since PURE holds 79 documents and a web SRS is likely among them.
+- **Pairwise / combinatorial testing** -- deferred, unchanged.
+- **The no-op-rewrite validator, fixes (b) and (c)** (KL10) -- the 2026-08-13 suite traced
+  every one of 38 no-ops to an answer supplying no information. No defect for the rule to
+  catch. Fix (a), *counting* no-ops, is kept and belongs to the protocol document.
+- **Loosening `TestPlan`'s strict "every case covers this requirement" rule** (KL6) --
+  never fired in any run.
+
+**Also conditional on S1:** mobile CT-MAT prompt content, worth doing only if mobile
+requirements survive into the evaluation corpus, and at prompt level rather than in the
+enum unless mobile coverage must be a *reported* metric. Standards-cited
+measurable-property rewrites (the verified `STANDARDS_REFERENCE` table above), worth
+doing only if a model rather than the operator answers Refiner questions -- its purpose
+is to convert the fabrication mode measured in the n=3 answerer pilot into a citation, and
+a human answerer does not exhibit it. Under the protocol's chosen answer policy, it is not
+needed.
+
+## S2 implemented -- operator system-type label, as a run-record field plus a third CLI subcommand (2026-08-15)
+
+S2 above deliberately left the shape open ("decide from the code whether this belongs on
+the classification record, the run record, or the human-interaction protocol"). Resolved
+as follows.
+
+**Field lives on `RequirementRunRecord`, not `Classification`.** `Classification` is a
+pure stage output -- its `system_type` is carried, unmodified, into `TestStrategy` and
+checked there (`_denormalised_fields_agree`). Putting the operator's label inside
+`Classification` itself would blur a model artifact with a human one and risk a future
+validator trying to reconcile them, which is exactly what must not happen: the two labels
+are allowed to disagree, because disagreement is the measurement. `RequirementRunRecord`
+already holds `classification: Optional[Classification]` as one field among the record's
+other provenance data, so `operator_system_type: Optional[SystemType] = None` sits next to
+it as a sibling, not a patch to the stage output.
+
+**Provenance is the two field names, not a third marker.** "Record both labels ... with
+provenance for who set each" does not require a `source` enum: `classification.system_type`
+is unambiguously the Classifier's (it is only ever set inside `run_requirement`'s
+`PipelineStage.CLASSIFIER` branch), and `operator_system_type` is unambiguously the
+operator's (nothing else ever writes it). A separate provenance field would restate what
+the two names already say.
+
+**Capture mechanism: a third CLI subcommand, not a `resume` flag and not a third `HumanFns`
+callable.** Both alternatives were rejected on the same file's own stated contracts:
+
+- A `resume --operator-labels FILE` flag would reopen the exact gap
+  `orchestrator/cli.py`'s module docstring explains `resume` was deliberately closed
+  against: "a resume that accepted a fresh config or input path could point at something
+  that disagrees with what is already on disk." An operator-labels file is precisely that
+  kind of fresh input.
+- A new `HumanFns` field (`label_system_type`, called once per requirement) would be the
+  "third human interaction point" the discussion under Known Limitation 9 explicitly
+  flagged as a real cost, and that document only reasoned about it in the *document-level
+  confirm/override* shape -- which was not adopted. Adding a blocking per-requirement
+  version here, even framed as "just recording," would be adopting a bigger version of the
+  thing that discussion declined.
+
+`python -m orchestrator.cli label-system-type RUN_DIR LABELS.json` (`orchestrator/cli.py`)
+instead reads a JSON `{requirement_id: system_type}` object once, offline -- no adapter, no
+`StageFns`, no `HumanFns` call, so it blocks nothing and calls no LLM. It validates every id
+against the run before writing anything (a typo'd id fails the whole call, nothing written,
+mirroring `retry_document_stage`'s "check everything before spending anything" shape), then
+rewrites each matching `requirements/*.json` file via the existing `write_requirement_run`.
+Prints an immediate agree/disagree count against `classification.system_type` as a
+side-effect of already having both values in hand -- not a new metrics system, just what
+falls out of the loop that writes the label.
+
+Tested: `design/test_schemas.py::test_operator_system_type_capture` (defaults to `None`,
+agreeing and disagreeing values both accepted, no validator between them, round-trips
+through JSON); `orchestrator/test_cli.py`'s four `test_label_system_type_*` cases (records
+the label without touching `classification`, disagreement stored as-is, unknown requirement
+id rejected with nothing written, an invalid `SystemType` string rejected). Suites at 330
+(schemas) and 55 (CLI) after this change.
+
+## S1 in progress -- evaluation-subset freeze, corpus extraction, and what the boundary question actually looks like against real data (2026-08-16)
+
+Working session on S1 (extraction for the reserved corpora). Corrects course partway
+through: the first plan (scope PDF/DOC/HTML/RTF extraction by which formats are cheap to
+parse) was rejected on methodological grounds before any format-specific extractor was
+built, and replaced with the approach below.
+
+**Why the format-first plan was wrong.** Deciding to build PDF+HTML extraction now and
+defer `.doc`/`.rtf` "until needed" means the evaluation subset ends up shaped by which
+formats happen to be easy to parse, not by any property of the documents themselves --
+exactly the kind of selection bias a defensible evaluation cannot carry silently. Corrected
+approach: **freeze which documents are the evaluation subset first, independent of parsing
+difficulty; only build format-specific extraction for documents the frozen subset actually
+needs.**
+
+**The primary PURE evaluation corpus is the already-extracted annotated subset, not
+`pure-full/`.** Of the 18 files in `datasets/requirements-xml/XMLZIPFile/`, exactly 6 carry
+real `<req>` annotations (`tools/extract_pure_xml.py`'s own docstring) -- the other 12 are
+unannotated PURE XML exports, same boundary problem as the 79-doc PDF/DOC/HTML corpus, just
+in an XML container. Of those 6, two (`1998 - themas.xml`, `2007-ertms.xml`) are spent for
+design purposes (`datasets/EVALUATION_DATASETS.md`). The remaining **5 documents -- cctns
+(115), gamma-j (51), eirene-fun-7-2 (583), keepass (32), peering (24): 805 requirements
+total -- are genuinely reserved, already `RequirementSet`-shaped, and already extracted with
+zero inference** (PURE's own annotators decided the boundaries). This is the primary PURE
+evaluation corpus. No new extraction work was needed to reach it -- it already existed in
+`datasets/pure-extracted/`.
+
+**Format-specific extraction for `pure-full/`'s 79 PDF/DOC/HTML/RTF documents is deferred**,
+not built, pending whether the frozen subset ever needs to expand past the 5 above.
+`pure-full/` breaks down as 62 PDF / 13 legacy `.doc` (verified by magic bytes,
+`D0 CF 11 E0...` -- genuine OLE compound files, not renamed `.docx`) / 2 HTML+HTM / 1 RTF.
+**If extraction is built later, do not exclude a document from the selected subset merely
+because its format is harder to parse than another's** -- the same selection-bias argument
+that killed the format-first plan applies retroactively to any later subset decision too.
+
+**The corruption scan (Known Limitation 5's fold-in) is NOT gated on that decision --
+built and run now, over all 79 documents, regardless of extraction scope.** Scanning for
+corruption signatures is diagnostic reporting, not a boundary/extraction decision, so the
+selection-bias argument above does not apply to it.
+`tools/scan_pure_corruption.py` reproduces the exact 2026-08-14 finding when re-run
+against the 18-file XML subset (`1998 - themas.xml` is the only file with
+`chained_comparisons`; `2006 - eirene sys 15.xml` shows exactly 7 `±` -- both match this
+file's earlier entry verbatim), which is the validation that it is measuring the same thing
+before trusting it on new data. Text is pulled best-effort per format for scanning purposes
+only (pdfplumber for PDF; a printable-ASCII-run regex for `.doc`, verified empirically to
+pull real prose rather than internal structure names from these specific files; a
+tag-strip regex for HTML/RTF) -- explicitly NOT the same bar as a real requirement
+extractor, and the script's own docstring says so, so nobody later mistakes the scan's
+crude text pull for a boundary-decision method.
+
+**pdfplumber is a recorded, approved exception to the handover doc's "no new
+dependencies" ground rule** (`docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`),
+not a silent one. Scoped narrowly on purpose: `requirements.txt` marks it
+diagnostic-tooling-only, imported by `tools/scan_pure_corruption.py` alone, never by
+`design/` or `orchestrator/` -- reproducibility for the thesis was judged to outweigh the
+"no new deps" rule for this one case, since the alternative (hand-rolling PDF text
+extraction) would be worse for reproducibility, not better.
+
+**This scan's text pull is NOT the same extraction path as whatever corrupted
+`1998 - themas.xml`.** That damage happened inside PURE's own original PDF-to-XML
+conversion pipeline, which this project has never had access to and does not reproduce --
+`scan_pure_corruption.py` reads the PDF directly with pdfplumber, an entirely different
+tool. So a clean result here does not mean "the original converter would not have
+corrupted this document too"; it means "pdfplumber's own text extraction, independently,
+did not surface one of these three signatures." The scan is a second, independent check
+on the same source PDFs, not a re-run of the process that produced the known corruption,
+and the conclusion below is phrased to reflect that.
+
+**Dalpiaz and PROMISE NFR needed extractors, not a boundary heuristic.** Both datasets are
+already segmented by their own creators -- Dalpiaz one user story per line, PROMISE NFR one
+labeled sentence per `@DATA` row -- so, like PURE's `<req>` elements, there is no inference
+to make about where a requirement starts or ends. `tools/extract_dalpiaz.py` (1,677
+requirements, 22 files) and `tools/extract_promise_nfr.py` (625 requirements, 15 projects)
+are built and run. Two real exceptions surfaced by surveying all 22 Dalpiaz files before
+writing the extractor, not assumed: a handful of stories wrap across two physical lines with
+no terminal punctuation, and several use "As ROLE" without an article ("As User", "As lab
+administrator") -- both handled by the extractor's line-continuation rule (continue any line
+not starting with "As "), which also means it cannot distinguish a genuine wrapped
+continuation from an unrelated line that happens to follow one. Exactly one such case exists
+in the real data (`dalpiaz-15`, a stray "Auditing & Reporting." heading merged into the
+preceding story) -- every merge the extractor performs is recorded in its manifest sidecar
+under `line_merges` specifically so this is reviewable, not silently trusted.
+
+**Riaz is deferred, not attempted.** Investigated because it looked like it might be
+another "already segmented" case (its own sentence-level annotations, including a
+`securityObjectiveAnnotations` field marking security-relevant sentences) -- but real
+examples show many annotated sentences are bullet-list *fragments*
+("-identifiers and other registration details of system users..."), not standalone
+requirement-shaped sentences, so reconstructing a coherent requirement means solving PURE's
+bullet-list-assembly problem (`tools/extract_pure_xml.py`'s itemize/enum handling) a second
+time for a different schema, not a one-row-one-requirement parse like Dalpiaz/PROMISE. Given
+`datasets/EVALUATION_DATASETS.md` already scopes Riaz as relevant "only if the thesis scope
+grows to cover... security-specific requirements," this is left unbuilt rather than rushed.
+
+**Empirical check on the requirement-boundary question, before choosing a heuristic for
+whatever of `pure-full/` eventually needs one.** Modal-verb prevalence (`shall`/`must`/
+`should`/`will`) was measured across all 5 real extracted PURE documents, since a
+modal-verb-triggered splitter was the naive first candidate: **cctns 99%, gamma-j 94%,
+eirene-fun-7-2 83%, keepass 44%, peering 4%.** A single modal-verb rule would perform
+unevenly to the point of uselessness on peering-shaped documents -- its 24 real requirements
+read as plain declaratives ("The format for service information description is defined.",
+"Resource provisioning, delegation and reservation policies are in place.") with no
+normative modal at all. This is a real, data-backed reason to reject "modal verb" as a
+general-purpose rule, not a guess. **Not yet resolved:** whether a paragraph/numbered-clause
+rule fares better depends on whether the source PDFs actually carry a numbered/tabular
+requirements layout pdfplumber could detect structurally -- unchecked, because it requires
+looking at real `pure-full/` PDF pages, which is exactly the "only if the subset needs it"
+gate above. Decide this if/when the frozen subset ever pulls a `pure-full/` document in.
+
+Not run in this session (no `GEMINI_API_KEY`/`GROQ_API_KEY` here, same constraint as the
+2026-08-16 Quality Checker stability harness): the `NON_ATOMIC` frequency measurement the
+handover doc's Task 3 asks for "before Task 5" over the now-extracted corpus. That needs a
+real Quality Checker call and is separate follow-up work.
+
+**Corruption scan result, all 79 `pure-full/` documents (`docs/superpowers/pure-full-corruption-scan.json`):**
+28/79 show at least one signature; 0 files failed to read (PDF/legacy-`.doc`/HTML all
+produced text). **No document reproduces themas's actual damage pattern.** Most flagged
+documents only trip `underscore_tokens` on legitimate API/constant identifiers a
+software SRS is full of (`DT_NULL`, `GUI_BACKGROUND`, `HW_TurnOn`, ...) -- expected noise
+on this signature, not evidence of anything. Exactly one document, `2007 - nlm.doc`,
+trips `chained_comparisons` (`'H9=H9=F6'`, `'H=EI=GE9E'`, `'xSuh=jtFwk=nf8i'`) -- but
+these are not English/identifier-shaped the way themas's `'LT = T = UT'` was, and the
+same document separately shows 27 clean `<=` and 24 clean `>=` occurrences from this
+scan's own text pull. The likelier explanation is the scan's own crude `.doc` text pull
+(a printable-ASCII-run regex, not a real OLE-stream parser) misfiring on binary noise,
+not a second corrupted document -- exactly the under/over-detection risk the tool's
+docstring already flags for that format.
+
+**Conclusion, stated conservatively:** no additional corruption was detected by this
+diagnostic across the 79-document corpus. This is not the same claim as "no other
+document is corrupted" -- as noted above, the scan checks these signatures against
+pdfplumber's own text extraction, not against whatever PURE's original PDF-to-XML
+converter produced, so it cannot rule out damage that a different converter introduced
+and this scan's own extraction path happens not to reproduce or surface. What it does
+support: the three named signatures, run over pdfplumber's text, do not turn up a second
+themas-shaped case. Re-scan if a different or better `.doc`/PDF text extraction is ever
+built, since that would check a path closer to (though still not identical to) the one
+that actually damaged `1998 - themas.xml`.

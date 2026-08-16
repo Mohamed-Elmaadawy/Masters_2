@@ -1,0 +1,140 @@
+{
+  "extractor_version": 1,
+  "extracted_at": "2026-08-16T07:13:33+00:00",
+  "input_dir": "datasets\\dalpiaz-user-stories",
+  "documents": [
+    {
+      "doc_id": "dalpiaz-01",
+      "source_file": "01.txt",
+      "requirements": 66,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-02",
+      "source_file": "02.txt",
+      "requirements": 73,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-03",
+      "source_file": "03.txt",
+      "requirements": 100,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-04",
+      "source_file": "04.txt",
+      "requirements": 53,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-05",
+      "source_file": "05.txt",
+      "requirements": 98,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-06",
+      "source_file": "06.txt",
+      "requirements": 102,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-07",
+      "source_file": "07.txt",
+      "requirements": 58,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-08",
+      "source_file": "08.txt",
+      "requirements": 115,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-09",
+      "source_file": "09.txt",
+      "requirements": 67,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-10",
+      "source_file": "10.txt",
+      "requirements": 51,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-11",
+      "source_file": "11.txt",
+      "requirements": 56,
+      "line_merges": 1
+    },
+    {
+      "doc_id": "dalpiaz-12",
+      "source_file": "12.txt",
+      "requirements": 69,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-13",
+      "source_file": "13.txt",
+      "requirements": 55,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-14",
+      "source_file": "14.txt",
+      "requirements": 53,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-15",
+      "source_file": "15.txt",
+      "requirements": 66,
+      "line_merges": 2
+    },
+    {
+      "doc_id": "dalpiaz-16",
+      "source_file": "16.txt",
+      "requirements": 83,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-17",
+      "source_file": "17.txt",
+      "requirements": 97,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-18",
+      "source_file": "18.txt",
+      "requirements": 53,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-19",
+      "source_file": "19.txt",
+      "requirements": 100,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-20",
+      "source_file": "20.txt",
+      "requirements": 138,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-21",
+      "source_file": "21.txt",
+      "requirements": 60,
+      "line_merges": 0
+    },
+    {
+      "doc_id": "dalpiaz-22",
+      "source_file": "22.txt",
+      "requirements": 64,
+      "line_merges": 0
+    }
+  ],
+  "total_requirements": 1677
+}

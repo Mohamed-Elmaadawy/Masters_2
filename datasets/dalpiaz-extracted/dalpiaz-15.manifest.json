@@ -1,0 +1,23 @@
+{
+  "doc_id": "dalpiaz-15",
+  "source_file": "15.txt",
+  "encoding_used": "utf-8-sig",
+  "counts": {
+    "requirements": 66,
+    "line_merges": 2
+  },
+  "line_merges": [
+    {
+      "story_index": 33,
+      "before": "As a repoadmin, I want to expose repository contents via OAI-PMH.",
+      "appended": "Auditing & Reporting.",
+      "after": "As a repoadmin, I want to expose repository contents via OAI-PMH. Auditing & Reporting."
+    },
+    {
+      "story_index": 45,
+      "before": "As a repoadmin, I want to have Symplectic Elements to communicate",
+      "appended": "bidirectionally with the repository.",
+      "after": "As a repoadmin, I want to have Symplectic Elements to communicate bidirectionally with the repository."
+    }
+  ]
+}

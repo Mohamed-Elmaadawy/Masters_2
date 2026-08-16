@@ -5,6 +5,7 @@ execution.
 
     python -m orchestrator.cli run CONFIG.yaml INPUT.json
     python -m orchestrator.cli resume RUN_DIR
+    python -m orchestrator.cli label-system-type RUN_DIR LABELS.json
 
 `resume` takes only a run directory, never a config or input path: everything it needs
 -- the exact ResolvedRunConfig the run started with, and the document/requirement
@@ -16,7 +17,17 @@ on disk, and it is the on-disk run_id/prompt_hash that catch that disagreement (
 _prompt_provenance_mismatches below and design/ORCHESTRATOR_CONTRACT.md item 18) --
 accepting fresh inputs here would reopen exactly the gap those checks close.
 
-Exit codes (shared by both subcommands):
+`label-system-type` is a third, offline subcommand -- not a `resume` flag and not a new
+HumanFns callable. It exists so the operator can record their own SystemType label per
+requirement (design/DESIGN_NOTES.md, "System changes to make before the evaluation
+freeze", S2) without either reopening `resume`'s closed-to-fresh-input contract above,
+or adding a third blocking human-interaction point to HumanFns (see DESIGN_NOTES.md,
+Known Limitation 9). It calls no stage fn and no HumanFns callable -- it only reads and
+rewrites requirement records already on disk -- and never touches
+`classification.system_type`, the Classifier's own label, so the two can be compared
+after the fact.
+
+Exit codes (`run`/`resume`; `label-system-type` only ever returns 0 or 2):
     0   completed, no stage errors recorded
     1   completed, but the record contains a DocumentStageError, a StageError on some
         requirement, or a requirement whose outcome is RunOutcome.ERROR
@@ -33,6 +44,7 @@ framework: production code (`main`) always passes the real ones.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -42,15 +54,15 @@ from typing import Callable, Optional
 import yaml
 from pydantic import ValidationError
 
-from design.schemas import RequirementSet, RunOutcome, prompt_fingerprint
+from design.schemas import RequirementSet, RunOutcome, SystemType, prompt_fingerprint
 from orchestrator.config import (
     ResolvedRunConfig, load_run_config, read_resolved_run_config, resolve_run_config,
     retry_args, run_dir_for, throttle_from, to_run_metadata, write_run_config,
 )
 from orchestrator.human_cli import answer_questions_cli, decide_at_cap_cli
 from orchestrator.pipeline import (
-    DocumentRunRecord, HumanFns, StageFns, Throttle, read_document_run, resume_document,
-    run_document,
+    DocumentRunRecord, HumanFns, RequirementRunRecord, StageFns, Throttle,
+    read_document_run, resume_document, run_document, write_requirement_run,
 )
 from orchestrator.providers.base import ProviderAdapter
 from orchestrator.providers.gemini import GeminiAdapter
@@ -318,6 +330,57 @@ def _do_resume(
     return _finish(resolved, run_dir, adapters, human_fns_factory, output_fn, execute)
 
 
+def _do_label_system_type(run_dir: Path, labels_path: Path, output_fn: Callable[[str], None]) -> int:
+    """S2 (design/DESIGN_NOTES.md, "System changes to make before the evaluation
+    freeze"): captures the operator's own SystemType label per requirement, alongside
+    (never instead of) the Classifier's. A separate subcommand rather than a `resume`
+    flag or a new HumanFns callable, for two reasons: `resume` is deliberately closed to
+    fresh inputs (see this module's docstring -- a labels file is exactly the kind of
+    fresh input that decision rules out), and a labels file read once, offline, is not a
+    blocking interaction, so it does not become a third HumanFns call the way a live
+    per-requirement prompt would (see DESIGN_NOTES.md, Known Limitation 9).
+
+    labels_path is a JSON object: {"requirement_id": "web"|"mobile"|"ai_system"|"other",
+    ...}. Every requirement id must already exist in the run; nothing is written until
+    every label in the file has been checked, so a typo'd id fails the whole call rather
+    than labelling everything else and silently skipping the bad one.
+    """
+    try:
+        raw_labels = json.loads(labels_path.read_text())
+        if not isinstance(raw_labels, dict):
+            raise ValueError(f"{labels_path} must contain a JSON object, got {type(raw_labels).__name__}")
+        labels = {req_id: SystemType(value) for req_id, value in raw_labels.items()}
+        record = read_document_run(run_dir)
+    except _CONFIG_ERRORS as e:
+        output_fn(f"Configuration/input error: {e}")
+        return EXIT_CONFIG_ERROR
+
+    by_id = {r.requirement.id: r for r in record.requirement_records}
+    unknown = sorted(set(labels) - set(by_id))
+    if unknown:
+        output_fn(f"Refusing to label {run_dir}: {labels_path} names requirement id(s) "
+                  f"not in this run: {unknown}")
+        return EXIT_CONFIG_ERROR
+
+    agree = disagree = 0
+    for req_id, system_type in labels.items():
+        req_record = by_id[req_id]
+        updated = req_record.model_copy(update={"operator_system_type": system_type})
+        updated = RequirementRunRecord.model_validate(
+            updated.model_dump(mode="json"))  # re-validate before persisting
+        write_requirement_run(run_dir, updated)
+        if req_record.classification is not None:
+            if req_record.classification.system_type is system_type:
+                agree += 1
+            else:
+                disagree += 1
+
+    output_fn(f"Labelled {len(labels)} requirement(s) in {run_dir}.")
+    if agree or disagree:
+        output_fn(f"Agrees with Classifier: {agree}. Disagrees: {disagree}.")
+    return EXIT_SUCCESS
+
+
 def _run(
     argv: list[str],
     adapter_factories: dict[str, Callable[[], ProviderAdapter]] = _DEFAULT_ADAPTER_FACTORIES,
@@ -335,6 +398,13 @@ def _run(
     resume_parser = subparsers.add_parser("resume", help="Resume an interrupted run")
     resume_parser.add_argument("run_dir", type=Path, help="Path to an existing run directory")
 
+    label_parser = subparsers.add_parser(
+        "label-system-type", help="Record the operator's own SystemType label per requirement")
+    label_parser.add_argument("run_dir", type=Path, help="Path to an existing run directory")
+    label_parser.add_argument(
+        "labels", type=Path,
+        help='Path to a JSON object {"requirement_id": "web"|"mobile"|"ai_system"|"other", ...}')
+
     try:
         args = parser.parse_args(argv)
     except SystemExit as e:
@@ -345,6 +415,8 @@ def _run(
 
     if args.command == "run":
         return _do_run(args.config, args.input, adapter_factories, human_fns_factory, output_fn)
+    if args.command == "label-system-type":
+        return _do_label_system_type(args.run_dir, args.labels, output_fn)
     return _do_resume(args.run_dir, adapter_factories, human_fns_factory, output_fn)
 
 

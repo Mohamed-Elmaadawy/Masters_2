@@ -1533,6 +1533,31 @@ def test_helpers_and_round_trip() -> None:
         ok(f"computed field {key} in dump", key in dumped["requirement_records"][0])
 
 
+def test_operator_system_type_capture() -> None:
+    """S2 (design/DESIGN_NOTES.md, 'System changes to make before the evaluation
+    freeze'): an operator-supplied SystemType, captured for comparison against the
+    Classifier's own label, never reconciled with it."""
+    section("Operator system-type capture")
+    ok("defaults to unset", rec().operator_system_type is None)
+
+    agree = rec(classification=Classification(requirement_id=REQ_D.id,
+                                               system_type=SystemType.OTHER, rationale="r"),
+                operator_system_type=SystemType.OTHER)
+    ok("agreeing labels both accepted", agree.operator_system_type is SystemType.OTHER
+       and agree.classification.system_type is SystemType.OTHER)
+
+    disagree = rec(classification=Classification(requirement_id=REQ_D.id,
+                                                  system_type=SystemType.OTHER, rationale="r"),
+                   operator_system_type=SystemType.AI_SYSTEM)
+    ok("disagreeing labels both accepted -- no validator forces agreement",
+       disagree.operator_system_type is SystemType.AI_SYSTEM
+       and disagree.classification.system_type is SystemType.OTHER)
+
+    ok("operator label survives a round trip",
+       RequirementRunRecord.model_validate_json(agree.model_dump_json())
+       .operator_system_type is SystemType.OTHER)
+
+
 def main() -> int:
     print("=" * 72)
     print("schemas.py regression")
@@ -1548,7 +1573,7 @@ def main() -> int:
                test_references_resolve, test_gap6_issue_identity,
                test_self_review_sweep, test_retry_without_redoing_everything,
                test_rule_table_anchors,
-               test_helpers_and_round_trip):
+               test_helpers_and_round_trip, test_operator_system_type_capture):
         fn()
     print("\n" + "=" * 72)
     if FAILED:

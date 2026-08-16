@@ -1,0 +1,1105 @@
+[
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "0000 - cctns.pdf",
+    "chars_extracted": 34662
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "0000 - gamma j.pdf",
+    "chars_extracted": 50246
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "0000 - inventory.pdf",
+    "chars_extracted": 25779
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "BUSY_ON",
+      "Command_ID",
+      "NOT_READY",
+      "Operator_Console"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "1995 - gemini.pdf",
+    "chars_extracted": 157672
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "1998 - themas.pdf",
+    "chars_extracted": 45114
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "CTRY_CD",
+      "CTRY_NM",
+      "ORG_ID",
+      "XML_Attribute",
+      "XML_Attributes",
+      "XML_Element",
+      "XML_Namespace",
+      "XML_Spec"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "1999 - dii.htm",
+    "chars_extracted": 37465
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "1999 - multi-mahjong.html",
+    "chars_extracted": 65297
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "1999 - tcs.pdf",
+    "chars_extracted": 257207
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {
+      "+/-": 1
+    },
+    "any_signature": true,
+    "file": "2000 - nasa x38.doc",
+    "chars_extracted": 130535
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - beyond.pdf",
+    "chars_extracted": 76658
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - ctc network.pdf",
+    "chars_extracted": 44174
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - elsfork.pdf",
+    "chars_extracted": 119094
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - esa.pdf",
+    "chars_extracted": 35646
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - hats.pdf",
+    "chars_extracted": 143702
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - libra.doc",
+    "chars_extracted": 29650
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "BF_TITLE",
+      "Figure_A",
+      "Figure_E",
+      "Requirement_Table",
+      "Table_C",
+      "Table_D",
+      "Table_E"
+    ],
+    "surviving_math_symbols": {
+      ">=": 2
+    },
+    "any_signature": true,
+    "file": "2001 - npac.doc",
+    "chars_extracted": 518011
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2001 - space fractions.pdf",
+    "chars_extracted": 19847
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "ANIO_DATA",
+      "ANIO_SAMPLES",
+      "ANIO_SQUARES",
+      "ANIO_STAT",
+      "ANIO_SUMS",
+      "BAD_COL",
+      "BAD_PIX",
+      "BC_INDEX",
+      "BHC_CMD",
+      "BHTR_ID",
+      "BHTR_PARMS",
+      "BIAS_THRSH",
+      "BIT_DATA",
+      "BIT_DRAM",
+      "BIT_RESULT",
+      "BIT_SUMMARY",
+      "BOOT_BLOCK",
+      "BOOT_CNT",
+      "BUF_LEN",
+      "BYTE_CNT",
+      "CCD_DATA",
+      "CCD_LINES",
+      "CCD_PURGE",
+      "CCSDS2_APDATA",
+      "CCSDS2_CHKS",
+      "CCSDS2_FCODE",
+      "CCSDS2_RESERVED",
+      "CCSDS2_SECONDS",
+      "CCSDS_APID",
+      "CCSDS_HDR",
+      "CCSDS_TYPE",
+      "CENT_PARMS",
+      "CENT_THRSH",
+      "CMD_CNT",
+      "CMD_DATA",
+      "CMD_ECHO",
+      "CMD_RUN",
+      "CPU_SPEED",
+      "DAC_ID",
+      "DAC_TBL",
+      "DAC_VOLTAGE",
+      "DCC_CMD",
+      "DCC_STATUS",
+      "DOOR_TIMEOUT",
+      "DOS_FILENAME",
+      "DUMP_ADDRESS",
+      "DUMP_PARMS",
+      "DUMP_SIZE",
+      "EEPRM_PAGE",
+      "EICR_EIM0",
+      "EICR_MEAR",
+      "EICR_MESR",
+      "EICR_SBAR",
+      "EICR_SBSR",
+      "ELF_MODULE",
+      "ENET_IP",
+      "ENET_MAC",
+      "ERP_CMD",
+      "ERROR_SET",
+      "EVENT_STHRSH",
+      "EVENT_THRSH",
+      "EVENT_ULD",
+      "HDR_DATA",
+      "HK_BHC",
+      "HK_BIT",
+      "HK_CCD",
+      "HK_CCM",
+      "HK_DCC",
+      "HK_DCX",
+      "HK_EDAC",
+      "HK_ERP",
+      "HK_SCUI",
+      "HK_SEQ",
+      "HK_TAM",
+      "HK_TEC",
+      "HK_THC",
+      "HK_TIS",
+      "HTR_ID",
+      "IS_SETTLED",
+      "LE_DAR",
+      "LE_DSISR",
+      "LE_ERRNO",
+      "LE_FPS",
+      "LE_MASK0",
+      "LE_MASK1",
+      "LE_SPTR",
+      "LE_VNUM",
+      "LE_VOFF",
+      "MEM_SIZE",
+      "MRC_FQ",
+      "MRC_ROW",
+      "MRC_THRSH",
+      "OBS_BUF",
+      "OBS_ID",
+      "PDM_CLPD",
+      "PDM_CLPE",
+      "PDM_CLPS",
+      "PDM_DIS",
+      "PDM_EN",
+      "PDM_H1PD",
+      "PDM_H1PE",
+      "PDM_H1PS",
+      "PDM_H2PD",
+      "PDM_H2PE",
+      "PDM_H2PS",
+      "PDM_H3PD",
+      "PDM_H3PE",
+      "PDM_H3PS",
+      "PDM_RESET",
+      "PDM_STAT",
+      "PKG_RTHK",
+      "PKG_SS",
+      "PKG_TDRSS",
+      "PP_CMD",
+      "PP_RANGE",
+      "PP_RATE",
+      "RED_APID",
+      "RED_FCODE",
+      "RPT_STATUS",
+      "RPT_TYPE",
+      "SAA_FLAG",
+      "SAA_PARMS",
+      "SCLK_SECONDS",
+      "SCM_EEPROM",
+      "SCUI_CTRL",
+      "SC_TIME",
+      "SEQ_ID",
+      "SEQ_PRG",
+      "SEQ_TBL",
+      "SKIP_BIT",
+      "SS_DATA",
+      "STATE_CODE",
+      "STATE_NEXT",
+      "STRIP_INTERVAL",
+      "ST_PDU",
+      "SYSTEM_BLOCK",
+      "TAM_CMD",
+      "TAM_DATA",
+      "TAM_RDFQ",
+      "TARGET_ID",
+      "TASK_BLOCK",
+      "TASK_DELAY",
+      "TASK_ERRNO",
+      "TASK_HBEAT",
+      "TASK_ID",
+      "TASK_PC",
+      "TASK_PRIORITY",
+      "TASK_SP",
+      "TASK_STATUS",
+      "TEC_CMD",
+      "TEC_VOLTAGE",
+      "TEN_ARCMIN",
+      "TGT_ID",
+      "THC_CMD",
+      "THTR_ENABLE",
+      "THTR_ID",
+      "THTR_LIMIT",
+      "THTR_PARMS",
+      "THTR_PWR",
+      "THTR_RESIST",
+      "TIMING_PARMS",
+      "TIMING_THRSH",
+      "TLM_DATA",
+      "TSM_IMR",
+      "TSM_IPR",
+      "TSM_IVR",
+      "TSM_MCR",
+      "TSM_RESET",
+      "TSM_WD",
+      "UPLD_APARM1",
+      "UPLD_APARM2",
+      "UPLD_DATA",
+      "UPLD_HDR",
+      "UTC_DELTA",
+      "UTC_OFFSET",
+      "UTC_SECONDS",
+      "UTC_SUBSECONDS",
+      "UTC_TIME",
+      "VALVE_TIMEOUT",
+      "XCM_ANIO",
+      "XCM_CCD",
+      "XCM_EEPROM",
+      "XCM_ENET",
+      "XCM_IMR",
+      "XCM_IPR",
+      "XCM_IVR",
+      "XCM_METCSR",
+      "XCM_METRST",
+      "XCM_TMFINE",
+      "XCM_TMHI",
+      "XCM_TMLO",
+      "XCM_WDR",
+      "XCP_DEC",
+      "XCP_DRAM",
+      "XCP_EEPROM",
+      "XCP_EICRS",
+      "XCP_IOCC",
+      "XCP_MODE",
+      "XCP_PROM",
+      "XCP_RTCL",
+      "XCP_RTCU",
+      "XCP_STATE",
+      "XCP_TIMR"
+    ],
+    "surviving_math_symbols": {
+      "+/-": 2
+    },
+    "any_signature": true,
+    "file": "2001 - telescope.pdf",
+    "chars_extracted": 168770
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2002 - evla back.pdf",
+    "chars_extracted": 41864
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2002 - evla corr.pdf",
+    "chars_extracted": 34665
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "SC_CTOR",
+      "SC_MODULE",
+      "SC_SLAVE",
+      "SC_THREAD"
+    ],
+    "surviving_math_symbols": {
+      "<=": 17,
+      ">=": 9,
+      "!=": 2
+    },
+    "any_signature": true,
+    "file": "2002 - sce api.pdf",
+    "chars_extracted": 196807
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Agent_A",
+      "Agent_B",
+      "Agent_C",
+      "Agent_D",
+      "Decrypt_Mesg",
+      "Encrypt_Mesg",
+      "Transmit_Broadcast",
+      "Transmit_Message",
+      "Transmit_Multicast"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2003 - agentmom.pdf",
+    "chars_extracted": 12779
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Boiler_CPH",
+      "Boiler_Capaciity",
+      "Boiler_Capacity",
+      "Boiler_Cycling",
+      "Boiler_Fuel",
+      "Boiler_Shutoff",
+      "Boiler_Stage",
+      "Boiler_Status",
+      "Current_Date",
+      "Current_Time",
+      "Cycle_Counts",
+      "Design_HWST",
+      "Electric_P",
+      "FHWST_High",
+      "FHWST_Low",
+      "HWSTMaintained_OK",
+      "HWSTNumber_High",
+      "HWSTNumber_Low",
+      "HWST_Deviation",
+      "HWST_Maintained",
+      "HWST_Setpoint",
+      "High_Array",
+      "High_Limit",
+      "High_Window",
+      "Low_Array",
+      "Low_Limit",
+      "Low_Window",
+      "Maintained_OK",
+      "Not_Too",
+      "Off_Duration",
+      "Off_Time",
+      "On_Duration",
+      "On_Time",
+      "Rated_Current",
+      "Run_Limit",
+      "Schedule_Type",
+      "Shutoff_OK",
+      "Threshold_Fossil"
+    ],
+    "surviving_math_symbols": {
+      "<=": 23,
+      ">=": 14
+    },
+    "any_signature": true,
+    "file": "2003 - pnnl.pdf",
+    "chars_extracted": 224946
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2003 - qheadache.pdf",
+    "chars_extracted": 19368
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2003 - tachonet.pdf",
+    "chars_extracted": 73388
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2004 - colorcast.pdf",
+    "chars_extracted": 30272
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2004 - e-procurement.rtf",
+    "chars_extracted": 515402
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2004 - grid bgc.pdf",
+    "chars_extracted": 50138
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "UETA_Guideline"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2004 - ijis.doc",
+    "chars_extracted": 36050
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "BRS_ISIN",
+      "Content_Types"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2004 - jse.doc",
+    "chars_extracted": 47776
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "WI_REQ"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2004 - philips.doc",
+    "chars_extracted": 17643
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2004 - rlcs.pdf",
+    "chars_extracted": 111435
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2004 - sprat.pdf",
+    "chars_extracted": 48600
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "GUI_BACKGROUND",
+      "GUI_BLUE",
+      "GUI_CLICKED",
+      "GUI_CLOSEABLE",
+      "GUI_DESTROY",
+      "GUI_EDIT",
+      "GUI_GADGETS",
+      "GUI_GETID",
+      "GUI_GMOUSE",
+      "GUI_GREY",
+      "GUI_HSCROLL",
+      "GUI_MAGENTA",
+      "GUI_MAXIMIZE",
+      "GUI_MINIMIZE",
+      "GUI_NONE",
+      "GUI_NOSCROLL",
+      "GUI_PAINT",
+      "GUI_RESIZEABLE",
+      "GUI_STATIC",
+      "GUI_VISIBLE",
+      "GUI_VSCROLL",
+      "GUI_WHITE",
+      "HWND_DESKTOP",
+      "MIN_HEIGHT",
+      "MIN_WIDTH",
+      "NUM_CONTROLS",
+      "NUM_TEXT",
+      "WM_CLOSE",
+      "WM_RESIZE",
+      "WPI_COLOUR",
+      "WPI_TEXTMETRIC"
+    ],
+    "surviving_math_symbols": {
+      "!=": 1
+    },
+    "any_signature": true,
+    "file": "2004 - watcom gui.pdf",
+    "chars_extracted": 70548
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "CALL_LABEL",
+      "DT_DEBUG",
+      "DT_HASH",
+      "DT_JMPREL",
+      "DT_NEEDED",
+      "DT_NULL",
+      "DT_PLTGOT",
+      "DT_PLTREL",
+      "DT_PLTRELSZ",
+      "DT_REL",
+      "DT_RELA",
+      "DT_RELAENT",
+      "DT_RELASZ",
+      "DT_RELENT",
+      "DT_RELSZ",
+      "DT_SONAME",
+      "DT_STRSZ",
+      "DT_STRTAB",
+      "DT_SYMENT",
+      "DT_SYMTAB",
+      "ET_DYN",
+      "ET_EXEC",
+      "Elf32_Addr",
+      "Elf32_Dyn",
+      "Elf32_Ehdr",
+      "Elf32_Phdr",
+      "Elf32_Rel",
+      "Elf32_Shdr",
+      "Elf32_Sword",
+      "Elf32_Word",
+      "FIX_ABS",
+      "FIX_BASE",
+      "FIX_HIGH",
+      "FIX_IFGLUE",
+      "FIX_REL",
+      "FIX_SHIFT",
+      "FIX_SIGNED",
+      "FIX_TOC",
+      "FIX_TOCV",
+      "FIX_UNSAFE",
+      "GROUP_ENTRY",
+      "HW_Asgn",
+      "HW_CAsgn",
+      "HW_CEqual",
+      "HW_COnlyOn",
+      "HW_COvlap",
+      "HW_CSubset",
+      "HW_CTurnOff",
+      "HW_CTurnOn",
+      "HW_EBX",
+      "HW_Equal",
+      "HW_OnlyOn",
+      "HW_Ovlap",
+      "HW_Subset",
+      "HW_TurnOff",
+      "HW_TurnOn",
+      "MK_ELF",
+      "OP_ADD",
+      "OP_BLOCK",
+      "OP_POP",
+      "PF_R",
+      "PF_X",
+      "POSITION_INDEPENDANT",
+      "PT_DYNAMIC",
+      "PT_INTERP",
+      "PT_PHDR",
+      "R386_PC32",
+      "ROUND_UP",
+      "SEG_LEADER",
+      "SHT_DYNAMIC",
+      "SHT_DYNSYM",
+      "SHT_RELA",
+      "SHT_SYMTAB",
+      "STT_FUNC",
+      "STT_NOTYPE"
+    ],
+    "surviving_math_symbols": {
+      "!=": 6
+    },
+    "any_signature": true,
+    "file": "2004 - watcom.pdf",
+    "chars_extracted": 96293
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - clarus high.doc",
+    "chars_extracted": 61152
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - clarus low.pdf",
+    "chars_extracted": 148490
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Cluster_Title",
+      "Point_Name",
+      "X_Title",
+      "X_Value",
+      "Y_Title",
+      "Y_Value",
+      "Z_Title",
+      "Z_Value"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2005 - grid 3D.pdf",
+    "chars_extracted": 17756
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - microcare.pdf",
+    "chars_extracted": 41475
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - nenios.html",
+    "chars_extracted": 27462
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "OM_RSv1"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2005 - phin.pdf",
+    "chars_extracted": 40436
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {
+      "<=": 1
+    },
+    "any_signature": true,
+    "file": "2005 - pontis.pdf",
+    "chars_extracted": 125652
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - triangle.pdf",
+    "chars_extracted": 35206
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2005 - znix.pdf",
+    "chars_extracted": 22695
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "LDA_WG161",
+      "LDA_WG162"
+    ],
+    "surviving_math_symbols": {
+      "+/-": 1,
+      "\u00b1": 6
+    },
+    "any_signature": true,
+    "file": "2006 - eirene sys 15.pdf",
+    "chars_extracted": 176753
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2006 - stewards.pdf",
+    "chars_extracted": 75306
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "CONTEXT_LEVEL"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2007 - central trading system.pdf",
+    "chars_extracted": 17939
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - e-store.doc",
+    "chars_extracted": 18126
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - eirene fun 7.pdf",
+    "chars_extracted": 134076
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - ertms.pdf",
+    "chars_extracted": 57399
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - get real 0.2.pdf",
+    "chars_extracted": 20752
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - mdot.pdf",
+    "chars_extracted": 112988
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - nde.pdf",
+    "chars_extracted": 162006
+  },
+  {
+    "chained_comparisons": [
+      "H9=H9=F6",
+      "H=EI=GE9E",
+      "xSuh=jtFwk=nf8i"
+    ],
+    "underscore_tokens": [
+      "Ea0_U",
+      "GE2HE5AA_IV"
+    ],
+    "surviving_math_symbols": {
+      "<=": 27,
+      ">=": 24
+    },
+    "any_signature": true,
+    "file": "2007 - nlm.doc",
+    "chars_extracted": 136691
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - puget sound.pdf",
+    "chars_extracted": 27191
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2007 - water use.pdf",
+    "chars_extracted": 99795
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2008 - caiso.pdf",
+    "chars_extracted": 16820
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2008 - keepass.pdf",
+    "chars_extracted": 46357
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2008 - peering.pdf",
+    "chars_extracted": 40570
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2008 - viper.doc",
+    "chars_extracted": 61796
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Content_Types"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2008 - virtual ed.doc",
+    "chars_extracted": 64030
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2008 - vub.pdf",
+    "chars_extracted": 49540
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Display_Sta",
+      "Display_Statut",
+      "Search_String"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2009 - email.pdf",
+    "chars_extracted": 28383
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2009 - gaia.pdf",
+    "chars_extracted": 24537
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2009 - inventory 2.0.pdf",
+    "chars_extracted": 114296
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Content_Types"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2009 - library.doc",
+    "chars_extracted": 34121
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2009 - library.pdf",
+    "chars_extracted": 29219
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Model_Manager"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2009 - model manager.pdf",
+    "chars_extracted": 23950
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2009 - peazip.pdf",
+    "chars_extracted": 54103
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "EC_Art",
+      "EC_Arts",
+      "Ministerial_Declaration"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2009 - peppol.pdf",
+    "chars_extracted": 378863
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2009 - video search.pdf",
+    "chars_extracted": 20191
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "ARC_FILES",
+      "WARC_FILE",
+      "WARC_FILES",
+      "WARC_PATTERN"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2009 - warc III.pdf",
+    "chars_extracted": 26144
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2010 - blit draft.pdf",
+    "chars_extracted": 19677
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2010 - fishing.pdf",
+    "chars_extracted": 100873
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "GNU_Parted"
+    ],
+    "surviving_math_symbols": {
+      ">=": 2
+    },
+    "any_signature": true,
+    "file": "2010 - gparted.pdf",
+    "chars_extracted": 33597
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2010 - home 1.3.pdf",
+    "chars_extracted": 27486
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [],
+    "surviving_math_symbols": {},
+    "any_signature": false,
+    "file": "2010 - mashboot.pdf",
+    "chars_extracted": 21644
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "BOOKMARK_NAME",
+      "YYYYMMDD_HHmmssSSS"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2010 - split merge.pdf",
+    "chars_extracted": 40564
+  },
+  {
+    "chained_comparisons": [],
+    "underscore_tokens": [
+      "Content_Types"
+    ],
+    "surviving_math_symbols": {},
+    "any_signature": true,
+    "file": "2011 - opensg 0.1.doc",
+    "chars_extracted": 15013
+  }
+]

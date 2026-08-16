@@ -1,0 +1,305 @@
+{
+  "doc_id": "dalpiaz-21",
+  "requirements": [
+    {
+      "id": "DALPIAZ-21-0001",
+      "text": "As a user, I want to search and discover music using content identification or fingerprinting.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0002",
+      "text": "As a user, I want to search and discover music based on my profile.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0003",
+      "text": "As a user, I want to search and discover music based on other users similar to myself.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0004",
+      "text": "As a user, I want to search and discover music or ringback tones similar to a given music video based on content similarity.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0005",
+      "text": "As a user, I want to search and discover music by exploiting enriched metadata and image tags, so that I find related artists, new genre, or other relevant listening path.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0006",
+      "text": "As a user, I want to upload tagged videos and have tags available for all further processing steps.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0007",
+      "text": "As a user, I want to view thumbnail sequences of video segments.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0008",
+      "text": "As a user, I want to get info about similar video items and segments.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0009",
+      "text": "As a user, I want to get info about perceptually similar video items and segments.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0010",
+      "text": "As a user, I want to receive content recommendations from similar profiles.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0011",
+      "text": "As a user, I want to receive content recommendations based on most relevant news events in my area.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0012",
+      "text": "As a user, I want to identify persons in videos, and receive related information about them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0013",
+      "text": "As a user, I want to identify products in videos, and receive related information about them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0014",
+      "text": "As a user, I want to identify broadcaster logos in videos, and receive related information about them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0015",
+      "text": "As a user, I want to identify brands in videos, and receive related information about them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0016",
+      "text": "As a user, I want to take a picture or upload an image, so that I am recommended with videos related to that picture or image.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0017",
+      "text": "As a user, I want to walk around, access content using a geographical map and be informed if there are videos covering the area, monuments or any other relevant point of interest.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0018",
+      "text": "As a user, I want to search content items using automatic speech recognition.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0019",
+      "text": "As an admin, I want to see, validate and edit segmentation of videos.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0020",
+      "text": "As an admin, I want to annotate news video segments and extract a topic for each segment.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0021",
+      "text": "As an admin, I want to filter and rank videos based on A/V quality aspects.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0022",
+      "text": "As an admin, I want to get a quick assessment of whether audio material has been edited before the upload.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0023",
+      "text": "As an admin, I want to prefilter nudity content.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0024",
+      "text": "As an admin, I want to prefilter content using search based on low­level asset information.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0025",
+      "text": "As an admin, I want to automatically validated the ingested contents for copyright infringement.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0026",
+      "text": "As an admin, I want to prefilter the content using search on high­level asset information such as metadata and tags either recognized by the system of provided by the user.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0027",
+      "text": "As a Zooniverse admin, I want to assess how interesting or appealing or complex a picture is based on automated analysis, citizen annotations, and comments on Talk.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0028",
+      "text": "As a Zooniverse admin, I want to detect when a scientist should be prompted to look at a subject, based on annotations and information from Talk comments.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0029",
+      "text": "As a Zooniverse admin, I want to identify volunteer types.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0030",
+      "text": "As a Zooniverse admin, I want to preclassify the Galaxy Zoo images using simple low­level image features.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0031",
+      "text": "As a Zooniverse admin, I want to automatically detect Snapshot Serengeti images with no classifiable animals in them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0032",
+      "text": "As a Zooniverse admin, I want to perform automatic image series detection for the case of timestamping malfunction in Snapshot Serengeti images.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0033",
+      "text": "As a Zooniverse admin, I want to perform automatic animal species preclassification in Snapshot Serengeti.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0034",
+      "text": "As a Zooniverse admin, I want to perform automatic animal attribute preclassification in Snapshot Serengeti.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0035",
+      "text": "As a Zooniverse admin, I want to perform automatic animal number detection in Snapshot Serengeti.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0036",
+      "text": "As a Zooniverse admin, I want to perform automatic segmentation or localization of plankton in Plankton Portal.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0037",
+      "text": "As a Zooniverse admin, I want to automatically detect Plankton Portal images with no classifiable plankton in them.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0038",
+      "text": "As a Zooniverse admin, I want to perform automatic detection of plankton size or orientation in Plankton Portal images.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0039",
+      "text": "As a Zooniverse admin, I want to perform automatic preclassification of plankton species in Plankton Portal images.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0040",
+      "text": "As a Zooniverse admin, I want to perform automatic worm motion analysis to reduce video duration in Worm Watch Lab.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0041",
+      "text": "As a Zooniverse admin, I want to automatically detect the time in a Worm Watch Lab video where the worm lays an egg.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0042",
+      "text": "As a Zooniverse admin, I want to detect important features such as areas of flooding, damage, temporary shelters, blocked roads etc in the satellite images.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0043",
+      "text": "As a Zooniverse admin, I want to assess the probability/weight of a volunteer’s classification based on their experience.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0044",
+      "text": "As a Zooniverse admin, I want to perform prefiltering of the images to remove artefacts such as bright stars and camera read errors.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0045",
+      "text": "As a Zooniverse admin, I want to detect moving and transient objects in the images.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0046",
+      "text": "As a Zooniverse admin, I want to remove background noise and distracting sounds from the audio files.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0047",
+      "text": "As a Zooniverse admin, I want to group whale calls that are similar.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0048",
+      "text": "As a Zooniverse admin, I want to identify the number of whales heard in a single audio file.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0049",
+      "text": "As a Zooniverse admin, I want to know when I should interrupt a volunteer.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0050",
+      "text": "As a Zooniverse admin, I want to know whether I should interrupt a volunteer with text, an image, or a video.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0051",
+      "text": "As a Zooniverse admin, I want to know when I should educate a volunteer.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0052",
+      "text": "As a Zooniverse admin, I want to know whether I should educate a volunteer with text, an image, or a video.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0053",
+      "text": "As a Zooniverse admin,I want to know which piece of education I should give to a volunteer.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0054",
+      "text": "As a Zooniverse admin, I want to know when a volunteer has made an interesting comment on a subject.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0055",
+      "text": "As a Zooniverse admin, I want to know when Zoonibot should comment on a subject.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0056",
+      "text": "As a Zooniverse admin, I want to know when Zoonibot should give an explanation.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0057",
+      "text": "As a Zooniverse admin, I want to know what Zoonibot should say to a volunteer.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0058",
+      "text": "As a Zooniverse admin, I want to group subjects by similarity.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0059",
+      "text": "As a Zooniverse admin, I want to recommend different projects to volunteers based on their previous experiences.",
+      "source_doc_id": "dalpiaz-21"
+    },
+    {
+      "id": "DALPIAZ-21-0060",
+      "text": "As an admin, I want to see a summary of articles, so that I reuse them.",
+      "source_doc_id": "dalpiaz-21"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "doc_id": "promise-15",
+  "source_file": "promise_nfr.arff",
+  "project_id": "15",
+  "counts": {
+    "requirements": 12
+  },
+  "class_labels": {
+    "PROMISE-15-0001": "A",
+    "PROMISE-15-0002": "O",
+    "PROMISE-15-0003": "O",
+    "PROMISE-15-0004": "O",
+    "PROMISE-15-0005": "MN",
+    "PROMISE-15-0006": "MN",
+    "PROMISE-15-0007": "SE",
+    "PROMISE-15-0008": "SE",
+    "PROMISE-15-0009": "LF",
+    "PROMISE-15-0010": "LF",
+    "PROMISE-15-0011": "US",
+    "PROMISE-15-0012": "PE"
+  }
+}

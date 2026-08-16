@@ -1,0 +1,270 @@
+{
+  "doc_id": "dalpiaz-18",
+  "requirements": [
+    {
+      "id": "DALPIAZ-18-0001",
+      "text": "As a depositor, I want to deposit and maintain datasets through a simple web interface, so that I don't need to install and learn new software to deposit.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0002",
+      "text": "As a depositor, I want to have a user interface that is familiar to me, so that I feel like all the University systems are joined up.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0003",
+      "text": "As a depositor, I want to deposit and maintain datasets through Pure, so that I have a single onestop shop for managing my research outputs.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0004",
+      "text": "As a depositor, I want to deposit and maintain datasets through Virtual Research Environments and other workflow tools, so that I can continue to work with tools with which I'm familiar.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0005",
+      "text": "As a depositor, I want to deposit the files that I have, so that I don't have to spend a lot of time finding the right version and converting to the right format.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0006",
+      "text": "As a depositor, I want to place data under an embargo, so that my right of first use is protected, and I can fulfil my confidentiality responsibilities.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0007",
+      "text": "As a depositor, I want to apply licenses to datasets, so that my IP rights are protected appropriately.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0008",
+      "text": "As a depositor, I want to allow my collaborators privileged access to datasets, so that we continue to have a productive relationship.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0009",
+      "text": "As a depositor, I want to deposit arbitrarily large files, so that I am not limited in what files I can and cannot deposit.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0010",
+      "text": "As a depositor, I want to link datasets to publications in Opus, so that both my data and publications are more easily discovered.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0011",
+      "text": "As a depositor, I want to mint DOIs for my data, so that it can be discovered and cited more easily and citations can be tracked so that I can receive credit.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0012",
+      "text": "As a depositor, I want to have metadata automatically filled from other University systems and remembered from previous deposits, so that I don't have to waste time reentering the same information.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0013",
+      "text": "As a depositor, I want to link to data stored in external repositories, so that I can store my data in an appropriate repository but still register it with the University and I don't have to deposit my data in multiple places.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0014",
+      "text": "As a depositor, I want to specify a disposal policy for my data, so that I do not accidentally breach laws or collaboration agreements.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0015",
+      "text": "As a depositor, I want to track downloads of my data, so that I can demonstrate the impact of my work.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0016",
+      "text": "As a depositor, I want to track citations of my data, so that I can demonstrate the impact of my work",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0017",
+      "text": "As a depositor, I want to have guarantees about data integrity, so that I can use my data in the future and I can fulfil funder requirements for archival.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0018",
+      "text": "As a depositor, I want to attach subject specific discoverability metadata to records, so that researchers in my discipline can find my data more easily.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0019",
+      "text": "As a depositor, I want to link datasets with the project DMP, so that compliance with DMP can be demonstrated and whole project workflow is linked together.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0020",
+      "text": "As a depositor, I want to manage and share “live” research data, so that whole project workflow is linked together.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0021",
+      "text": "As a depositor, I want to manage multiple versions of the same dataset, so that changes to the dataset are transparent and do not compromise research integrity.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0022",
+      "text": "As a depositor, I want to allow others to deposit on my behalf, so that I can delegate research data management tasks appropriately.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0023",
+      "text": "As a data reuser, I want to search the archive through the web, so that I can easily find data relevant to my needs.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0024",
+      "text": "As a data reuser, I want to access the system in my native language, so that I am not put off reusing University of Bath data by language barriers.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0025",
+      "text": "As a data reuser, I want to examine and identify deposited files, so that I can make a preliminary assessment of usefulness without downloading the whole dataset.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0026",
+      "text": "As a data reuser, I want to view an example citation for a dataset, so that I can reference it correctly.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0027",
+      "text": "As a data reuser, I want to view a DOI for a dataset, so that I can get back to the data in future and I can import the dataset into my referencemanagement software automatically.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0028",
+      "text": "As a data reuser, I want to get a persistent URL for a dataset, so that I can get back to the data in future.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0029",
+      "text": "As a data reuser, I want to search the archive through Primo , so that I can search books, articles and data all in one place.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0030",
+      "text": "As a data reuser, I want to see different versions of a dataset at a glance, so that I can be sure I'm using the right version of the dataset.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0031",
+      "text": "As an externalcollaborator, I want to gain privileged access to data for projects in which I am involved, so that I can collaborate effectively.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0032",
+      "text": "As an externalcoordinator, I want to have guarantees that my IP rights will not be breached, so that the risk of collaborating with Bath is acceptable to me.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0033",
+      "text": "AS an externalcoordinator, I want to access data from Bath collaborators off campus, so that I can collaborate effectively.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0034",
+      "text": "As a research facility manager, I want to deposit data from my facility directly into the archive on behalf of researchers, so that I am no longer required to maintain my own archive of facility data and researchers can access their own data as needed.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0035",
+      "text": "As a Bath Data Archive administrator, I want to make some checks on deposited datasets before they are made public, so that consistent quality of metadata is maintained, compliance with policies can be checked and details of licensing can be checked.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0036",
+      "text": "As a Bath Data Archive administrator, I want to require a minimum set of metadata, so that consistent quality of metadata is maintained.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0037",
+      "text": "As a Bath Data Archive administrator, I want to approve scheduled disposal of data, so that data which is still required is not destroyed.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0038",
+      "text": "As a Bath Data Archive administrator, I want to query the entire archive , so that I can report on particular aspects of the archive holdings.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0039",
+      "text": "As a Bath Data Archive administrator, I want to import Bath data from an external data centre wholesale, so that Bath data holdings in external archives are not lost if they close down.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0040",
+      "text": "As a Bath Data Archive administrator, I want to encourage and promote the use of open standards for deposit, so that data is as reusable as possible.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0041",
+      "text": "As a Research Information manager, I want to integrate the archive with CRIS, so that I can analyse impact of research data publication I can link funding to all of the outputs it produces.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0042",
+      "text": "As a Research Information manager, I want to include records for externally held data complete, so that the university's record of data holdings is complete.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0043",
+      "text": "As a Research Information manager, I want to track citation counts for published datasets, so that impact of datasets within academia can be demonstrated.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0044",
+      "text": "As a Research Information manager, I want to segment the view and download statistics by country and sector so that impact of datasets outside academia can be demonstrated.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0045",
+      "text": "As a Research Information manager, I want to have datasets linked to metadata about projects, so that I can report on projects depositing datasets in relation to funder requirements.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0046",
+      "text": "As an UnivITservice, I want to store archived data on existing storage systems, so that university data storage is consistent and maintainable and future availability of data can be guaranteed.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0047",
+      "text": "As an UnivITservice, I want to integrate the archive with existing university systems such as LDAP, so that the cost of administering the system can be kept low.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0048",
+      "text": "As an UnivITservice, I want to store archived data directly on the HCP object store, so that  features can be made.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0049",
+      "text": "As an UnivITservice, I want to be able to export all data to a different system, so that I am not tied into one system which may not be the most appropriate at some point in the future.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0050",
+      "text": "As a developer, I want to deposit and maintain datasets via an API such as SWORD2, so that my service can interact with the archive.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0051",
+      "text": "As an academicpublisher, I want to make persistent web links between my articles and underlying datasets, so that my journals can be seen to be filled with robust, high quality research.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0052",
+      "text": "As a fundingbody, I want to be reassured that researchers I fund have robust archival plans for their data, so that I can be sure that funding them is a worthwhile investment.",
+      "source_doc_id": "dalpiaz-18"
+    },
+    {
+      "id": "DALPIAZ-18-0053",
+      "text": "As a fundingbody, I want to harvest metadata on outputs from research I fund, so that I can analyse effectiveness of funding strategy and I can encourage cross fertilisation of research outputs.",
+      "source_doc_id": "dalpiaz-18"
+    }
+  ]
+}

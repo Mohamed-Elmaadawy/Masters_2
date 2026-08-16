@@ -1,0 +1,375 @@
+{
+  "doc_id": "promise-6",
+  "requirements": [
+    {
+      "id": "PROMISE-6-0001",
+      "text": "The product must work with most database management systems (DBMS) on the market  whether the DBMS is colocated with the product on the same machine or is located on a different machine on the computer network.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0002",
+      "text": "The product will function alongside server software on any operating system where the Java runtime can be installed.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0003",
+      "text": "The product will require collaboration with a database management system (DBMS).  The DBMS may be located on the same machine as the product or on a separate machine residing on the same computer network.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0004",
+      "text": "The product must make use of web/application server technology.  Open source examples include Apache web server  Tomcat  and the JBoss application server.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0005",
+      "text": "A database management system such as Oracle  DB2  MySql or HSQL will need to be integrated with the product.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0006",
+      "text": "The product’s Look and Feel shall be able to incorporate aspects of the customer’s organization such as logo  branding  and identity",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0007",
+      "text": "The product shall have a conservative and professional appearance.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0008",
+      "text": "The product shall make the users want to use it. 80% of the users surveyed report they are regularly using the product after the first 2 weeks post-launch.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0009",
+      "text": "The product shall be easy to use. 90% of users will be able to successfully reserve a conference room within 5 minutes of product use.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0010",
+      "text": "The product shall give users feedback when necessary. 80% of the users surveyed report that the product accurately confirms their actions.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0011",
+      "text": "The product shall allow the user to select a chosen language from one of the target market countries.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0012",
+      "text": "The product shall allow for customization of start page and views preferences.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0013",
+      "text": "An employee will be able to successfully use the product within a few minutes.  After informally navigating the product for less than 15 minutes  users shall be able to successfully setup meetings and reserve conference rooms.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0014",
+      "text": "The product shall use a standard navigation menu familiar to most web users.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0015",
+      "text": "The product shall allow for intuitive searching of available conference rooms.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0016",
+      "text": "The product shall conform to the Americans with Disabilities Act.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0017",
+      "text": "The response shall be fast enough to avoid interrupting the user’s flow of thought.  90% of tasks shall complete within 5 seconds.  98% of tasks shall complete within 8 seconds.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0018",
+      "text": "Aside from server failure  the software product shall achieve 99.99% up time.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0019",
+      "text": "The product shall create an exception log of problems encountered within the product for transmission to our company for analysis and resolution.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0020",
+      "text": "The product shall be capable of handling up to 1 000 concurrent requests.  This number will increase to 2 000 by Release 2.  The concurrency capacity must be able to handle peak scheduling times such as early morning and late afternoon hours.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0021",
+      "text": "The product shall be able to process 10 000 transactions per hour within two years of its launch.  This number will increase to 20 000 by Release 2.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0022",
+      "text": "The product shall be expected to operate for at least 5 years for each customer installation.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0023",
+      "text": "The product shall be used in office environments.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0024",
+      "text": "The product must be able to interface with any HTML browser.  The product shall transmit data between the user and the product without problems. The product shall display HTML properly in 80% of all HTML browsers tested (minimum is to test 8 browsers).",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0025",
+      "text": "The product must be able to interface with various database management systems. The product shall communicate successfully with the database management system on 100% of all transactions.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0026",
+      "text": "The product must be able to interface with various email servers. The product shall be able to send email.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0027",
+      "text": "The product shall be available for distribution via the Internet as a binary or ZIP file.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0028",
+      "text": "The product shall be available for distribution as a packaged CD.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0029",
+      "text": "The product will be available for licensing as a one-server  two-five servers  or five-or-more servers license.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0030",
+      "text": "A new user must be able to be added to the system within 10 minutes.  90% of new users are able to log into the system within 10 minutes.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0031",
+      "text": "The product must be designed using Design Patterns and coding best practices.  90% of maintenance software developers are able to integrate new functionality into the product with 2 working days.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0032",
+      "text": "The product must be highly configurable for use with various database management systems for the end users.  80% of end users are able to integrate new database management systems with the product without changing the product’s software code.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0033",
+      "text": "Maintenance releases will be offered to customers once a year.  The releases shall take no longer than 5 minutes for 80% of the customer base to install.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0034",
+      "text": "Every registered user will have access to the product’s support site via the Internet.  70% of registered users shall find a solution to their problem within 5 minutes of using the support site.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0035",
+      "text": "The customer shall be able to easily integrate new building maps with the product throughout the product’s lifecycle.  Integration of new maps with the product shall be possible with little to no support from product support staff.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0036",
+      "text": "The product shall be translated into foreign languages other than the target market countries’ languages in future releases.  For each emerging target market  it shall take no more than 5 days to configure the product for that market’s language.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0037",
+      "text": "The product is expected to integrate with multiple database management systems.  The product will operate with Oracle  SQL Server  DB2  MySQL  HSQL  and MS Access.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0038",
+      "text": "The product shall be able to be installed in any operating environment within 2 days.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0039",
+      "text": "The product shall ensure that only company employees or external users with company-approved user IDs may have product access.  100% of all logons shall be by either company employees or external users with company-approved user IDs.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0040",
+      "text": "Only managers are able to perform search queries for reservations by user.  100% of all search queries for reservations by user shall be from logons of only management logons.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0041",
+      "text": "The product shall ensure that the database’s data corresponds to the data entered by the user.  Each conference room reservation in the system will contain the same information as was entered by the user.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0042",
+      "text": "The product shall prevent the input of malicious data.  The product and/or adjacent hardware/software systems’ data shall remain 100% uncorrupted each time malicious data is input into the product.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0043",
+      "text": "The product and/or dependent databases/filesystems shall remain operational as a result of the input of malicious data.  The product and/or dependent databases/filesystems shall not crash 100% of the time that malicious data is input into the product.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0044",
+      "text": "The product shall have the ability to receive automatic software updates as new threats emerge.  100% of customers will be able to receive automatic software updates transmitted to the installed product.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0045",
+      "text": "The language of the product shall accommodate all of the target market countries. 90% of survey respondents from each target market country will find that the language of the product is acceptable.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0046",
+      "text": "The product shall be able to display calendar dates and times according to the user’s locale.  90% of survey respondents from each target market country will find that the date and time formatting of the product is correct.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0047",
+      "text": "The product must be developed with the J2SE/J2EE programming language libraries",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0048",
+      "text": "The product shall record meeting entries.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0049",
+      "text": "The product will notify employees of meeting invitations.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0050",
+      "text": "The product shall have the ability to send meeting reminders to employees.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0051",
+      "text": "The product shall assign the organizers contact information to each meeting they create.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0052",
+      "text": "The product will record meeting acknowledgements.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0053",
+      "text": "The product shall store new conference rooms.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0054",
+      "text": "The product shall update existing conference rooms.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0055",
+      "text": "The product will be able to delete conference rooms.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0056",
+      "text": "The product shall be able to store new room equipment.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0057",
+      "text": "The product will update existing room equipment.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0058",
+      "text": "The product shall be able to delete room equipment.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0059",
+      "text": "The product shall allow an organizer to invite other employees to meetings.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0060",
+      "text": "Each time a conference room is reserved  the conference room schedule shall be updated to reflect the time and date of the reservation.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0061",
+      "text": "The product shall record the transportation status of equipment reserved.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0062",
+      "text": "The product shall display a map of the company building showing conference room locations.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0063",
+      "text": "The product shall record updated meeting agendas.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0064",
+      "text": "The product shall send a meeting confirmation to the meeting organizer.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0065",
+      "text": "The product shall display room equipment according to search parameters.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0066",
+      "text": "The product shall display conference rooms according to search parameters.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0067",
+      "text": "The product shall record different meeting types.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0068",
+      "text": "The product shall record all the equipment that has been reserved.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0069",
+      "text": "The product shall notify building personnel of equipment transport requests.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0070",
+      "text": "The product will allow priviledged users to view meeting schedules in multiple reporting views.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0071",
+      "text": "The product shall be able to send meeting notifications via different kinds of end-user specified methods.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0072",
+      "text": "The product shall have a customizable Look and Feel.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0073",
+      "text": "The product shall have an intuitive user interface.",
+      "source_doc_id": "promise-6"
+    },
+    {
+      "id": "PROMISE-6-0074",
+      "text": "The product will display an available status for unreserved conference rooms.",
+      "source_doc_id": "promise-6"
+    }
+  ]
+}

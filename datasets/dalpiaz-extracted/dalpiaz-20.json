@@ -1,0 +1,695 @@
+{
+  "doc_id": "dalpiaz-20",
+  "requirements": [
+    {
+      "id": "DALPIAZ-20-0001",
+      "text": "As an OlderPerson, I want to know exactly what ALFRED does with my personal data, and share it only on my specific permission.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0002",
+      "text": "As an OlderPerson, I want to receive information from ALFRED by speech technology.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0003",
+      "text": "As an OlderPerson, I want to use only well-visible buttons.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0004",
+      "text": "As an OlderPerson, I want to use ALFRED as much as possible with speech interaction.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0005",
+      "text": "As an OlderPerson, I want to always keep control on the activities of ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0006",
+      "text": "As an OlderPerson, I want to be able to manage my privacy and data settings.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0007",
+      "text": "As an OlderPerson, I want to have everything preinstalled, so that I do not have to set up ALFRED by myself.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0008",
+      "text": "As an OlderPerson, I want to have a small ALFRED device that is wearable and easy to carry with me.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0009",
+      "text": "As an OlderPerson, I want to have ALFRED on all my computers, tablets and phone.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0010",
+      "text": "As an OlderPerson, I want to have ALFRED on a bracelet or a necklace, so that I can always wear him with me.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0011",
+      "text": "As an OlderPerson, I want to have clear instructions and service after sales that guide me if I have trouble in using ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0012",
+      "text": "As an OlderPerson, I want to have an ALFRED device that speaks very slowly and clearly.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0013",
+      "text": "As an OlderPerson, I want to have an ALFRED device that only reacts to me.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0014",
+      "text": "As an OlderPerson, I want to have an ALFRED device that only listens to me when I ask it to.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0015",
+      "text": "As an OlderPerson, I want to have an introduction conversation with ALFRED, so that I can learn everything about him and he about me.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0016",
+      "text": "As an OlderPerson, I want to buy ALFRED in a senior shop with special client support.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0017",
+      "text": "As an OlderPerson, I want to buy ALFRED for a low price.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0018",
+      "text": "As an OlderPerson, I want to receive visual support, especially when looking at a list, map or agenda.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0019",
+      "text": "As an OlderPerson, I want to use ALFRED to pay for small amounts.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0020",
+      "text": "As an OlderPerson, I want to have a very good battery for ALFRED so I can keep him on the whole day.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0021",
+      "text": "As an OlderPerson, I want to have an ALFRED device that informs me about a low battery when leaving the house.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0022",
+      "text": "As an OlderPerson, I want to have an ALFRED device that can be easily adapted for user that have visual or hearing troubles.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0023",
+      "text": "As an OlderPerson, I want to have an ALFRED device that can be easily adapted for user that have visual troubles.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0024",
+      "text": "As an OlderPerson, I want to have an ALFRED device that can be easily adapted for user that have hearing trouble.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0025",
+      "text": "As an OlderPerson, I want to have an ALFRED device that repeats the last phrase.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0026",
+      "text": "As an OlderPerson, I want to be able to zoom into visual content.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0027",
+      "text": "As an OlderPerson, I want to have an ALFRED device that responds to the changing demand of the users by offering new Apps in the ALFREDO platform.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0028",
+      "text": "As an OlderPerson, I want to have an ALFRED device that helps me to communicate with my friends and family.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0029",
+      "text": "As an OlderPerson, I want to have video conversation with others.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0030",
+      "text": "As a MedicalCaregiver, I want to have videophone.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0031",
+      "text": "As an OlderPerson, I want to have an AFLRED device that encourages its users for real interaction between humans and not only with ICT tools.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0032",
+      "text": "As an OlderPerson, I want to have an ALFRED device that provides me with information about existing apps that corresponds to my interests.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0033",
+      "text": "As an OlderPerson, I want to be able to customize my preferences in the different functionalities of the solution.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0034",
+      "text": "As a MedicalCaregiver, I want to have a simple ALFRED unit that is expandable in is functions.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0035",
+      "text": "As an OlderPerson, I want to have my data stored directly on the phone.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0036",
+      "text": "As an OlderPerson, I want to receive a wake up call from ALFRED in the morning checking on me if I am ok.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0037",
+      "text": "As an OlderPerson, I want to receive day and night rythm support with agenda reminders.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0038",
+      "text": "As an OlderPerson, I want to receive support to use the public transport.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0039",
+      "text": "As an OlderPerson, I want to use ALFRED for navigation.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0040",
+      "text": "As an OlderPerson, I want to use ALFRED for touristic walks and indications with explanations on historical and cultural sights.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0041",
+      "text": "As an OlderPerson, I want to receive support to have a taxi on time.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0042",
+      "text": "As an OlderPerson, I want to use ALFRED to see who is standing at my door and open the door.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0043",
+      "text": "As an OlderPerson, I want to use ALFRED to pick the phone sooner up when I am at home.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0044",
+      "text": "As an OlderPerson, I want to use ALFRED to turn on/off the lights.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0045",
+      "text": "As an OlderPerson, I want to use ALFRED to control the heating.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0046",
+      "text": "As an OlderPerson, I want to use ALFRED to control the TV and radio.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0047",
+      "text": "As an OlderPerson, I want to use ALFRED to watch movies.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0048",
+      "text": "As an OlderPerson, I want to use ALFRED to hear about the news.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0049",
+      "text": "As an OlderPerson, I want to use ALFRED to contact help in case of an emergency.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0050",
+      "text": "As a MedicalCaregiver, I want to use video calls in case of emergency.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0051",
+      "text": "As an OlderPerson, I want to have ALFRED contact the nearest caregiver when I ask ALFRED for urgent help.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0052",
+      "text": "As an OlderPerson, I want to receive a message when my home care nurse is on her way.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0053",
+      "text": "As an OlderPerson, I want to receive a medicine reminder from ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0054",
+      "text": "As an OlderPerson, I want to be able to see whether I already have taken my pills, so that I can avoid an overdose.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0055",
+      "text": "As a MedicalCaregiver, I want to be able to see if the patient has taken her medicine.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0056",
+      "text": "As an OlderPerson, I want to use ALFRED to do my grocery shopping.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0057",
+      "text": "As an OlderPerson, I want to use ALFRED to send messages.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0058",
+      "text": "As an OlderPerson, I want to have ALFRED to detect falls and send an emergency to a specific contact.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0059",
+      "text": "As an OlderPerson, I want to have ALFRED to suggest healthy recipes.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0060",
+      "text": "As an OlderPerson, I want to have ALFRED ask spontaneous questions but it would be better to programme it during certain times of the day.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0061",
+      "text": "As an OlderPerson, I want to have ALFRED to initiate questions, but it should be in the domains of my interest such as cinema, exhibitions, cooking.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0062",
+      "text": "As an OlderPerson, I want to be able to call someone with ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0063",
+      "text": "As an OlderPerson, I want to activate the vocal interaction mode of ALFRED by pushing a specific button.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0064",
+      "text": "As an OlderPerson, I want to use ALFRED to maintain my contact list in my phone.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0065",
+      "text": "As an OlderPerson, I want to use ALFRED to manage my agenda.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0066",
+      "text": "As an OlderPerson, I want to insert my meetings into ALFRED using speech.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0067",
+      "text": "As an OlderPerson, I want to receive reminders on my appointments.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0068",
+      "text": "As an OlderPerson, I want to receive a reminder from ALFRED on all the things I need to bring with me when I leave the house.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0069",
+      "text": "As a SocialCaregiver, I want ALFRED to remind me of the things I need to bring to the person I care for.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0070",
+      "text": "As an OlderPerson, I want to use ALFRED to set up social groups of people with similar diseases.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0071",
+      "text": "As an OlderPerson, I want to use ALFRED to contact people from my own circle.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0072",
+      "text": "As an OlderPerson, I want to use ALFRED to learn about art expositions or a museum.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0073",
+      "text": "As an OlderPerson, I want to use ALFRED to learn about all the social activities that are organized in my neighborhood.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0074",
+      "text": "As an OlderPerson, I want to use ALFRED to get a personalized invitation to a social event, so that it motivates more to go.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0075",
+      "text": "As an OlderPerson, I want to use ALFRED to navigate to an event or concert and help me when I am lost.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0076",
+      "text": "As an OlderPerson, I want to use ALFRED to help me navigate despite my mild cognitive impairments.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0077",
+      "text": "As an OlderPerson, I want to be able to pay for small amounts.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0078",
+      "text": "As an OlderPerson, I want to use ALFRED to organize a meeting with a group of friends at a certain place.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0079",
+      "text": "As an OlderPerson, I want to play online games together with other users.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0080",
+      "text": "As an OlderPerson, I want to get suggestions for sports classes in my neighbourhood.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0081",
+      "text": "As an OlderPerson, I want to have ALFRED to enable me to have face to face contacts as well, so that I do not just have virtual contacts over ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0082",
+      "text": "As an OlderPerson, I want to help me to control my body weight.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0083",
+      "text": "As an OlderPerson, I want to just press one button to call my caregiver.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0084",
+      "text": "As an OlderPerson, I want to decide who has access to my vital data.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0085",
+      "text": "As a MedicalCaregiver, I want to be sure that the user can decide who has access to her data.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0086",
+      "text": "As an OlderPerson, I want to have the wearables with integrated sensors to look good and not to be stigmatizing.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0087",
+      "text": "As an OlderPerson, I want to see my vital parameters myself on the phone.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0088",
+      "text": "As an OlderPerson, I want to have the ALFRED shirt to look good.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0089",
+      "text": "As an OlderPerson, I want to have the ALFRED shirt has to be non stigmatizing.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0090",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to be able to determine the user's blood pressure.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0091",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to be able to determine the user's body temperature.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0092",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to be able to determine the user's heart rate.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0093",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to be able to determine the user's breathing frequency.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0094",
+      "text": "As a MedicalCaregiver, I want to have feedback on the activity level of the user.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0095",
+      "text": "As a MedicalCaregiver, I want to locate the ALFRED user.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0096",
+      "text": "As a SocialCaregiver, I want to have ALFRED to be able to recognize pain and or stress by using skin conduction sensors.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0097",
+      "text": "As a SocialCaregiver, I want to have a step counter included into ALFRED.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0098",
+      "text": "As an OlderPerson, I want to have ALFRED to give me goals and missions that encourage me to do new activities and exercises and to go out.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0099",
+      "text": "As an OlderPerson, I want to have ALFRED to set limits in the games duration as I get bored easily.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0100",
+      "text": "As an OlderPerson, I want to play games where I can use my Imagination.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0101",
+      "text": "As an OlderPerson, I want to do guided exercises with ALFRED and ALFRED should also use sensors to capture health data while I am doing exercises.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0102",
+      "text": "As an OlderPerson, I want to have games that include my favourite sports.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0103",
+      "text": "As an OlderPerson, I want to receive suggestions about local sport Classes.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0104",
+      "text": "As an OlderPerson, I want to have ALFRED to remind me to keep a good body posture.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0105",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to remind people to exercise regularly.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0106",
+      "text": "As an OlderPerson, I want to receive specific tips how to reduce my health impairments without medication.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0107",
+      "text": "As an OlderPerson, I want to have some games that show me how good my memory and physical health is.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0108",
+      "text": "As an OlderPerson, I want to have training for specific muscle Groups.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0109",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to offer training for specific muscle groups.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0110",
+      "text": "As an OlderPerson, I want to be able to see my training Performance.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0111",
+      "text": "As an OlderPerson, I want to have ALFRED to help to motivate me during the week to do exercise that should change daily, as the constant change motivates me.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0112",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to propose me games that require the combination of mental and physical exercise, such as opposing motion exercises of the arms and legs.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0113",
+      "text": "As an OlderPerson, I want to games that require the combination of mental and physical exercise, such as opposing motion exercises of the arms and legs.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0114",
+      "text": "As a MedicalCaregiver, I want to control if the user does the exercise correct.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0115",
+      "text": "As a MedicalCaregiver, I want to have a regular summary on how much exercise is performed by the user.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0116",
+      "text": "As an InformalCaregiver, I want to have a game that the carer could play together with the user, so that it would enable to monitor the users’ state of health but also have some fun time.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0117",
+      "text": "As a MedicalCaregiver, I want to have ALFRED to propose training that promotes complex thinking.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0118",
+      "text": "As a MedicalCaregiver, I want to give corrective feedback if exercises are performed wrong, too much or in any other way harmful to the user.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0119",
+      "text": "As a developer, I want to present my app to as many people as Possible.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0120",
+      "text": "As a developer, I want to have the accounting to be as simple and clear as Possible.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0121",
+      "text": "As a developer, I want to easily create and to maintain my apps within the market place.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0122",
+      "text": "As a developer, I want to enable customers to provide feedback about my App and need an easy way to watch this feedback.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0123",
+      "text": "As a developer, I want to have an easy way to manage the pricing modality of my Apps.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0124",
+      "text": "As a developer, I want to have the API to be well defined and well documented.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0125",
+      "text": "As a developer, I want to obtain Apps development support.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0126",
+      "text": "As a developer, I want to know the fees the provider of the market place charges for using the platform.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0127",
+      "text": "As a developer, I want to be notified as soon as possible when the state of any of my Apps changes.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0128",
+      "text": "As a developer, I want to have detailed information of what happened when my App crashes on the user’s device.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0129",
+      "text": "As a developer, I want to present my App in several ways.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0130",
+      "text": "As a developer, I want to be able to design my App on my own - though there will be a few rules I have to stand to.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0131",
+      "text": "As a developer, I want to have an easy way to define questions the user can ask and perform.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0132",
+      "text": "As a developer, I want to have my App to be granted access to several operating system features.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0133",
+      "text": "As a developer, I want to have the API components to be on a high level so that I don’t have to deal with their details.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0134",
+      "text": "As a developer, I want to have an easy way to read data from health sensors the user is wearing.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0135",
+      "text": "As a serious games developer, I want to be able to take control over some functions to provide the desired user experience.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0136",
+      "text": "As a developer, I want to provide an easy way to manage the user Settings.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0137",
+      "text": "As a developer, I want to have the ALFRED API to reduce the work to achieve my goals.",
+      "source_doc_id": "dalpiaz-20"
+    },
+    {
+      "id": "DALPIAZ-20-0138",
+      "text": "As a developer, I want to have the ALFRED API to reduce the work to achieve my goals.",
+      "source_doc_id": "dalpiaz-20"
+    }
+  ]
+}

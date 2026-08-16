@@ -627,6 +627,98 @@ def test_resume_after_completion_makes_no_stage_calls() -> None:
         ok("no stage calls made on resume", resume_fake.calls == 0)
 
 
+# ---------------------------------------------------------------------------------
+# label-system-type -- offline capture of the operator's own SystemType label.
+# ---------------------------------------------------------------------------------
+
+def _completed_happy_run(tmp_path: Path, run_id: str, req_id: str = "REQ-1") -> Path:
+    config_path = write_config_yaml(tmp_path, run_id=run_id)
+    input_path = write_input_json(tmp_path, req_id=req_id)
+    fake = FakeAdapter(_happy_path_responses(req_id))
+    code = _run(["run", str(config_path), str(input_path)],
+                adapter_factories={"gemini": lambda: fake, "groq": _spy_factory()},
+                human_fns_factory=_human_fns_unused)
+    ok("fixture run completes", code == EXIT_SUCCESS)
+    return tmp_path / "runs" / run_id
+
+
+def test_label_system_type_records_operator_label() -> None:
+    section("label-system-type records the operator's label without touching classification")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = _completed_happy_run(tmp_path, "run-label-agree", req_id="REQ-1")
+
+        labels_path = tmp_path / "labels.json"
+        labels_path.write_text(json.dumps({"REQ-1": "other"}))  # matches the fixture's classification
+
+        messages: list[str] = []
+        code = _run(["label-system-type", str(run_dir), str(labels_path)], output_fn=messages.append)
+
+        ok("exit code is EXIT_SUCCESS", code == EXIT_SUCCESS)
+        ok("summary reports one agreement", any("Agrees with Classifier: 1" in m for m in messages))
+
+        record = read_document_run(run_dir)
+        req_record = record.requirement_records[0]
+        ok("operator_system_type is recorded", req_record.operator_system_type == SystemType.OTHER)
+        ok("classification.system_type is untouched",
+           req_record.classification.system_type == SystemType.OTHER)
+
+
+def test_label_system_type_disagreement_is_recorded_not_reconciled() -> None:
+    section("a disagreeing operator label is stored as-is, no validator forces agreement")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = _completed_happy_run(tmp_path, "run-label-disagree", req_id="REQ-1")
+
+        labels_path = tmp_path / "labels.json"
+        labels_path.write_text(json.dumps({"REQ-1": "ai_system"}))  # fixture classified "other"
+
+        messages: list[str] = []
+        code = _run(["label-system-type", str(run_dir), str(labels_path)], output_fn=messages.append)
+
+        ok("exit code is EXIT_SUCCESS", code == EXIT_SUCCESS)
+        ok("summary reports one disagreement", any("Disagrees: 1" in m for m in messages))
+
+        record = read_document_run(run_dir)
+        req_record = record.requirement_records[0]
+        ok("operator_system_type keeps the operator's own value",
+           req_record.operator_system_type == SystemType.AI_SYSTEM)
+        ok("classification.system_type still says what the Classifier said",
+           req_record.classification.system_type == SystemType.OTHER)
+
+
+def test_label_system_type_unknown_requirement_id_rejected() -> None:
+    section("a labels file naming an id not in the run is rejected, nothing written")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = _completed_happy_run(tmp_path, "run-label-unknown", req_id="REQ-1")
+        before = read_document_run(run_dir).requirement_records[0].model_dump_json()
+
+        labels_path = tmp_path / "labels.json"
+        labels_path.write_text(json.dumps({"REQ-1": "other", "REQ-DOES-NOT-EXIST": "web"}))
+
+        messages: list[str] = []
+        code = _run(["label-system-type", str(run_dir), str(labels_path)], output_fn=messages.append)
+
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+        ok("message names the unknown id", any("REQ-DOES-NOT-EXIST" in m for m in messages))
+        after = read_document_run(run_dir).requirement_records[0].model_dump_json()
+        ok("the known requirement's record is untouched (all-or-nothing)", before == after)
+
+
+def test_label_system_type_bad_value_rejected() -> None:
+    section("a label value that isn't one of the four SystemType members is rejected")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        run_dir = _completed_happy_run(tmp_path, "run-label-badvalue", req_id="REQ-1")
+
+        labels_path = tmp_path / "labels.json"
+        labels_path.write_text(json.dumps({"REQ-1": "embedded"}))  # not a real SystemType
+
+        code = _run(["label-system-type", str(run_dir), str(labels_path)])
+        ok("exit code is EXIT_CONFIG_ERROR", code == EXIT_CONFIG_ERROR)
+
+
 ALL_TESTS = [
     test_bad_config_shape_rejected,
     test_malformed_yaml_rejected,
@@ -644,6 +736,10 @@ ALL_TESTS = [
     test_resume_mismatched_requirement_file_rejected,
     test_resume_run_config_run_id_mismatch_rejected,
     test_resume_after_completion_makes_no_stage_calls,
+    test_label_system_type_records_operator_label,
+    test_label_system_type_disagreement_is_recorded_not_reconciled,
+    test_label_system_type_unknown_requirement_id_rejected,
+    test_label_system_type_bad_value_rejected,
 ]
 
 

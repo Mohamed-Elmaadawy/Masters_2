@@ -1,0 +1,370 @@
+{
+  "doc_id": "promise-5",
+  "requirements": [
+    {
+      "id": "PROMISE-5-0001",
+      "text": "The product must support Internet Explorer 5.5 and above.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0002",
+      "text": "The product must support Mozilla Firefox 1.0 and above.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0003",
+      "text": "The product shall interface with the Choice Parts System.  This provides the feed of recycled parts data.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0004",
+      "text": "The product shall run on the existing hardware for all environments.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0005",
+      "text": "The product shall adhere to the corporate Architecture guidelines",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0006",
+      "text": "The product shall comply with corporate User Interface Guidelines",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0007",
+      "text": "The product shall comply with corporate color scheme",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0008",
+      "text": "The appearance of the product shall appear professional",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0009",
+      "text": "The product shall be easy to use by Adjusters and Collision Estimators.  95% of Adjusters and Collision Estimators shall find the product easy to use.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0010",
+      "text": "The product shall increase productivity of Collision Estimators. 80% of the Collision Estimators shall agree their productivity has increase within 1 month of using the product.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0011",
+      "text": "Users shall feel satisfied using the product.  85% of all users will be satisfied with the product.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0012",
+      "text": "The product shall be easy to learn by Adjusters and Collision Estimators.  The product shall be learned with two days onsite training",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0013",
+      "text": "The user shall easily locate instructions while using the product.  User help can be found within 90% of the system.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0014",
+      "text": "The search for recycled parts shall take no longer than 15 seconds.  The search results shall be returned in under 15 seconds.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0015",
+      "text": "The search for the preferred repair facility shall take no longer than 8 seconds.  The preferred repair facility is returned within 8 seconds",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0016",
+      "text": "The recycled parts audit report shall be returned to the user within 10 seconds.  The audit report shall be returned within 10 seconds.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0017",
+      "text": "The preferred repair facility ratings shall be saved within 5 seconds. The save shall occur within 5 seconds.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0018",
+      "text": "The product shall adhere to the corporate online availability schedule.  The application is brought down only within 98% of the scheduled outages per the availability schedule.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0019",
+      "text": "The product shall achieve a 98% uptime. The product shall not fail more than 2% of the available online time.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0020",
+      "text": "The product shall be able to handle up to 1500 simultaneous users. The system shall perform with 1500 users as a time.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0021",
+      "text": "The average number of recycled parts records per day shall be 50 000.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0022",
+      "text": "The product shall be able to handle 10 000 concurrent users within 2 years of the initial launch.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0023",
+      "text": "For estimators  the product shall be able to be operated in a repair facility during dirty and noisy conditions.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0024",
+      "text": "The product shall interface with the ChoiceParts system once per day at approximately 1:00 AM.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0025",
+      "text": "The maintenance of the product will fall within the established corporate maintenance windows.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0026",
+      "text": "The product shall be supported using the corporate support center.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0027",
+      "text": "Product installations and upgrades shall be handled by the middleware technology team within established launch time frames.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0028",
+      "text": "Only adjusters can request recycled parts audit reports. No users without an adjuster role shall request recycled parts audits.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0029",
+      "text": "Only adjusters with a supervisor role can update preferred repair facility ratings. Users without the supervisor role cannot access the repair facility ratings.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0030",
+      "text": "Only collision estimators shall search for recycled parts.  Users without the collision estimator role shall not have access to the search for recycled parts.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0031",
+      "text": "Only valid data shall be entered into the system.  No invalid data shall be entered into the system.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0032",
+      "text": "One insurance company shall not be able to view another insurance companys claim data.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0033",
+      "text": "The product shall free of computer viruses.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0034",
+      "text": "The system shall prevent malicious attacks including denial of service.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0035",
+      "text": "The product must comply with Sarbanes-Oxley.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0036",
+      "text": "The product shall comply with the estimatics laws relating to recycled parts usage.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0037",
+      "text": "The product shall comply with insurance regulations regarding claims processing.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0038",
+      "text": "The user shall search for the preferred repair facility using vehicle  vehicle location  and radius in miles",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0039",
+      "text": "The vehicle data shall include vehicle year  make  and model",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0040",
+      "text": "The vehicle location shall include street address  city  state  and zipcode",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0041",
+      "text": "The system shall resolve the zipcode for the street address  city  and state if zipcode is unknown.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0042",
+      "text": "The search radius shall be between 1 and 30 miles",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0043",
+      "text": "The system shall locate the preferred repair facility with the highest ratings for the input criteria",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0044",
+      "text": "The adjuster shall enter the preferred repair facility on the estimate assignment.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0045",
+      "text": "The adjuster shall be able to override the preferred repair facitlity on the estimate assignment.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0046",
+      "text": "The preferred repair facility shall be returned to the user.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0047",
+      "text": "The system shall return a list of repair facilities within the radius if the preferred repair facility cannot be determined.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0048",
+      "text": "The estimator shall search for available recycled parts using damaged vehicle parts information.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0049",
+      "text": "The estimator shall search for available recycled parts using a list of preferred parts suppliers.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0050",
+      "text": "The system shall search for available recycled parts for the supplied vehicle parts and suppliers.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0051",
+      "text": "The estimator shall search by zipcode with a radius of 30 miles if no parts are found for the preferred parts suppliers",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0052",
+      "text": "The system shall retain the available recycled parts and suppliers returned from the search.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0053",
+      "text": "The available recycled parts information and their suppliers shall be returned to the user.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0054",
+      "text": "The estimator shall apply selected recycled parts to the collision estimate.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0055",
+      "text": "The estimator shall not apply recycled parts to the collision estimate if no available parts are returned.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0056",
+      "text": "The adjuster shall review the collision estimate.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0057",
+      "text": "The adjuster shall request a recycled parts audit of the collision estimate.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0058",
+      "text": "The recycled parts search results provided to the estimator shall be retrieved by the system.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0059",
+      "text": "The system shall generate an audit report based on the available recycled parts and the collision estimate.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0060",
+      "text": "The audit report shall include the total number of recycled parts used in the estimate.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0061",
+      "text": "The audit report shall include the number of available recycled parts from the original search results.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0062",
+      "text": "The audit report shall include the percentage of available recycled parts used in the estimate",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0063",
+      "text": "The audit report shall include the total score of the audit which sums the indivual line items.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0064",
+      "text": "The audit report shall be displayed to the user.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0065",
+      "text": "The audit report shall be available to other adjusters at later points in time.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0066",
+      "text": "The user shall select to view the preferred repair facility ratings.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0067",
+      "text": "The current repair facility ratings shall be displayed to the user.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0068",
+      "text": "The system will display a blank set of ratings if there are not ratings yet defined.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0069",
+      "text": "The user shall enter new ratings based on the audit report",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0070",
+      "text": "The ratings shall be from a scale of 1-10",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0071",
+      "text": "The ratings shall include categories for attempted use of recycled parts and actual use of recycled parts",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0072",
+      "text": "The user shall select to save the preferred repair facility ratings.",
+      "source_doc_id": "promise-5"
+    },
+    {
+      "id": "PROMISE-5-0073",
+      "text": "The preferred repair facility ratings shall be saved by the system.",
+      "source_doc_id": "promise-5"
+    }
+  ]
+}

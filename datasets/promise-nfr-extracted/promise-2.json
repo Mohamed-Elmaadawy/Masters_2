@@ -1,0 +1,205 @@
+{
+  "doc_id": "promise-2",
+  "requirements": [
+    {
+      "id": "PROMISE-2-0001",
+      "text": "The look and feel of the system shall conform to the user interface standards of the smart device.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0002",
+      "text": "The user interface shall have standard menus  buttons for navigation",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0003",
+      "text": "The system shall have a professional appearance",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0004",
+      "text": "The product shall have a consistent color scheme and fonts.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0005",
+      "text": "The system shall be used by realtors with no training.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0006",
+      "text": "The system shall be intuitive and self explanatory.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0007",
+      "text": "The product shall be easy for a realtor to learn.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0008",
+      "text": "The product shall use symbols and words that are naturally understandable by the realtor community.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0009",
+      "text": "The product shall produce search results in an acceptable time",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0010",
+      "text": "The search results shall be returned no later 30      seconds  after the user has entered the search criteria",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0011",
+      "text": "The product shall generate a CMA report in an acceptable time.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0012",
+      "text": "The CMA report shall be returned no later 60 seconds after the user has entered the CMA report criteria.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0013",
+      "text": "The product shall synchronize contacts and appointments in an acceptable time.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0014",
+      "text": "The product shall synchronize with the office system every hour.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0015",
+      "text": "The product shall be available for use 24 hours per day  365 days  per year",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0016",
+      "text": "Out of 1000 accesses to the system  the system is available 999 times.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0017",
+      "text": "The product shall operate in offline mode whenever internet connection is unavailable.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0018",
+      "text": "The product shall allow the user to view previously downloaded search results  CMA reports  and appointments.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0019",
+      "text": "The product shall retain user preferences in the event of a failure.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0020",
+      "text": "100% of saved user preferences shall be restored when system comes back online.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0021",
+      "text": "The product shall be able to support multiple remote users",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0022",
+      "text": "The product shall be able support 1000 simultaneous users.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0023",
+      "text": "The product shall be capable of handling the existing 1000 users. This number is expected to grow 5 times within the next year.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0024",
+      "text": "The product shall be installed by an untrained realtor   without recourse to separately-printed instructions.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0025",
+      "text": "90% of untrained realtors shall be able to install the product on their device without printed instructions",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0026",
+      "text": "The product is expected to run on Windows CE and Palm operating systems.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0027",
+      "text": "Only registered realtors shall be able to access the system.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0028",
+      "text": "Every user of the system shall be authenticated and authorized.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0029",
+      "text": "The product shall prevent its data from incorrect data being introduced.",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0030",
+      "text": "The system shall allow a real estate agent to query MLS information",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0031",
+      "text": "The user shall be able to get driving directions to a selected property",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0032",
+      "text": "The user shall be able to download appointments and contact information for clients",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0033",
+      "text": "The system shall display clear property images in the search results",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0034",
+      "text": "The system shall update or create new property listings in the MLS",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0035",
+      "text": "Realtor shall be able to generate a CMA report based on property criteria",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0036",
+      "text": "The system shall be able to call the seller or buyer to schedule an appointment",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0037",
+      "text": "The realtor shall be notified of new client appointments after automatic synchronization with office system",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0038",
+      "text": "The realtor shall be able to retrieve a map showing property locations for a specified area",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0039",
+      "text": "The system shall notify the realtor when a seller or buyer responds to an appointment request",
+      "source_doc_id": "promise-2"
+    },
+    {
+      "id": "PROMISE-2-0040",
+      "text": "The product shall allow the user to save the property search results.",
+      "source_doc_id": "promise-2"
+    }
+  ]
+}

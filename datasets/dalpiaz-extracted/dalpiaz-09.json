@@ -1,0 +1,340 @@
+{
+  "doc_id": "dalpiaz-09",
+  "requirements": [
+    {
+      "id": "DALPIAZ-09-0001",
+      "text": "As a Publisher, I want to publish a dataset, so that I can view just the dataset with a few people.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0002",
+      "text": "As a Publisher, I want to publish a dataset, so that I can share the dataset publicly with everyone.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0003",
+      "text": "As a Publisher, I want to sign up for an account, so that that I can publish my data package to the registry and to have a publisher account to publish my data package under.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0004",
+      "text": "As a Visitor, I want to sign up via github or google, so that that I don't have to enter lots of information and remember my password for yet another website.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0005",
+      "text": "As a Publisher, I want to know what do next after signing up, so that that I can get going quickly.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0006",
+      "text": "As an Admin, I want to invite someone to join the platform, so that that they can start contributing or using data.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0007",
+      "text": "As a Publisher, I want to import my data package into the registry, so that my data has a permanent online home to access.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0008",
+      "text": "As a Publisher, I want to configure my client, so that I can start publishing data packages.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0009",
+      "text": "As a Publisher, I want to use a publish command to update a data package that is already in the registry, so that it appears there.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0010",
+      "text": "As a Publisher, I want to unpublish a data package, so that it is no longer visible to anyone.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0011",
+      "text": "As a Publisher, I want to permanently delete a data package, so that that it no longer takes up storage space.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0012",
+      "text": "As a Publisher, I want to validate the data I am about to publish to the registry, so that that I publish good data and know that I am doing.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0013",
+      "text": "As a Publisher, I want to data to be validated when I publish it, so that that I know immediately if I have accidentally broken my data or have bugs and can take action to correct.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0014",
+      "text": "As a Consumer, I want to know that the data I am downloading is good and can be relied on, so that that I don't have to check it myself or run into annoying bugs later on.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0015",
+      "text": "As a Publisher, I want to publish a data package where its resource data is stored on my servers but the registry caches a copy of that data, so that that if my data is lost or gets broken I still have a copy people can use.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0016",
+      "text": "As a Consumer, I want to be able to get the data for a data package even if the original data has been moved or removed, so that that I can still use is and my app or analysis keeps working.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0017",
+      "text": "As a Publisher, I want to publish a data package in the UI, so that that it is available and published.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0018",
+      "text": "As a Publisher, I want to create a data package in the UI so that it is available and published.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0019",
+      "text": "As a Publisher, I want to be able to restore the deleted data package via cli, so that that it is back visible and available to view, download.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0020",
+      "text": "As a Publisher, I want to undelete the deleted data packages, so that that the deleted data packages is now visible again.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0021",
+      "text": "As a Publisher, I want to be able to preview the views of the current data package using cli prior to publishing, so that that I can refine the json declarations of datapackage view section to achieve a great looking result.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0022",
+      "text": "As a Consumer, I want to view a data package online, so that I can get a sense of whether this is the dataset I want.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0023",
+      "text": "As a publisher, I want to show the world how my published data is, so that that it immediately catches consumer's attention.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0024",
+      "text": "As a consumer, I want to view the data package, so that that I can get a sense of whether I want this dataset or not.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0025",
+      "text": "As a Publisher, I want to preview a datapackage I have prepared, so that that I can check it works and share the results.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0026",
+      "text": "As a Consumer, I want to see how much the data has been downloaded, so that that I can choose most popular in the case when there are several alternatives for my use case.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0027",
+      "text": "As a Publisher, I want to see real examples of published packages so that I can understand how useful and simple the datapackage format and the registry is.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0028",
+      "text": "As a Consumer, I want to see some example data packages quickly, so that I get a sense of what is on this site and if it is useful to look further.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0029",
+      "text": "As a Consumer, I want to search data packages, so that that I can find the ones I want.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0030",
+      "text": "As a Consumer, I want to search based on description of data package, so that that I can find package which related to some key words.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0031",
+      "text": "As a Consumer, I want to download the data package in one file, so that that I don't have to download descriptor and each resource by hand.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0032",
+      "text": "As a Developer, I want to use data package as a node lib in my project, so that that I can depend on it using my normal dependency framework.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0033",
+      "text": "As a Consumer, I want to load a Data Package from R, so that that I can immediately start playing with it.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0034",
+      "text": "As a Data Analyst I want to download a data package, so that that I can study it and wrangle with it to infer new data or generate new insights.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0035",
+      "text": "As a Data Analyst, I want to update previously downloaded data package, so that that I can work with the most recent data.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0036",
+      "text": "As a Consumer, I want to download a DataPackage's data one coherent SQLite database, so that that I can get it easily in one form.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0037",
+      "text": "As a Data Analyst, I want to compare different versions of some datapackage locally, so that that I can see schema changes clearly and adjust my analytics code to the desired schema version.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0038",
+      "text": "As a Web Developer, I want to be able to install multiple versions of the same datapackage separately, so that that all my projects could be developed independently and deployed locally.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0039",
+      "text": "As a Developer, I want to list all DataPackages requirements for my project in the file and pin the exact versions of any DataPackage that my project depends on, so that that the project can be deterministically deployed locally and won't break because of the DataPackage schema changes.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0040",
+      "text": "As a Publisher, I want to tag datapackage to create a snapshot of data on the registry server, so that that consumers can refer to it.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0041",
+      "text": "As a Publisher, I want to be warned that a tag exists when I try to overwrite it, so that that I don't accidentally overwrite stable tagged data which is relied on by consumers.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0042",
+      "text": "As a Publisher, I want to be able to overwrite the previously tagged datapackage, so that that I can fix it if I mess up.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0043",
+      "text": "As a Publisher, I want to version my Data Package and keep multiple versions around including older versions, so that that I do not break consumer systems when I change my datapackage.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0044",
+      "text": "As a Publisher, I want to be able to get access to a previous version I tagged, so that that I can return to it and review it.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0045",
+      "text": "As a Consumer, I want to know full details of how the data package schema has changed, so that that I can adjust my scripts to handle it.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0046",
+      "text": "As a Consumer, I want to get a sense of the age of the datapackage that I have downloaded before, so that that I can decide if I should update or not.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0047",
+      "text": "As a Consumer, I want to view a Datapackage at a particular version online, so that that I can present/discuss the particular data timeslice of interest with other people.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0048",
+      "text": "As a Consumer, I want to download a Data package at a particular version, so that that I know it is compatible with my scripts and system.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0049",
+      "text": "As a Consumer, I want to be notified of changes to a package I care about, so that that I can check out what has changed and take action.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0050",
+      "text": "As a Consumer, I want to see how active the site is, so that I can decide if I should get involved.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0051",
+      "text": "As a Consumer, I want to browse and find publishers, so that that I can find interesting publishers and their packages.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0052",
+      "text": "As a Consumer, I want to see a publisher's profile, so that that I can discover their packages and get a sense of how active and good they are.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0053",
+      "text": "As a Consumer, I want to view a publisher's profile, so that that I can see who is behind a particular package or to see what other packages they produce.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0054",
+      "text": "As a Consumer, I want to search among all data packages owned by a publisher, so that that I can easily find one data package amongst all the data packages by this publisher.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0055",
+      "text": "As an Owner, I want to edit my profile, so that that it is updated with new information.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0056",
+      "text": "As an Owner, I want to invite an existing user, so that the user can become a member of my publisher.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0057",
+      "text": "As an owner, I want to invite someone using their email to sign up and become a member of my Publisher, so that that they are authorized to publish data packages under my Publisher.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0058",
+      "text": "As an owner, I want to remove someone from membership in my publisher, so that they no longer have ability to publish or modify my data packages.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0059",
+      "text": "As an owner, I want to view all the people in my organization and what roles they have, so that that I can change these if I want.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0060",
+      "text": "As an owner, I want to make a user an owner, so that they have full control.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0061",
+      "text": "As an owner, I want to remove a user as an owner, so that they are just a member and no longer have full control.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0062",
+      "text": "As an Admin, I want to set key configuration parameters for my site deployment, so that that I can change key information like the site title.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0063",
+      "text": "As an Admin, I want to see key metrics about usage such as users, API usage, downloads, so that that I know how things are going.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0064",
+      "text": "As an Admin, I want to have a pricing plan and billing system, so that that I can charge users and make my platform sustainable.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0065",
+      "text": "As a Publisher, I want to know if this site has a pricing plan and what the prices are, so that that I can work out what this will cost me in the future and have a sense that these guys are sustainable.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0066",
+      "text": "As a Publisher, I want to sign up for a given pricing plan, so that that I am entitled to what it allows.",
+      "source_doc_id": "dalpiaz-09"
+    },
+    {
+      "id": "DALPIAZ-09-0067",
+      "text": "As a Publisher, I want to have private data packages, so that I can share just with my team.",
+      "source_doc_id": "dalpiaz-09"
+    }
+  ]
+}

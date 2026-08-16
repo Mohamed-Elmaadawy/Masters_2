@@ -26,6 +26,142 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-16 — Corpus extraction and evaluation-subset freeze (Task 3 of handover, S1, in progress)
+
+**Changed:** `tools/scan_pure_corruption.py` (new) -- scans a directory of PDF/`.doc`/
+HTML/HTM/RTF/XML documents for Known Limitation 5's three corruption signatures
+(`X = Y = Z` comparison chains, `T_LT`-shaped underscore tokens, surviving Unicode math),
+best-effort text pull per format, diagnostic only (no `RequirementSet` output). Verified
+against the known 18-file XML baseline (reproduces it exactly), then run over all 79
+`pure-full/` documents -- 28/79 flagged, 0 unreadable, report written to
+`docs/superpowers/pure-full-corruption-scan.json`. `tools/extract_dalpiaz.py` (new) --
+1,677 requirements across 22 files, output in `datasets/dalpiaz-extracted/`.
+`tools/extract_promise_nfr.py` (new) -- 625 requirements across 15 projects, output in
+`datasets/promise-nfr-extracted/`. `requirements.txt` gains `pdfplumber>=0.11,<1` (used
+by the corruption scanner; already installed in this environment, now pinned).
+`design/DESIGN_NOTES.md`, new entry "S1 in progress -- evaluation-subset freeze, corpus
+extraction, and what the boundary question actually looks like against real data",
+records: the format-first extraction plan was proposed and rejected (selection-bias risk
+-- would shape the evaluation subset by parsing convenience, not document properties);
+the primary PURE evaluation corpus is instead the 5 already-extracted annotated documents
+in `datasets/pure-extracted/` (805 requirements, zero new work needed); format-specific
+extraction for `pure-full/`'s 79 PDF/DOC/HTML/RTF documents is deferred pending whether
+the frozen subset ever needs to expand past those 5; Riaz is investigated and deferred
+(its security-annotated sentences are often bullet-list fragments, not standalone
+requirements -- same unsolved problem as PURE's unannotated prose, not a trivial parse);
+modal-verb prevalence measured across the 5 real annotated PURE documents before any
+boundary-heuristic decision (cctns 99%, gamma-j 94%, eirene-fun-7-2 83%, keepass 44%,
+peering 4%) -- real data showing a modal-verb rule would fail badly on peering-shaped
+documents, which is why no boundary heuristic has been chosen yet.
+
+**Why:** `docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md` Task 3, implementing
+S1. The scope and sequencing above followed a mid-task course correction from explicit
+user direction: freeze which documents constitute the evaluation subset before building
+any format-specific extraction, so subset membership isn't silently shaped by which
+formats happen to be easy to parse.
+
+**Impact:** `datasets/dalpiaz-extracted/`, `datasets/promise-nfr-extracted/`, and
+`docs/superpowers/pure-full-corruption-scan.json` are new, real, on-disk artifacts,
+verified by running each tool (not just written and assumed correct). No production code
+(`design/schemas.py`, `orchestrator/`) touched, so no suite re-run needed there.
+`requirements.txt` gains `pdfplumber>=0.11,<1`, recorded as an approved, narrowly-scoped
+exception to the handover doc's "no new dependencies" rule (diagnostic tooling only,
+never imported by `design/`/`orchestrator/`) -- not a silent addition.
+
+**Corruption finding, stated conservatively:** no additional corruption was detected by
+this diagnostic across the 79-document corpus (`1998 - themas.xml`, the one document
+known to be corrupted, is excluded from evaluation regardless). This is not "no other
+document is corrupted" -- the scan reads these PDFs via pdfplumber, a different
+extraction path from whatever PURE's own PDF-to-XML converter did to produce the known
+themas damage, so a clean result here cannot rule out damage that converter introduced
+and this scan's own path does not surface. The single other flagged file's
+`chained_comparisons` are non-word-shaped garbage (`'H9=H9=F6'`), most likely the scan's
+own crude `.doc` text pull misfiring on binary noise rather than a second real
+corruption -- that same file separately shows 27+24 cleanly-surviving `<=`/`>=` from this
+scan's own extraction. **Still open, not yet decided:** the requirement-boundary rule for
+any `pure-full/` document, if the frozen subset ever needs one, and the `NON_ATOMIC`
+frequency measurement Task 3 asks for before
+Task 5 (needs a real Quality Checker call; no API key available in this environment).
+
+## 2026-08-16 — Quality Checker stability harness (Task 2 of handover, E3 level 1)
+
+**Changed:** new `docs/superpowers/quality_checker_stability.py` -- a standalone,
+throwaway-grade script (not a new orchestrator/ module, per the handover doc) that calls
+only `make_check_quality_fn`'s closure, N times (`--calls`, default 5) on one requirement
+named on the command line, with no Classifier call (a placeholder `Classification` is
+built from a `--system-type` flag) and no refinement loop. Reports each call's
+`(category, span)` issue set, `passed` flag, distinct-set count, and a majority-agreement
+figure; writes the full JSON report to `--output` if given. A `StageCallFailed`/
+`StageCallFatal`/`StageCallPartial` on one call is caught and counted, not fatal to the
+other N-1 calls. Includes a `--self-test` mode (11 checks, scripted `FakeAdapter`, no
+network/API key) covering: identical reports -> STABLE; opposite verdicts across calls
+(Known Limitation 10's actual failure mode) -> UNSTABLE with the right distinct-set count;
+one transport failure tolerated without losing the other calls; an unknown requirement id
+raises a clean `ValueError` rather than crashing.
+
+**Why:** handover doc Task 2. `design/DESIGN_NOTES.md` Known Limitation 10 records the
+Quality Checker returning opposite verdicts on character-identical input in consecutive
+rounds -- every per-category precision/recall figure in the evaluation is a single draw
+until this is quantified, and it has to exist before the frozen run, not be reconstructed
+after.
+
+**Impact:** `python docs/superpowers/quality_checker_stability.py --self-test` -- 11/11
+passed, verified in this change. No production code touched (`design/schemas.py`,
+`orchestrator/`), so no suite re-run needed there. The actual stability MEASUREMENT (real
+API calls against a real requirement) has NOT been run in this environment -- no
+`GEMINI_API_KEY`/`GROQ_API_KEY` configured here; confirmed the script fails cleanly with
+exit 2 and a clear message on that path. Running it for real, and recording the resulting
+agreement figure, is separate follow-up work for whoever has API access before the freeze.
+
+## 2026-08-15 — Operator system-type label capture (Task 1 of handover, implements S2)
+
+**Changed:** `design/schemas.py`, `RequirementRunRecord` gains
+`operator_system_type: Optional[SystemType] = None`, independent of `classification`, no
+validator forcing agreement. `orchestrator/cli.py` gains a third subcommand,
+`label-system-type RUN_DIR LABELS.json`, which reads a JSON `{requirement_id: system_type}`
+object, validates every id against the run before writing anything, and rewrites each
+matching `requirements/*.json` via the existing `write_requirement_run`; no adapter,
+`StageFns`, or `HumanFns` call. Tests: `design/test_schemas.py::test_operator_system_type_capture`
+(4 new checks); `orchestrator/test_cli.py`'s four `test_label_system_type_*` cases (16 new
+checks, including the fixture helper `_completed_happy_run`). `design/DESIGN_NOTES.md`, new
+entry "S2 implemented -- operator system-type label, as a run-record field plus a third CLI
+subcommand", records where the field lives and why capture is a third subcommand rather than
+a `resume` flag or a third `HumanFns` callable.
+
+**Why:** `docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md` Task 1, implementing S2
+(`docs/superpowers/plans/2026-08-15-system-changes-before-freeze.md`). The Classifier's
+accuracy has had n=0 since no human label was ever collected, and it can't be reconstructed
+after a run. `resume`'s own docstring rules out a fresh-input flag there, and Known
+Limitation 9's discussion already flagged a new blocking `HumanFns` point as a real cost not
+adopted — this capture mechanism is offline and blocks nothing, so neither objection applies.
+
+**Impact:** `design/test_schemas.py` 326 → 330 checks; `orchestrator/test_cli.py` 39 → 55
+checks; both green. `design.generate_diagrams`/`design.test_generate_diagrams` (13 checks)
+and `design.test_generate_arch_diagrams` (88 checks) re-run clean — no new module/stage, so
+no structural diagram change. No pipeline behaviour change: nothing downstream reads
+`operator_system_type`; it is a record only, verified by the disagreement test asserting
+`classification.system_type` is unchanged. Classifier-accuracy measurement itself is not yet
+computed anywhere — that's evaluation-phase work (E1), not this task.
+
+## 2026-08-15 — System-changes-before-freeze decisions recorded (Task 0 of handover)
+
+**Changed:** `design/DESIGN_NOTES.md`, new dated section "System changes to make before
+the evaluation freeze (2026-08-15)" appended after the "Multi-key rotation for free-tier
+rate limits" entry — the full content of
+`docs/superpowers/plans/2026-08-15-system-changes-before-freeze.md` (S1 extraction, S2
+operator system-type label, S3 pipeline phasing, S4 human-supplied `NON_ATOMIC` splits,
+plus the Declined list), reheaded to this file's existing style (H2 title with date, H3
+subsections). Known Limitations section itself untouched. `docs/EVALUATION_PROTOCOL.md`
+left where it is, not folded in — it is the measurement protocol, kept separate on
+purpose.
+
+**Why:** `docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`, Task 0. Records the
+decisions Tasks 1–5 will implement so they're traceable to a dated design note rather than
+only living in a plan file.
+
+**Impact:** documentation only — no code, schema, or prompt change. No suites re-run
+(nothing executable touched).
+
 ## 2026-08-15 — Future-work item: cite a standard instead of inventing a threshold
 
 **Changed:** `design/DESIGN_NOTES.md`, new entry "Future work, adjacent to Limitation 11 —

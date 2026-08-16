@@ -1,0 +1,125 @@
+{
+  "doc_id": "promise-9",
+  "requirements": [
+    {
+      "id": "PROMISE-9-0001",
+      "text": "Total lead cycle time must be completed in 5 minutes for 90% of lead volume between the business hours of 8AM CST to 8PM CST; then 3 minutes for 99% of lead volume during off business hours.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0002",
+      "text": "No lead evaluation will complete in a time period longer than 25 seconds for 97% of all leads processed.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0003",
+      "text": "For leads that process longer than 25 seconds the system will record the event and duration",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0004",
+      "text": "The process must fit within the processing time conditions set forth by the Auto Rep Assignment process in which a lead is assigned within 3 minutes of the total life cycle.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0005",
+      "text": "The lead washing process will operate within the established physical web service structure.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0006",
+      "text": "The washing process must use a non binding  neutral data format  such as xml  when receiving and processing lead data.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0007",
+      "text": "Defect reports will be available to technical units on a 24x7 basis.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0008",
+      "text": "Washing parameters will be updated during scheduled maintenance hours.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0009",
+      "text": "The vendor will verify the invalid lead.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0010",
+      "text": "Vendor will submit a credit validation record to be applied to the enterprise billing system.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0011",
+      "text": "If a lead is scored to the high range the system will supply the lead data and score to the enterprise system.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0012",
+      "text": "The leads washing functionality will validate all leads received by the web service for valid data",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0013",
+      "text": "The leads washing functionality will insert all leads captured by the web service.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0014",
+      "text": "If the leads score falls within the high average score then it will be process by the ARA functionality.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0015",
+      "text": "If the leads score falls within the medium average then it will be set for manual verification by an Enrollment Coordinator through the eleads system.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0016",
+      "text": "If the leads score falls within the low average then it will be returned to the supplying vendor",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0017",
+      "text": "The leads washing functionality will compile both contact and academic scoring information for a total score.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0018",
+      "text": "The leads washing functionality will use the parameters supplied by corporate and schools to score part of the lead.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0019",
+      "text": "The leads washing functionality will return the lead data supplied to the vendor along with the reason of rejection.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0020",
+      "text": "The leads washing functionality will have an interface in which lead data parameters can be maintained.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0021",
+      "text": "The leads washing functionality will verify the users authentication and rights to make parameter updates.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0022",
+      "text": "The leads washing functionality will store any potential lead duplicates returned by the enterprise system.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0023",
+      "text": "Prior to submitting the lead to the enterprise system the leads washing functionality will assign the lead to an admissions rep.",
+      "source_doc_id": "promise-9"
+    },
+    {
+      "id": "PROMISE-9-0024",
+      "text": "The leads washing functionality shall receive a period list of available reps from the enterprise system.",
+      "source_doc_id": "promise-9"
+    }
+  ]
+}

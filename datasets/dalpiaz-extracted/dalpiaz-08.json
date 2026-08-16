@@ -1,0 +1,580 @@
+{
+  "doc_id": "dalpiaz-08",
+  "requirements": [
+    {
+      "id": "DALPIAZ-08-0001",
+      "text": "As a faculty member, I want to access a collection within the repository, so that I can obtain research materials.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0002",
+      "text": "As a faculty member, I want to direct students to an item within the repository, so that I can facilitate my teaching (i.e. desires ability to link to content).",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0003",
+      "text": "As a Cornell faculty member, I want to upload data to the repository and associate it with a publication, so that I receive attribution for my data as well as my publications.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0004",
+      "text": "As a patron, I want to know which reports/datasets are coming out when, so that I can access latest report/dataset.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0005",
+      "text": "As a patron, I want to select/deselect reports/datasets to be emailed, possibly many at one time, when new versions are available.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0006",
+      "text": "As a DB/IR administrator, I want to mark report/dataset not to be emailed/viewable due to error being discovered.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0007",
+      "text": "As a DB/IR administrator, I want to manage report/dataset name changes so patrons are able to find historic reports that have a different name from current report.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0008",
+      "text": "As a Cornell faculty member, I want to see clearly what reuse rights I have to files discovered in the repository, so that I know how I can reuse them.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0009",
+      "text": "As a library staff member, I want to apply or remove an access embargo to an item when asked to do this by an item author.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0010",
+      "text": "As a researcher, I want to stay up to date on research related to a given topic at Cornell, including those in other departments/schools, so that my own research remains relevant and innovative.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0011",
+      "text": "As a faculty member, I want to easily collect my publications -- both those within the repository and without -- into a single online access point, so that I can raise the profile of my work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0012",
+      "text": "As a crossdeptprojteammember, I want to have a better place to collect and share project materials, with a range of organization/tagging and access options, including private (internal group use only), University and public.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0013",
+      "text": "As a Cornell faculty member, I want to upload data and provide a cut and paste formatted citation for people who use it, so that I receive proper attribution for my work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0014",
+      "text": "As a patron, I want to view/upload content in multiple formats, including old formats such as Lotus Works.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0015",
+      "text": "As a Cornell faculty member, I want to search the repository and browse through its contents on my phone, so that I can check things on the go.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0016",
+      "text": "As a Cornell faculty member, I want to login remotely to the repository using Shibboleth, so that I can get remote access to Cornell campus-only content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0017",
+      "text": "As a Cornell faculty member, I want to have some control over how items within my collection sort in collection contents lists, so that I can control how my work is presented.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0018",
+      "text": "As an administrator, I want to be able to use systems such as Symplectic Elements and Activity Insight to properly track faculty scholarly output in the repositories, so that I can facilitate personnel decisions.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0019",
+      "text": "As a library staff member, I want to access useful and comprehensive usage statistics and analytics, including altmetrics, at the repository, collection, author, and item level, so that I can assess the results of this service.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0020",
+      "text": "As an administrator, I want to see comprehensive tracking statistics that can be presented to faculty in a digestible way, so that I can increase buy-in for contributing their work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0021",
+      "text": "As a Cornell faculty member, I want to be notified if someone downloads any of my items or files, so that I can follow usage and see what others are most interested in reading.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0022",
+      "text": "As a DB/IR administrator, I want to see list of subscribers for specified report in order research missing report complaints.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0023",
+      "text": "As an administrator, I want to disseminate the aforementioned works in a digital space that is strongly branded, so that I can make sure my school is credited for the work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0024",
+      "text": "As a faculty member, I want to upload my scholarly work to the repository, so that I can have a persistent URL that can be used for my personal web page and CV.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0025",
+      "text": "As a library staff member, I want to create collections which highlight rare, archival, or endangered material, so that I can preserve and provide access to this material.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0026",
+      "text": "As an Extension Administrator, I want to have easy, well documented and supported workflows that can be easily passed on to others when she/others retire, so that continuity can be maintained.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0027",
+      "text": "As a faculty member, I want to maintain versioning of Extension brochures, FAQs, etc., so that only the most current are used/adapted by other CCE Educators in their work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0028",
+      "text": "As a Cornell faculty member, I want to upload a data file and put a CC-By or CC0 license on it, so that my licensing desires are clearly stated.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0029",
+      "text": "As a library staff member, I want to be able to tell the researchers I'm helping with DMPs that Cornell has a repository system I can use for archiving and sharing results of their research, so that I can easily meet the needs of funder DMP requirements.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0030",
+      "text": "As a Cornell faculty member, I want to create a collection for my documents, or my organization's documents, and apply some distinctive branding to that collection, so that I can promote my work, or that of my organization.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0031",
+      "text": "As a Cornell faculty member, I want to easily find all the items in the repository that I have authored, by searching on my name (author name authority and/or identification issue), because I keeps my publications in the repository up-to-date and points people tithe repository.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0032",
+      "text": "As a Cornell faculty member, I want to see items I have deposited in the repository appear high up in Google search results, because that's my ticket to stardom.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0033",
+      "text": "As a repository support team member, I want to alias (or map) an item from one collection to another (so the item will appear to belong to both collections), because the collection owner has asked them to.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0034",
+      "text": "As a researcher, I want to discover items in the repository through the library's discovery system and Google, so that I can facilitate my easy use of the content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0035",
+      "text": "As a researcher, I want to see descriptive metadata for the item whether I come to the item through the repository or directly to the PDF, so that I can correctly identify the source of the content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0036",
+      "text": "As a researcher, I want to contact the author of a work that interests me, so that I can learn more about my research.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0037",
+      "text": "As a researcher, I want to receive updates when new works are published in a given collection or by a given author, so that I can discover more of their work.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0038",
+      "text": "As a researcher, I want to search within a repository or collection in an effective manner, including searching within subsets of a given collection, so that I can facilitate my use of the collection.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0039",
+      "text": "As an academicresearcher, I want to find the works of a particular author in one easily sortable spot, so that I can see the evolution of their scholarship over time.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0040",
+      "text": "As an academicresearcher, I want to the thesis paper of an influential judge or legal thinker to gain insight into how their initial scholarship got started.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0041",
+      "text": "As a patron, I want to search for report/dataset with keywords or a partial or complete title to locate needed report/dataset.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0042",
+      "text": "As a patron, I want to browse content by author or subject area to locate needed resources.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0043",
+      "text": "As a DB/IR administrator, I want to manage subject classifications for ease of patron browsing and searching.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0044",
+      "text": "As a DB/IR administrator, I want to manage customizable relationship groups in support of patron see also option.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0045",
+      "text": "As a Cornell faculty member, I want to search for the dissertations in the repository for which I have been a thesis committee member, to quickly find work by a former student.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0046",
+      "text": "As a library staff member, I want to make digital items held in trusted external system searchable within our system, so that I can provide seamless access to disparate collections.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0047",
+      "text": "As a researcher, I want to have information that will help me identify other faculty I might partner/collaborate with.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0048",
+      "text": "As an externaluser, I want to easily find and access research and educational materials from Cornell faculty related to a particular topic, which I can use to develop stronger research/evidence based programming, grant proposals, community policy, or business practices.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0049",
+      "text": "As a student, I want to learn who at Cornell has or is engaged in research related to a particular topic, so that I can decide if I would like to pursue studies/research at Cornell.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0050",
+      "text": "As a student, I want to learn who at Cornell has or is engaged in research related to a particular topic, so that I can find an appropriate advisor, choose which courses to enroll in, and identify work/internship opportunities.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0051",
+      "text": "As a teachingfacultymember, I want to identify timely and relevant research suitable for use in my curriculum, and be notified of new research/content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0052",
+      "text": "As a patron, I want to view multiple versions of a report/dataset to get both timely and historical information.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0053",
+      "text": "As a faculty member, I want to upload my scholarly work to the repository, so that I can reach a non-academic audience, expand my influence within my academic community, and use it for teaching.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0054",
+      "text": "As a library staff member, I want to upload material to the repository on the author's behalf, so that I can fulfill a service obligation.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0055",
+      "text": "As a library staff member, I want to create metadata for items within the repository that includes document title, description, author, document type, status, file locations, subscribable flag, subject area, release frequency, and keywords for searching.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0056",
+      "text": "As a library staff member, I want to upload large batches of items simultaneously, including descriptive metadata, so that I can offer service to authors efficiently.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0057",
+      "text": "As a library staff member, I want to upload an item to the repository that will only become visible after a specific embargo period has expired, so that I can comply with author or publisher requirements.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0058",
+      "text": "As a library staff member, I want to include supplementary files such as datasets, slideshows, etc. – with DOIs for each, as needed – when uploading a given work, so that I can provide a robust image of the work in question.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0059",
+      "text": "As a library staff member, I want to deliver streaming media from within the repository, so that I can deliver such content in the manner expected and ensure continued access to said content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0060",
+      "text": "As an administrator, I want to have a platform that can support a variety of media file and text-based formats, so that the intellectual output of the school can be showcased and preserved in a more comprehensive way.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0061",
+      "text": "As a library staff member, I want to be able to assign an item to more than one collection.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0062",
+      "text": "As a library staff member, I want to be able to add custom metadata fields for deposits I make on behalf of researchers to allow for better search capabilities.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0063",
+      "text": "As a DB/IR administrator, I want to upload revised report/dataset due to error in report/document.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0064",
+      "text": "As a DB/IR administrator, I want to upload new version of report/dataset while retaining previous versions for patron use.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0065",
+      "text": "As a DB/IR administrator, I want to have the system recognize/categorize document type (e.g. historical report still published, expired historical report, single topic dataset, broad topic dataset, report with subtopic, computer file), so that report/dataset is processed and displayed properly.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0066",
+      "text": "As a Cornell faculty member, I want to easily assign a CC license to the files I are depositing, so that users know how the materials can be used.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0067",
+      "text": "As a repository support team member, I want to export a set of records and associated files, manipulate this data set, and reload into the system, because I am aware of a uniform error in a collection.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0068",
+      "text": "As a Cornell faculty member, I want to associate a researcherID or ORCID with a submission, so that there is no ambiguity between my work and someone else with the same name.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0069",
+      "text": "As a student, I want to upload to the repository the data that is associated with my embargoed dissertation to meet requirements of a DMP I submitted with my NSF DDIG.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0070",
+      "text": "As a library staff member, I want to have customizable metadata fields, so that each project is described in the most accurate way possible.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0071",
+      "text": "As a faculty member, I want to associate files with my scholarly works such that someone accessing the latter also receives access to the former, so that I can deliver the fullest picture of my research.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0072",
+      "text": "As a library staff member, I want to use content and metadata from the repository in other systems and/or web pages easily, so that I can deliver such content in the manner best fit to the audience or occasion.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0073",
+      "text": "As an Extension Administrator, I want to make resources that were developed for specific projects and geographic areas available to other faculty and educators across NYS.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0074",
+      "text": "As an Extension Administrator or Staff Content Manager, I want to get periodic IR reminders, including when something needs attention (including next ingestion/approval steps), or something that might need to move from a current knowledge collection to Historical.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0075",
+      "text": "As a researcher, I want to promote/share my work through interactive maps, so that I can display the range and extent of my work graphically.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0076",
+      "text": "As an Extension Educator, I want to have a place to store a variety of documents, presentations and data sets I've created, that doesn't require an extra step in making available on my own County/Region/Project site (i.e. a list or directory of materials there is automatically updated when placed in a central archive/repository).",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0077",
+      "text": "As a patron, I want to know other reports/datasets that are related (e.g. see also) to report/dataset being viewed for the purpose finding other related information.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0078",
+      "text": "As a patron, I want to know previous name(s) and publication date range (first version-last version) of reports/datasets, so that I can know what historical versions are available and how current more recent version is.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0079",
+      "text": "As a patron, I want to create a personal account to request email notification when new version of report/dataset is available.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0080",
+      "text": "As a patron, I want to download report/dataset release calendar to load into own calendar.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0081",
+      "text": "As a librarydiscoveryoperator, I want to harvest useful metadata from the repository via OAI, and continue to do so incrementally, so that I can make Cornell publications discoverable in my repository.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0082",
+      "text": "As a library staff member, I want to quickly correct errors in uploaded metadata, and even uploaded documents, while leaving a record of my revisions (and possibly the reasons behind them), so that I can present correct versions of content and to locate points of error.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0083",
+      "text": "As a library staff member, I want to receive a quick response and a reasonable resolution to tech support issues, so that service can proceed with minimal interruption.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0084",
+      "text": "As a Cornell faculty member, I want to share on the repository files that are larger than 1GB in a way that still allows users to download them if I want to use them, so that I can meet funder requirements.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0085",
+      "text": "As a DB/IR administrator, I want to login to personal account with access to authorized functions.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0086",
+      "text": "As a DB/IR administrator, I want to have a personal account with the ability to change passwords to make them more secure or to retrieve forgotten ones.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0087",
+      "text": "As a DB/IR administrator, I want to set up or delete accounts for other administrators with various levels of permission.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0088",
+      "text": "As a DB/IR administrator, I want to see a list of all administrators for ease of administering accounts.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0089",
+      "text": "As a DB/IR administrator, I want to have robust searching and tracking features for existing and newly created patron accounts.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0090",
+      "text": "As a DB/IR administrator, I want to unpublish a report/dataset if requested to do so by USDA agency.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0091",
+      "text": "As a DB/IR administrator, I want to add future release dates of reports/datasets to calendar for patron FYI.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0092",
+      "text": "As a faculty member, I want to recommend a digital collection be built in the repository, so that I can assist in my research.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0093",
+      "text": "As a DB/IR administrator, I want to search for administrator accounts using full/partial email or name.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0094",
+      "text": "As a DB/IR administrator, I want to administrate patron accounts for purpose of closing accounts, viewing subscriptions, changing subscriptions, resetting passwords, changing email address, etc.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0095",
+      "text": "As a library staff member, I want to create custom metadata fields for certain collections, and allow searching of those fields, so that I can best reflect and deliver diverse content.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0096",
+      "text": "As a repository support team member, I want to move a collection, so that I can fulfill the collection owner's request.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0097",
+      "text": "As a repository support team member, I want to rename a collection, so that I can fulfill the collection owner's request.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0098",
+      "text": "As an asset manager, I want to be assured that the digital copy I deposit is stored redundantly, so that when one copy suffers destruction or unwanted changes, I still have other good copies to restore from.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0099",
+      "text": "As an asset manager, I want to be assured that threats to copies in one repository are not automatically incurred by the redundant copies.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0100",
+      "text": "As an asset manager, I want to be assured that the redundant copies are continuously monitored for unwanted changes, and that if/when changes do occur, there is a mechanism by which I can determine the original object and restore it to all copies.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0101",
+      "text": "As an asset manager, I want to be assured that the assets can be taken out of the repository, and that the assets taken out are the same as those that are put in.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0102",
+      "text": "As an asset manager, I want to know what the intellectual value of the asset is to the institution at the time of deposit, so that I obtain guidance in the evaluation of it for current value for the institution.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0103",
+      "text": "As an asset manager, I want to have a mechanism to obtain a listing or understanding of all the assets that have been deposited, and their current status.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0104",
+      "text": "As an asset manager, I want to be assured that funding and staffing of the IR have a commitment to longevity of the repository through published plans and/or explicit contract clauses.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0105",
+      "text": "As a stakeholder, I want to have files adequately described, so that I can successfully render them in my contemporary operating environment.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0106",
+      "text": "As a library staff member, I want to preserve both the content and the metadata within the repository in a robust manner, so that I can provide stable, long-term access to this material.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0107",
+      "text": "As a data curator, I want to upload a new version of an item that has changed, while still allowing old versions to be accessed.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0108",
+      "text": "As a library staff member, I want to preserve the scholarship of the law school by using sustainable links that will not succumb to link rot, so that I can create a permanent digital archive for the scholarship of my institution.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0109",
+      "text": "As a library staff member, I want to create a collection, sometimes with custom metadata fields, so that I can house digital material for wider distribution.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0110",
+      "text": "As a library staff member, I want to trace the list of revisors to determine who uploaded an item to the repository, so that I can confirm that proper procedures were followed.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0111",
+      "text": "As an asset manager, I want to be assured that there is a formal plan for the disposition of assets if the IR should cease.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0112",
+      "text": "As an asset manager, I want to have mechanism to pass ownership/management of the assets to a successor.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0113",
+      "text": "As a patron, I want to email system provider to report issues and ask questions.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0114",
+      "text": "As a data curator, I want to have a mechanism to allow for records scheduling for items that do not need to be stored indefinitely.",
+      "source_doc_id": "dalpiaz-08"
+    },
+    {
+      "id": "DALPIAZ-08-0115",
+      "text": "As a data curator, I want to upload a new version of an item that has changed, while still allowing old versions to be accessed.",
+      "source_doc_id": "dalpiaz-08"
+    }
+  ]
+}

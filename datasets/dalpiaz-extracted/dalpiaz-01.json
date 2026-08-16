@@ -1,0 +1,335 @@
+{
+  "doc_id": "dalpiaz-01",
+  "requirements": [
+    {
+      "id": "DALPIAZ-01-0001",
+      "text": "As a Developer, I want to get a Data Package into Node, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0002",
+      "text": "As a Researcher, I want to get a Data Package into Julia in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0003",
+      "text": "As a Publisher, I want to add type information to my data, so that it is more useful to others and can be used better with tools like visualization programs.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0004",
+      "text": "As a Publisher, I want to be able to provide a visualization of data in the Data Package, so that I can provide my analysis and show my work to users of the data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0005",
+      "text": "As a Researcher, I want to be able to save new visualizations, so that I can share them with others or include them in the Data Package.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0006",
+      "text": "As a ResearcherPublisher, I want to know that my data conforms to its Data Package profile, so that I can feel trust in the validity and usefulness of the data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0007",
+      "text": "As a ResearcherPublisher, I want to understand the ways in which my data is invalid, so that I can know how to fix it.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0008",
+      "text": "As a Researcher, I want to get a Data Package into R in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0009",
+      "text": "As a Researcher, I want to get a Data Package into Excel in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0010",
+      "text": "As a Researcher, I want to get a Data Package into SPSS in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0011",
+      "text": "As a Researcher, I want to get a Data Package into STATA in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0012",
+      "text": "As a Researcher, I want to be able to translate my EML dataset to a Data Package, so that I can benefit from the wide array of tools available for Data Packages.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0013",
+      "text": "As a Researcher, I want to get a Data Package into LibreOffice/OpenOffice in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0014",
+      "text": "As a Developer, I want to get a Data Package into Python in seconds, so that I can start using the data for doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0015",
+      "text": "As a Developer, I want a jQuery plugin for Core Data Packages, so that I can use it to apply to form control that uses a core dataset for autocompletion.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0016",
+      "text": "As a Researcher, I want to get my Excel spreadsheet into a Data Package, so that I can benefit from better tooling and standardization.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0017",
+      "text": "As a Developer, I want to do exploratory data analysis in R and operationalize that analysis in Python, so that I can use the best tool for the job.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0018",
+      "text": "As a Developer, I want to get a Data Package into Clojure in seconds, so that I can start using the data in doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0019",
+      "text": "As a Developer, I want to get a Data Package into Julia in seconds, so that I can start using the data in doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0020",
+      "text": "As a Developer, I want to get a Data Package into C++ in seconds, so that I can start using the data in doing analysis and visualizations.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0021",
+      "text": "As a Machine Learning expert, I would like to package ML datasets as data packages, so that I can easily import them into my ML platform, so that I can start using the data in doing analysis.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0022",
+      "text": "As a Developer, I want an Elasticsearch integration, so that I can integrate data-packaged data with pipelines that use Elasticsearch.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0023",
+      "text": "As a Developer, I want an SPSS integration, so that I can integrate data-packaged data with pipelines that use SPSS.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0024",
+      "text": "As a Developer, I want an EPrints integration, so that I can integrate data-packaged data with pipelines that use EPrints.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0025",
+      "text": "As a Developer, I want a Mongo integration, so that I can integrate data-packaged data with pipelines that use Mongo.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0026",
+      "text": "As a Developer, I want a DAT integration, so that I can integrate data-packaged data with pipelines that use DAT.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0027",
+      "text": "As a ResearcherGovernment Publisher, I want to add general reference data to my narrow dataset, so that my dataset is more useful.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0028",
+      "text": "As a ResearcherGovernment Publisher, I want to add general country names to my dataset that only contains country codes, so that my dataset is more readable.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0029",
+      "text": "As a ResearcherGovernment Publisher, I want to add reference data on inflation to my spending dataset, so that the spending lines in my dataset is more understandable.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0030",
+      "text": "As a ResearcherGovernment Publisher, I want to map lines in my dataset using geographic data in my dataset, so that my dataset is more engaging for non-technical users.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0031",
+      "text": "As a Researcher, I want to be able to reference a remote-controlled vocabulary for my dataset, so that I can be sure that column of my dataset are valid against a single shard list of terms.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0032",
+      "text": "As a developer, I want an DSpace integration, so that I can integrate data-packaged data with pipelines that use Dspace.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0033",
+      "text": "As a Developer, I want Feather integration, so that I can integrate data-packaged data with pipelines that use Feather.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0034",
+      "text": "As a Developer, I want HDF5 integration, so that I can integrate data-packaged data with pipelines that use HDF5.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0035",
+      "text": "As a Researcher, working with data, I want an Microsoft Power BI integration, so that I can import datasets without downloading them locally.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0036",
+      "text": "As a ResearcherPublisher, I want an integration with Zenodo, so that when I store my dataset in GitHub, I don’t have to retype descriptive information about my dataset.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0037",
+      "text": "As a Publisher, I would like an integration with Open Refine, so that I can output cleaned Data Packages.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0038",
+      "text": "As a ResearcherPublisher, I want to publish Data Packages to CKAN, so that my data is findable, and I can have a data API.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0039",
+      "text": "As a ResearcherDeveloper, would like the ability import/export from MS-SQL, so that I can use Data Packages in workflows that involve MS-SQL.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0040",
+      "text": "As a Researcher, working with data in NetCDF, I want NetCDF integration, so that I can store my data in plaintext while still retaining its metadata.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0041",
+      "text": "As a Researcher, I want an integration with https://data.mendeley.com/, so that I can validate my data upon ingest to the service.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0042",
+      "text": "As a Publisher, I would like an integration with Excel, so that I can output cleaned Data Packages.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0043",
+      "text": "As a Publisher, I want to store my data quickly and easily online.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0044",
+      "text": "As a Repository Manager, I want a tool that makes it easy for researchers/ users to add basic metadata to their research data, so that it is more findable and therefore useful.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0045",
+      "text": "As a ResearcherPublisher, I want validate my data with a minimum of clicks, so that I can feel trust in the validity and usefulness of the data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0046",
+      "text": "As a publisher, I want to be able to check that every time I update my data it is still good, so that I can catch errors early and store reliable data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0047",
+      "text": "As a DeveloperWrangler, I want to use a command line tool that allows met to validate data, so that I can feel trust in the validity and usefulness of the data quickly and in the context of my command line workflow.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0048",
+      "text": "As a developer, I want an online service that is connected to my data repository that validates data on update, so that I can delegate data validation to a third party.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0049",
+      "text": "As a government Publisher, I want to make it easy to prove that our published data is valid, so that I can claim that we are living up to our transparency commitments.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0050",
+      "text": "As a Civic Tech Activist, I want to make it easy to assess the quality of data stored by the government, so that I can make sure that government is living up to its transparency commitments.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0051",
+      "text": "As a publisher, I want to embed an interactive preview of my data on my site, so that users can be encouraged that this is the correct data for them.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0052",
+      "text": "As a publisher, I want to embed a preview button on my site, so that users can preview the data and be encouraged that this is the correct data for them.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0053",
+      "text": "As a Publisher, I want to know how many users have previewed a dataset, so that I know how interest in a dataset relates to its actual download numbers.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0054",
+      "text": "As a Developer, I want to customize an existing wizard for my specific type of data, so that I can give my users a great user experience.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0055",
+      "text": "As a Publisher, I want to add useful metadata or add in new data columns to make the dataset more useful.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0056",
+      "text": "As a publisher, I want to package reproducible steps to get a certain data state, so my methodology is transparent and can be rerun by others.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0057",
+      "text": "As a DeveloperDataWrangler, I want to store my Data Package in GitHub and have it automatically stored into CKAN, so that I get a data API and my dataset is listed in a relevant catalog.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0058",
+      "text": "As a Researcher, I want a tool that can generate basic statistics about a dataset, so that I can get a quick preview of the data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0059",
+      "text": "As a DeveloperPublisher, I want a tool to create an embeddable data summary via iframe, so that I can embed data summaries across sites.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0060",
+      "text": "As a Researcher, I want an app that generates an OpenRefine reconciliation API endpoint from a Tabular Data Package, so that I can use it to clean messy data.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0061",
+      "text": "As a Researcher, I want an app that create proxy Data Packages for well know and reliable data, sources, so that I can load high quality data using Data Package tooling.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0062",
+      "text": "As a RepositoryManagerResearcher, I want an app that acts as a match-making service for packaging data, so that owners are paired with data packagers.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0063",
+      "text": "As a developer, I would like to create a web socket protocol for Frictionless data tools, so that I can easily use data packages with additional data analysis tools.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0064",
+      "text": "As a Publisher, I would like a tool to check data availability persistence after publication.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0065",
+      "text": "As a ResearcherPublisher, I want to specify the funding that contributed to the creation of a given dataset, so that funding agencies can identify the funding, source for a given dataset.",
+      "source_doc_id": "dalpiaz-01"
+    },
+    {
+      "id": "DALPIAZ-01-0066",
+      "text": "As a ResearcherPublisher, I want to add a DOI to a dataset, so that I can cite it in papers stored  with the data.",
+      "source_doc_id": "dalpiaz-01"
+    }
+  ]
+}

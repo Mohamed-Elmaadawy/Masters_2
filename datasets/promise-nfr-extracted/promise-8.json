@@ -1,0 +1,470 @@
+{
+  "doc_id": "promise-8",
+  "requirements": [
+    {
+      "id": "PROMISE-8-0001",
+      "text": "Administrator shall be able to activate a pre-paid card via the Administration section in under 5 seconds.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0002",
+      "text": "Customer shall be able to check the status of their prepaid card  by entering in the PIN number  in under 5 seconds.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0003",
+      "text": "System shall let customers register on the website as a “pay as you go” user in under 5 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0004",
+      "text": "System shall let customers register on the website as a “unlimited movie subscriber” user in under 10 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0005",
+      "text": "System shall let existing customers log into the website with their email address and password in under 5 seconds.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0006",
+      "text": "System shall let customers cancel their account  process shall take no longer than 2 minutes.  Database will mark the account as inactive  and user will not be able to log into the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0007",
+      "text": "System shall let administrator de-activate a customer account in under 1 minute. Customer will no longer be able to access the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0008",
+      "text": "System shall let administrator add/remove movies on the website in under 5 minutes.  Entered movie information will be stored in the database and will now be available on the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0009",
+      "text": "System shall let the administrator add/remove categories on the website in under 5 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0010",
+      "text": "System shall let Izogn Manager access sales and usage statistics in under 2 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0011",
+      "text": "System shall let administrators generate unique pre-paid pins in under 2 minutes and generate an Excel file with the generated PINs.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0012",
+      "text": "The website shall be attractive to all audiences.  The website shall appear to be fun and the colors should be bright and vibrant.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0013",
+      "text": "The website should have an African feel  but should not alienate non-Africans.  The website should use animation on pages which are describing the services  to grab the users attention and encourage them to sign up.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0014",
+      "text": "The website design should be modern  clean  and concise.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0015",
+      "text": "The product should be able to be used by 90% of novice users on the Internet.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0016",
+      "text": "Users should only have to navigate through a maximum of 4 pages  to create an account with the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0017",
+      "text": "Users should be able to access their streaming movies in under 2 clicks after logging into the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0018",
+      "text": "An anonymous survey will show that 70% of customers are comfortable purchasing streaming movies after 2 weeks using the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0019",
+      "text": "An anonymous survey will show that 95% of customers are comfortable using and purchasing pre-paid cards after a month of using the system.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0020",
+      "text": "The product shall retain the customer’s buying preferences and information.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0021",
+      "text": "The product shall be easy for customers with novice skills on the  Internet to purchase and watch streaming movies.  Customers should be able to purchase and watch a pre-determined movie in under 3 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0022",
+      "text": "The product shall use symbols and words that are naturally understandable by users familiar with websites",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0023",
+      "text": "The website will use standard Internet conventions when interacting with the user.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0024",
+      "text": "Any interface between a user and the automated system shall have a maximum response time of 5 seconds  unless noted by an exception below.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0025",
+      "text": "When purchasing a streaming movie or pre-paid card via credit card  the processing time should have a maximum response time of 15 seconds.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0026",
+      "text": "When streaming a movie  the buffering time should take no longer than 10 seconds (plus any latency on the user’s connection.)",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0027",
+      "text": "While streaming a movie  buffering should only occur if there is latency in the user’s connection.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0028",
+      "text": "All credit card information will be secured on the server  and only accessible by authorized Izogn administrators.  Information will be encrypted in the database.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0029",
+      "text": "The website shall be available for use 24 hours per day  365 days per year.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0030",
+      "text": "The website shall achieve 99.5% up time.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0031",
+      "text": "All movies shall be streamed on demand  at any time of the day.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0032",
+      "text": "The website shall continue to operate if the streaming server goes down.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0033",
+      "text": "The website shall continue to operate if the payment gateway goes down.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0034",
+      "text": "The streaming server will support 50 simultaneous streaming connections.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0035",
+      "text": "The streaming server will support a maximum of 700 movies; new servers can be added to support more movies.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0036",
+      "text": "The server will support a maximum of 1 000 simultaneous users.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0037",
+      "text": "The website shall be capable of supporting 100 000 customers.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0038",
+      "text": "The product shall be expected to operate within the maximum maintenance budget for a minimum of 2 years.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0039",
+      "text": "All aspects of the website shall be accessed by a web browser over the Internet.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0040",
+      "text": "The same hardware supporting the current website will be used to support the new system.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0041",
+      "text": "We must be able to interface with the following browsers: IE 5.X  6.0  Netscape 6.x  7.x  8.x and Firefox 1.0.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0042",
+      "text": "Website must interface with the CyberSource API to process credit card transactions.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0043",
+      "text": "Website must be fully operational with MSN TV2.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0044",
+      "text": "Movies shall be encoded and streamed via Windows Media Player 9.0.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0045",
+      "text": "Movies shall be encoded for 56k and 256k streams.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0046",
+      "text": "Promotional updates to the website should take a day to update.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0047",
+      "text": "Izogn Administrator must be able to update the category listings on the website within 2 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0048",
+      "text": "Izogn Administrator must be able to add new products to the website within 2 minutes.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0049",
+      "text": "The system will provide a 24 hour 800 toll free number for support to its customers.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0050",
+      "text": "The website will provide a help section with answers and solutions to common problems.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0051",
+      "text": "Velkat staff will be available for phone support between 7am-7pm  M-F to provide technical support to the Izogn administrators.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0052",
+      "text": "The product shall be able to be installed in the specified environment within 1 working day.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0053",
+      "text": "Only registered customers can purchase streaming movies.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0054",
+      "text": "A customer can only stream a movie if they purchased it  and are within the 2 day viewing period.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0055",
+      "text": "Only authorized personnel can access customer records in the database.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0056",
+      "text": "Only administrators can activate a pre-paid card.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0057",
+      "text": "Only authorized personnel can access sales information.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0058",
+      "text": "The website shall prevent its data from being corrupted when incorrect data is entered in.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0059",
+      "text": "The website shall protect itself from intentional abuse  and notify the administrator at all occurrences.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0060",
+      "text": "Data integrity scripts will be run on a weekly basis to verify the integrity of the database.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0061",
+      "text": "The website shall make its user aware of its information practices before collection data from them via a Privacy Policy  accessible on all pages of the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0062",
+      "text": "The system shall notify customers of changes to its information policy.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0063",
+      "text": "The system shall reveal private information only in compliance with the organization’s information policy.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0064",
+      "text": "All customer information will be stored on a secure database  accessible only to authorized personnel.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0065",
+      "text": "All credit card information will be encrypted in the database.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0066",
+      "text": "The streaming server will have anti-virus software to prevent infection of malicious viruses.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0067",
+      "text": "The website should cater to all tribes in Nigeria.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0068",
+      "text": "The website shall not be offensive to religious or ethnic groups.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0069",
+      "text": "The website should appeal to all Africans  not only Nigerians.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0070",
+      "text": "The website should use Flash to provide animation on the home page.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0071",
+      "text": "IzognMovies shall meet the licensing requirements set forth by the appropriate organizations in order to stream African movies.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0072",
+      "text": "The website will comply with W3C standards.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0073",
+      "text": "The PHP code will comply with PEAR standards.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0074",
+      "text": "The website will allow customers to search for movies by title  actor  or director.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0075",
+      "text": "viewing a movie details  the website will display the movies description  actor  and director entered in by the administrator.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0076",
+      "text": "Website shall request  and authorize credit card payment before allowing a user to stream a movie.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0077",
+      "text": "shall be able to stream purchased movie via Windows Media Player  for up to 2 days aftere purchase date.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0078",
+      "text": "Website shall allow customers to browse movies by categories entered in by izogn administrator.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0079",
+      "text": "Website shall allow customers to view reviews of selected movies by other customers.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0080",
+      "text": "Website shall allow customers to add their own movie review for a selected movie.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0081",
+      "text": "Website shall allow the Izogn administrator to approve a review posted by a customer.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0082",
+      "text": "System will allow customers to pay for a streaming movie with a pre-paid card.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0083",
+      "text": "Website shall allow customers to purchase pre-paid cards of $5  $10  or $20 value either by credit card or mail-in payment option.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0084",
+      "text": "System shall automatically update the main page of the website every Friday  and show the 4 latest movies that have been added to the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0085",
+      "text": "System shall allow users to update their billing and contact information via the “My Account” section of the website.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0086",
+      "text": "Pre-paid cards shall be distributed via email  or via a printed paper card.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0087",
+      "text": "Only registered customers can purchase streaming movies.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0088",
+      "text": "Movies can only be streamed if the customer has purchased a movie  and is within the 2-day time period to stream the movie.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0089",
+      "text": "Website must be able to support free trial periods with various parameters set by the Izogn Manager.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0090",
+      "text": "All streaming movie sales will be logged in the database  and accessible by the administrator.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0091",
+      "text": "All registered customer information shall be stored and maintained in the database  even after the customer cancels their account.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0092",
+      "text": "Daily usage statistics should be logged  and accessible by the administrator.",
+      "source_doc_id": "promise-8"
+    },
+    {
+      "id": "PROMISE-8-0093",
+      "text": "The owner shall have free access to all of the streaming movies.",
+      "source_doc_id": "promise-8"
+    }
+  ]
+}

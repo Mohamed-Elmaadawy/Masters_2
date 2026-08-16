@@ -1,0 +1,270 @@
+{
+  "doc_id": "promise-10",
+  "requirements": [
+    {
+      "id": "PROMISE-10-0001",
+      "text": "The product shall simulate the look of ships at sea.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0002",
+      "text": "The product shall display the grids within a circle as a view from a periscope.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0003",
+      "text": "The product shall display each type of ship in a grid using an image of the specific type of ship.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0004",
+      "text": "When the offensive player takes a shot  the product shall simulate the sound of a ship at sea.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0005",
+      "text": "When a shot is marked as a miss  the product shall simulate the sound of a shot missing its target.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0006",
+      "text": "When a shot is marked as a hit  the product shall simulate the sound of a shot hitting its target.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0007",
+      "text": "When a ship is sunk  the product shall simulate the sound of a sinking ship.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0008",
+      "text": "The product shall be available 24 hours per day  seven days per week.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0009",
+      "text": "The product shall able to handle a large number of games simultaneously.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0010",
+      "text": "The response time shall be fast enough to maintain the flow of the game.  The response time shall be no more than 2 seconds for 95% of responses and no more than 4% for the remaining responses.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0011",
+      "text": "The product shall protect the identity of the players. The product shall provide players no access to information that might reveal the identity of another player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0012",
+      "text": "The product shall be intuitive and self-explanatory.  Nine out ten users shall be able to successfully complete a game with no training.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0013",
+      "text": "The product shall be available to players who understand English  Spanish and French.  The product shall allow the user to select the language upon accessing the product.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0014",
+      "text": "The product shall provide players no access to information that might reveal the identity of another player",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0015",
+      "text": "The response time shall be fast enough to maintain the flow of the game. The response time shall be no more than 2 seconds for 95% of responses and no more than 4% for the remaining responses.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0016",
+      "text": "The product shall maintain a list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0017",
+      "text": "The product shall allow a user to identify himself or herself as a player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0018",
+      "text": "Once a game has been initiated  the product shall make the players assigned to the game unavailable for selection from the list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0019",
+      "text": "The product shall allow a user to remove himself or herself from the list of players at any time.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0020",
+      "text": "The product shall make inactive players unavailable for selection from the list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0021",
+      "text": "The product shall remove players who have been inactive for 24 hours from the list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0022",
+      "text": "The product shall allow a player to initiate a game by selecting another available player from the list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0023",
+      "text": "Once a game is initiated  the product shall display a defensive grid to each player",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0024",
+      "text": "Once a game is initiated  the product shall display an offensive grid to each player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0025",
+      "text": "The product shall prevent a player from viewing the offensive or defensive grids of the other player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0026",
+      "text": "Once a game is initiated  the product shall allow each player to position their 5 ships on their respective defensive grids.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0027",
+      "text": "The product shall allow a player to position ships horizontally on their grid.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0028",
+      "text": "The product shall allow the player to position ships vertically on their grid.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0029",
+      "text": "The product shall allow the player to position ships diagonally on their grid",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0030",
+      "text": "The product shall prevent the player from overlapping ships on their grid.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0031",
+      "text": "When both players have positioned their 5 ships on their defensive grids  the product shall define the status of each player for the first turn.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0032",
+      "text": "For each turn  the product shall identify one player as offensive status and one player as defensive status.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0033",
+      "text": "The product shall maintain the status of each player for a turn  either offensive or defensive.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0034",
+      "text": "At the start of each turn  the product shall notify each player of his or her status.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0035",
+      "text": "For each turn  the product shall allow the offensive player to define a shot.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0036",
+      "text": "For each shot  the product shall examine the defensive grid of the defensive player to determine whether the shot was a hit or miss.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0037",
+      "text": "For each shot  the product shall notify the players whether the shot was a hit or miss.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0038",
+      "text": "For each shot  the product shall mark the shot as a hit or miss on the defensive grid of the defensive player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0039",
+      "text": "For each shot  the product shall mark the shot as a hit or miss on the offensive grid of the offensive player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0040",
+      "text": "When the hit results in sinking a ship  the product shall notify the players that the ship was sunk.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0041",
+      "text": "When the hit results in sinking a ship  the product shall mark the ship as sunk on the defensive grid of the defensive player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0042",
+      "text": "When the hit results in sinking a ship  the product shall indicate the type of ship sunk on the defensive grid of the defensive player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0043",
+      "text": "When the hit results in sinking a ship  the product shall mark the ship as sunk on the offensive grid of the offensive player.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0044",
+      "text": "If the shot was marked as a hit  the product shall allow the offensive player to define a shot.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0045",
+      "text": "If the shot was marked as a miss  the product shall change the status of the offensive player to defensive",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0046",
+      "text": "If the shot was marked as a miss  the product shall change the status of the defensive player to offensive",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0047",
+      "text": "The product shall continue to assign turns until the game is ended.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0048",
+      "text": "The product shall end a game when a hit by the offensive player results in sinking the last of the defensive player’s ships  which had not been previously marked as sunk.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0049",
+      "text": "The product shall allow a player to end a game at any time during the game.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0050",
+      "text": "When a game is ended  the product shall notify the players that the game is ended.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0051",
+      "text": "The notification of the game ending will include the reason the game is ended (i.e.  a player has won the game or a player has ended the game).",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0052",
+      "text": "When a game is ended  the product shall allow each player to identify himself or herself as an available player in the list of players.",
+      "source_doc_id": "promise-10"
+    },
+    {
+      "id": "PROMISE-10-0053",
+      "text": "When a game is ended  the product shall allow each player to remove himself or herself from the list of players.",
+      "source_doc_id": "promise-10"
+    }
+  ]
+}

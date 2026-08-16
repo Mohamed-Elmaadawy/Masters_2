@@ -1,0 +1,505 @@
+{
+  "doc_id": "dalpiaz-19",
+  "requirements": [
+    {
+      "id": "DALPIAZ-19-0001",
+      "text": "As a repository manager, I want to know all the collections and objects in the DAMS for which I have custodial responsibility.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0002",
+      "text": "As a repository manager, I want to be able to update repository information in one place and be assured updates will be propagated to all relevant places.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0003",
+      "text": "As a repository manager, I want to constrain curatorial access to my units assets to staff members of my unit and to DAMS managers having universal access.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0004",
+      "text": "As a user, I want to list all the collections and objects in the DAMS that belong to a library unit.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0005",
+      "text": "As a user, I want to be able to contact repositories.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0006",
+      "text": "As the DAMS manager, I want to be able to list for browsing all formal collections represented in the DAMS along with the appropriate relationships.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0007",
+      "text": "As a repository manager, I want to know all the collections for which I have curatorial responsibility.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0008",
+      "text": "As a repository manager, I want to compose collections, limiting the collection to the items sharing the same provenance, limiting the collection to represent a part of a collection have a singular provenance, or assembly a collection from other collections and objects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0009",
+      "text": "As a repository manager, I want to say one collection is related to another collection.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0010",
+      "text": "As a repository manager, I want to describe a collection, including its title, it's inclusive / bulk dates, its language(s), and many other aspects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0011",
+      "text": "As a repository manager, I want to indicate names related to the collection either as creator, source, or subject.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0012",
+      "text": "As a repository manager, I want to indicate subjects related to the collection.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0013",
+      "text": "As a repository manager, I want to indicate other descriptions of the collection that are outside the DAMS and of probable importance to users.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0014",
+      "text": "As a repository manager, I want to know all events occurring to a collection.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0015",
+      "text": "As a user, I want to be able to browse by collections in the DAMS.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0016",
+      "text": "As a user, I want to be able to limit my search to specified collection(s).",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0017",
+      "text": "As a repository manager, I want know all the components belonging to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0018",
+      "text": "As repository manager, I want to know all the files belonging to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0019",
+      "text": "As a repository manager, I want to describe an object, including its title, date(s), language(s), and other aspects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0020",
+      "text": "As a repository manager, I want to indicate names related to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0021",
+      "text": "As a repository manager, I want to indicate subjects that are related to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0022",
+      "text": "As a repository manager, I want to indicate the copyright status of an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0023",
+      "text": "As a repository manager, I want to indicate any statutes pertinent to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0024",
+      "text": "As a repository manager, I want to indicate any license pertinent to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0025",
+      "text": "As a repository manager, I want to indicate any other rights pertinent to an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0026",
+      "text": "As a repository manager, I want to indicate any external versions or descriptions of an object that may be of probable importance to an user.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0027",
+      "text": "As a repository manager, I want to know all events done to an object over the object's life cycle.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0028",
+      "text": "As a DAMS manager, I want to know what repository an object belongs to.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0029",
+      "text": "As a DAMS manager I want to know what collection(s) an object belongs to.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0030",
+      "text": "As a user, I want to know what repository an object belongs to.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0031",
+      "text": "As a user, I want to know what collection(s) an object belongs to.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0032",
+      "text": "As a user, I want to see all the component parts of an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0033",
+      "text": "As a user, I want to have access to the content files for an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0034",
+      "text": "As a user, I want to know the rights status of an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0035",
+      "text": "As a user, I want to know about other versions of the object or its metadata that might be of use to me.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0036",
+      "text": "As a repository manager, I want to represent the physical and/or logical structure of an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0037",
+      "text": "As a repository manager, I want to list all the components, in their appropriate order, for an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0038",
+      "text": "As a repository manager, I want to link, when appropriate, a component to another component or to a file.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0039",
+      "text": "As a repository manager, I want to describe each component as necessary, including title, date(s), language(s), and other facets.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0040",
+      "text": "As a repository manager, I want to indicate any name that is pertinent to the component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0041",
+      "text": "As a repository manager, I want to indicate any subject that is pertinent to the component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0042",
+      "text": "As a repository manager, I want to indicate if the component has a copyright status different than that of of the object as a whole.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0043",
+      "text": "As a repository manager, I want to indicate if a statute pertains to the component, apart from the object as a whole.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0044",
+      "text": "As a repository manager, I want to indicate if a license pertains to the component, apart from the object as a whole.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0045",
+      "text": "As a repository manager, I want to indicate if other rights pertain to the component, apart from the object as a whole.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0046",
+      "text": "As a repository manager, I want to know all events occurring to a component over its life cycle.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0047",
+      "text": "As a DAMS manager, I want to present in their assigned order all components comprising an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0048",
+      "text": "As a user, I want to be able to see and navigate the component hierarchy of an object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0049",
+      "text": "As a repository manager, I want to know all the content files in the DAMS for my repository's objects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0050",
+      "text": "As a repository manager, I want to associate a content file with either an object or an object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0051",
+      "text": "As a repository manager, I want to know any event that occurred to a content file for any of my repository's objects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0052",
+      "text": "As a DAMS manager, I want to indicate to preservation managers aspects of a master file useful for monitoring its integrity, and impending obsolescence, including file size, creation date, file format and format version.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0053",
+      "text": "As a DAMS manager, I want to indicate to preservation managers the checksum and checksum method for each master file for a given object.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0054",
+      "text": "As a DAMS manager, I want to indicate the source-capture information for a file where it is useful to do so.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0055",
+      "text": "As a DAMS manager, I want to know, via preservation managers, of any object for which integrity or authenticity is in question or that has been updated to a more current file format.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0056",
+      "text": "As a user, I want access to content files that comprise an object, so that I can decide whether a file is too large to download.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0057",
+      "text": "As a repository manager, I want to provide a title, in all useful forms, for my repository's collections, objects, and object components.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0058",
+      "text": "As a repository manager, I want to know any changes occurring to titles for repository's collections, objects, and object components.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0059",
+      "text": "As a DAMS manager, I want to present collections, objects, and object components by title.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0060",
+      "text": "As a user, I want to search collections, objects, and object components by title.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0061",
+      "text": "As a repository manager, I want to indicate for an object or object component the place of publication, the publisher, edition, etc., when pertinent.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0062",
+      "text": "As a repository manager, I want to know of any changes made to the origin Info for an object, including its component parts.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0063",
+      "text": "As a user, I want to know for an object or its component parts the place of publication, the publisher, etc.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0064",
+      "text": "As a repository manager, I want to describe various facets of a collection, object, or object component that are not addressable via title, date, name, and subject entities.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0065",
+      "text": "As a repository manager, I want to know of all modifications made to notes for my repository's collections, objects, or object components.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0066",
+      "text": "As a user, I want to know about various facets of a collection, object, or object component, such as scope and content, various identifiers, conditions governing use/access, etc.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0067",
+      "text": "As a repository manager, I want to indicate the language(s) for present in a collection, object, or object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0068",
+      "text": "As a repository manager, I want to know of any changes made to language(s) indicated for a collection, object, or object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0069",
+      "text": "As a user, I want to scope my searches for collections, objects, or object components to a specific language.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0070",
+      "text": "As a repository manager, I want to register a name record for each unique identity associated with my repository's collections and objects.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0071",
+      "text": "As a user, I want to search by for collections and objects by name.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0072",
+      "text": "As a repository manager, I want to indicate that a name pertinent to a collection, object, or object component has a specific role, such as illustrator, photographer, etc.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0073",
+      "text": "As a user, I want to scope by searches by name to a specific role such as illustrator, photographer, etc.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0074",
+      "text": "As a repository manager, I want to indicate all subjects that are pertinent to a collection, object, or object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0075",
+      "text": "As a user, I want to search for collections, objects, and object components by pertinent such headings, including title, topic, genre/form, geographical name, function, occupation, name, cartographics, etc.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0076",
+      "text": "As a repository manager, I want to indicate the geo-coordinates for any resource that believe useful to an end user.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0077",
+      "text": "As a user, I want to see the geographical context of a collection, object, or object component, where pertinent.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0078",
+      "text": "As a repository manager, I want to indicate all other pertinent versions or descriptions of a resource that are external to the DAMS.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0079",
+      "text": "As a user, I want to know of all other pertinent versions or descriptions of the resource.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0080",
+      "text": "As a repository manager, I want to know if the checksum for any of my repository's content files that have changed.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0081",
+      "text": "As a DAMS manager, I want to know, via the preservation manager, of all files for which the checksum has changed since last registered.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0082",
+      "text": "As a repository manager, I want to know, where pertinent, the hardware and software used to generate a content file.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0083",
+      "text": "As a DAMS manager, I want to know what objects or object components are still under copyright and cannot be displayed without either a license or incurring risk.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0084",
+      "text": "As a DAMS manager, I want to know when copyright for an object or object component is likely to expire per jurisdictional copyright statute.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0085",
+      "text": "As a DAMS manager, I want to know when the copyright status for an object or object component is modified, either manually or automatically.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0086",
+      "text": "As a user, I want to know if an object or object component is under copyright and, where possible, who the rights holder is.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0087",
+      "text": "As a DAMS manager, I want to know all the statutes pertinent to an object or object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0088",
+      "text": "As a DAMS manager, I want to know when the pertinence of a statute to a object or object component is scheduled to expire.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0089",
+      "text": "As a DAMS manager, I want to know when the application of a statute to an object or object component has been modified, either manually or automatically.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0090",
+      "text": "As a DAMS manager, I want to know if copyrighted content has an applicable license.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0091",
+      "text": "As a DAMS manager, I want to know if an object or object component is subject to a library policy that restricts access in any way.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0092",
+      "text": "As a DAMS manager, I want to know when application of a library policy to an object or object component is scheduled to expire.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0093",
+      "text": "As a DAMS manager, I want to know if application of a library policy to an object or object component has been modified, either manually or automatically.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0094",
+      "text": "As a DAMS manager, I want to know all the uses for an object or object component that are permitted or restricted per the rights status of the object or object component.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0095",
+      "text": "As a DAMS manager, I want know the dates for when a permission or restriction is active.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0096",
+      "text": "As a DAMS manager, I want to know when permitted and restricted acts and/or their active dates are modified.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0097",
+      "text": "As a DAMS manager, I want to track all events scheduled for recording in the DAMS.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0098",
+      "text": "As a DAMS manager, I want to know the agent(s) responsible for carrying out an event.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0099",
+      "text": "As a DAMS manager, I want to know when the event occurred.",
+      "source_doc_id": "dalpiaz-19"
+    },
+    {
+      "id": "DALPIAZ-19-0100",
+      "text": "As a DAMS manager, I want to know the outcome of the event, e.g., object NN was deleted.",
+      "source_doc_id": "dalpiaz-19"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "doc_id": "promise-12",
+  "source_file": "promise_nfr.arff",
+  "project_id": "12",
+  "counts": {
+    "requirements": 22
+  },
+  "class_labels": {
+    "PROMISE-12-0001": "LF",
+    "PROMISE-12-0002": "LF",
+    "PROMISE-12-0003": "US",
+    "PROMISE-12-0004": "US",
+    "PROMISE-12-0005": "US",
+    "PROMISE-12-0006": "PE",
+    "PROMISE-12-0007": "PE",
+    "PROMISE-12-0008": "PE",
+    "PROMISE-12-0009": "PE",
+    "PROMISE-12-0010": "PE",
+    "PROMISE-12-0011": "A",
+    "PROMISE-12-0012": "FT",
+    "PROMISE-12-0013": "FT",
+    "PROMISE-12-0014": "SC",
+    "PROMISE-12-0015": "O",
+    "PROMISE-12-0016": "O",
+    "PROMISE-12-0017": "MN",
+    "PROMISE-12-0018": "MN",
+    "PROMISE-12-0019": "MN",
+    "PROMISE-12-0020": "SE",
+    "PROMISE-12-0021": "SE",
+    "PROMISE-12-0022": "SE"
+  }
+}

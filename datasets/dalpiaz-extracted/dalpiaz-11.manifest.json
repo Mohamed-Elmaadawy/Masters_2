@@ -1,0 +1,17 @@
+{
+  "doc_id": "dalpiaz-11",
+  "source_file": "11.txt",
+  "encoding_used": "utf-8-sig",
+  "counts": {
+    "requirements": 56,
+    "line_merges": 1
+  },
+  "line_merges": [
+    {
+      "story_index": 6,
+      "before": "As a migration specialist, I want to store the AT or Archon source record ids in each ASpace record",
+      "appended": "to support data migration integrity testing.",
+      "after": "As a migration specialist, I want to store the AT or Archon source record ids in each ASpace record to support data migration integrity testing."
+    }
+  ]
+}

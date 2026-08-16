@@ -1,0 +1,120 @@
+{
+  "doc_id": "promise-7",
+  "requirements": [
+    {
+      "id": "PROMISE-7-0001",
+      "text": "Recreation of Inventory Quantity Adjustment for the period of previous 30 days shall take no more than 30min.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0002",
+      "text": "The System shall allow for a minimum of  6 users to work at the same time.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0003",
+      "text": "The System shall utilize currently owned computer equipment.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0004",
+      "text": "The System shall be able to automatically backup business data and restore them on demand.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0005",
+      "text": "The System shall maintain consistent security.  Any changes in user passwords and/or permissions should take affect in all parts of the System.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0006",
+      "text": "The System shall granularly control access rights to all major subsystems.  It should be possible to assign access rights to all subsystems independently.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0007",
+      "text": "The System shall meet all applicable accounting standards.  The final version of the System must successfully pass independent audit performed by a certified auditor.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0008",
+      "text": "The System shall not require additional third party licenses resulting in royalty fees.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0009",
+      "text": "The System shall allow generation of Inventory Quantity Adjustment documents on demand.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0010",
+      "text": "The System shall allow on demand generation of all Inventory Quantity Adjustment documents since certain point of time.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0011",
+      "text": "The IQA subsystem shall take into account current inventory status and adjust inventory of substitutionary ingredients accordingly.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0012",
+      "text": "The System shall allow entering  storing and modifying product formulas.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0013",
+      "text": "Product formulas shall allow use of semi-products  which have own formulas.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0014",
+      "text": "Product formula ingredients shall allow defining substitutionary ingredients.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0015",
+      "text": "Product formula substitutionary ingredients shall be entered automatically by the PFE subsystem.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0016",
+      "text": "Formula substitutionary ingredients shall be kept in persisted order",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0017",
+      "text": "Product shall allow entering  storing and modifying product menus used by POS terminals.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0018",
+      "text": "PME Subsystem shall allow building product menus based on the list of products kept in the accounting system.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0019",
+      "text": "PME Subsystem shall allow keeping submenus within menus and products within submenus in a managed and persisted order.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0020",
+      "text": "PME Subsystem shall allow for a product to exist in more than one submenu",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0021",
+      "text": "The RMS System shall have Windows XP look and feel and use GUI futures making its use intuitive.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0022",
+      "text": "The System shall generate Inventory Quantity Adjustment document based on product daily sales data and product formulas.",
+      "source_doc_id": "promise-7"
+    },
+    {
+      "id": "PROMISE-7-0023",
+      "text": "The System shall generate Inventory Quantity Adjustment document automatically when daily Product Sales data is available.",
+      "source_doc_id": "promise-7"
+    }
+  ]
+}
