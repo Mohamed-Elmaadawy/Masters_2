@@ -4993,6 +4993,282 @@ throughout). No frozen evaluation input, historical result, or
 `docs/EVALUATION_PROTOCOL.md` touched (the one real historical run directory used in
 `test_arm_p_report.py` was only ever read). Not committed -- staged for another review.
 
+## 2026-08-17 -- Task 7 (E3 Level 2 repeat runs): frozen six-scenario matrix, offline machinery only
+
+Scoped and built the offline half of Task 7
+(`docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`; `docs/EVALUATION_PROTOCOL.md`
+section 4). Level 1 is Task 2, already built
+(`docs/superpowers/quality_checker_stability.py`), unaffected by this entry. This entry
+covers Level 2: five repetitions of a frozen six-document matrix, offline preflight and
+FakeAdapter-only tests built and green; the real 30-execution paid run itself is
+explicitly **not** run by this entry (see "What remains", below).
+
+**Operational definition, agreed before implementation.** One experimental repeat = one
+execution of the complete six-scenario matrix; the matrix repeats 5 times; this is
+honestly **5 experimental repetitions and 30 document executions**, not 5 pipeline
+invocations, and is reported that way. Each of the 10 requirements keeps its own
+document context -- the candidates span multiple fixture documents and must never be
+flattened into one artificial `RequirementSet`, which would fabricate consistency/
+dependency context that never existed. The frozen matrix, chosen from already-known
+outcomes (the 2026-08-14 v2-live replay of the frozen live-human transcript, plus the
+one `DocumentOutcome.DEGRADED` on record anywhere in this repo) so the outcome-type
+coverage requirement (`COMPLETED`/`CAP_STOPPED`/`CAP_GENERATED`/document-stage failure)
+is satisfied without picking after seeing Level-2-specific results:
+
+| Scenario | Requirement(s) | Stratum |
+|---|---|---|
+| scn-08-clean | THEMAS-REQ-G | normal |
+| scn-09-vague | THEMAS-REQ-D, THEMAS-REQ-E | normal |
+| scn-10-atomicity | AUTOGEN-US2, LUITEL-R7 | normal |
+| scn-04-conflict-numeric | PURE-THEMAS-R6, PURE-THEMAS-R6-P | normal |
+| scn-11a-cap-generate | AUTOGEN-US3 | normal |
+| scn-01-dep-pair | PURE-ERTMS-R7, PURE-ERTMS-R8 | **forced document-stage failure** |
+
+Threat to validity, stated rather than hidden: `THEMAS-REQ-*`/`PURE-THEMAS-R6*` are drawn
+from THEMAS, already on record (`EVALUATION_PROTOCOL.md` section 7, threat 3) as
+prompt-tuning-contaminated -- v2 was tuned against behaviour fixtures from this same
+document. Judged acceptable here because E3 Level 2 measures pipeline/stage
+*determinism*, not refinement *quality* -- but the write-up must say so, not let a
+reader assume this suite is drawn from the untouched evaluation-reserved corpus.
+
+**Verified, not assumed: the historical `-v2-live` YAML configs cannot execute under the
+current resolver.** `docs/superpowers/results/2026-08-14-live-answers/configs/scn-*-v2-live.yaml`
+load fine as historical RESULT files (`DocumentRunRecord`'s legacy eight-stage
+compatibility branch), but `load_run_config()` on one of them as a fresh execution
+config raises `ValidationError: prompts is missing an entry for:
+['consistency_checker_refined', 'dependency_mapper_refined']` -- confirmed directly
+against the real resolver, not inferred from the historical files loading. They predate
+S3's ten-stage schema. Used only as read-only evidence for which outcome type each
+requirement produced; never as an execution config.
+
+**Wiring correction, made before implementation.** An in-memory
+`ResolvedRunConfig.model_copy(update={"run_id": ...})` cannot be handed to
+`orchestrator.cli._run()`, which takes a YAML path and reloads it -- so an earlier draft
+of this plan (preflight validating an in-memory copy, execution reloading the unmodified
+template) would have let preflight and paid execution silently diverge. Fixed by
+generating and persisting all 30 concrete YAML configs FIRST
+(`docs/superpowers/e3-configs/generated/`, one per (repeat, scenario), `_generate_config`
+in `docs/superpowers/e3_level2_repeat_runs.py`), then running every preflight check
+(`load_run_config`/`resolve_run_config`, fingerprint, stage-set, collision) against those
+exact persisted files, and passing those same file paths to `_run()` at execution time.
+Preflight and execution are provably reading identical bytes because they read the same
+file, not because two independently-built configs are asserted equal.
+
+**Config templates.** Two new ten-stage YAML templates,
+`docs/superpowers/e3-configs/{normal,failure}_template.yaml`, structurally = the config
+`evaluation/config_parity.py::frozen_arm_p_config` already treats as "the frozen arm-P
+config" (`orchestrator/runs_gemini.yaml`), with one correction: that file's
+`prompt_version: v1` label is stale relative to what it actually serves --
+`orchestrator/example_prompts/*.txt` content was edited to v2 in place (no v1/v2 file
+split exists; `prompt_version` is a provenance label, not a file selector) -- so the E3
+templates carry `prompt_version: v2`, matching real content and the other five
+scenarios' already-established `-v2-live` labelling convention. `failure_template.yaml`
+is identical to `normal_template.yaml` except one pre-registered override
+(`consistency_checker: {model: gemini-nonexistent-model-x9}` plus its matching
+unthrottled `rate_limits` entry), ported from
+`docs/superpowers/results/2026-08-11-behavior-scenarios/configs/scn-13-degraded.yaml`
+onto the current schema -- a fixed experimental stratum present in every repetition, not
+between-repeat configuration drift. Both verified to resolve cleanly against the real
+resolver, all ten stages, every prompt file present, before anything was built around
+them.
+
+**Config fingerprint** (`_config_fingerprint`): `sha256` of
+`json.dumps(resolved.model_dump(mode="json", exclude={"run_id","output_dir"}),
+sort_keys=True)` -- canonical, so `stages`/`rate_limits` dict key order can never
+silently affect it, the way plain `model_dump_json()` (declared-field order only, not
+dict-key order) would not have guaranteed. Excludes exactly the two fields this module
+deliberately varies per (repeat, scenario); everything else that must stay identical
+across a scenario's 5 repetitions (every stage's provider/model/temperature/
+output_mode/prompt_version/prompt_hash, retry, rate_limits, max_revisions) is covered.
+Preflight (`_validate_prepared`) asserts this fingerprint is identical across a
+scenario's 5 repeats, and asserts no duplicate `run_id`/`run_dir` and no pre-existing
+run directory, for all 30 executions at once -- before any adapter is constructed,
+catching a cross-repeat collision that a per-call check (the kind `orchestrator/cli.py`'s
+`_do_run` already does for one run_dir at a time) would only discover mid-matrix.
+
+**Wall-clock**: `time.perf_counter()` wrapped directly around each `_run()` call
+(`_execute_one`) -- no manual stopwatch and no pipeline-schema change, unlike arm P's
+own wall-clock (`evaluation/arm_p_report.py`), because this driver already controls
+every invocation itself. Cost reuses `evaluation.arm_p_report.compute_arm_p_cost`
+unmodified -- it is generic over any `DocumentRunRecord`, not arm-P-specific.
+
+**Per-document summary**, persisted atomically (`evaluation.atomic_io.atomic_write_json`)
+immediately after every one of the 30 document executions, so an interruption mid-matrix
+during the real paid run does not lose completed metadata: repeat number, scenario,
+run_id/run_dir, config fingerprint, CLI exit code, document + per-requirement outcomes,
+replay miss/drift count **for that document execution specifically** (a delta against
+the shared policy's running total, not the cumulative count -- the policy is
+deliberately shared across a repeat's six scenarios, so the raw cumulative count would
+attribute one scenario's misses to another), wall-clock, and the full cost report.
+
+**Policy lifecycle, the exact contract specified**: one fresh `TranscriptAnswerPolicy`
+per repeat, reused across that repeat's six scenarios, never across repeats. Verified
+directly (self-test section 5) by injecting a fake `execute_one_fn` into `run_matrix`
+that records `id(policy)` per execution with no adapter involved -- confirms same
+instance within a repeat's scenarios, different instance across repeats, without relying
+on indirect evidence like miss counts (which would only prove freshness if a scenario
+happened to produce a miss).
+
+**Preflight halts the whole matrix, not just the failing execution**, on
+`EXIT_CONFIG_ERROR` or `EXIT_INTERRUPTED` from a real `_run()` call. A config error
+surfacing only at execution time (e.g. a missing API key -- something preflight cannot
+see without constructing an adapter, which it must not do) will recur identically on
+every remaining execution; continuing would burn 29 more attempts against a guaranteed
+repeat of the same failure. `KeyboardInterrupt`/`EOFError` similarly stop immediately
+rather than continuing to spend budget.
+
+**Self-test caught a real bug in the self-test itself, not the driver.** The first
+version of `_happy_path_responses`'s scripted `TestCase.id` used a plain
+`f"TC-{req_id}-1"`; `orchestrator/pipeline.py::_test_generator_extra_check` requires
+the length-prefixed `test_case_id_prefix` format (`TC-<len(req_id)>-<req_id>-`) --
+confirmed by reading `orchestrator/test_cli.py`'s own (correct) fixture, which this
+file's docstring was supposed to be copying. The mismatch produced a
+`VALIDATION_FAILURE` that retried, consumed extra items from the fixed 8-item scripted
+response list, and surfaced two calls later as an unrelated-looking `TEST_GENERATOR`
+`OTHER_FAILURE` (`IndexError: pop from empty list`) -- a genuinely confusing failure
+mode to debug from the symptom alone. Fixed by importing and calling
+`orchestrator.pipeline.test_case_id_prefix` directly instead of restating its format,
+so the two can never drift apart again (CLAUDE.md, "two fields that must agree need
+something forcing it" -- applies here to a test fixture and the production function it
+mimics, not just to two schema fields).
+
+**What remains, deliberately not done here.** The real 30-execution paid run itself:
+`python docs/superpowers/e3_level2_repeat_runs.py run` was never invoked (confirmed
+`GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/`GROQ_API_KEYS`/`GEMINI_API_KEY_PAID`
+all unset throughout this session). `prepare_and_preflight()` WAS run for real, offline,
+as part of the self-test (section 4) -- it persisted the real 30 generated YAML configs
+under `docs/superpowers/e3-configs/generated/` and confirmed they all resolve, collide
+nowhere, and fingerprint identically per scenario across the 5 repeats. No `runs/`
+directory or run output exists yet; nothing has been executed.
+
+**Impact:** new `docs/superpowers/e3-configs/{normal,failure}_template.yaml` (verified
+against the real resolver, see above), new
+`docs/superpowers/e3_level2_repeat_runs.py` (27/27 self-test checks, offline, no
+network, run in well under 1 second). All nine `orchestrator`/`design` suites unchanged
+and green: schemas 351, arch diagrams 88, harness 489, CLI 65, stages 163, stage_fns 67,
+config 101, rotation 18; all six `evaluation` suites unchanged and green: runner 145,
+mechanical 57, blinding 50, config_parity 26, pricing 21, arm_p_report 13.
+`docs/superpowers/quality_checker_stability.py --self-test` (Level 1, Task 2) unchanged,
+11/11. `git diff --check` clean. No API call made. Not committed -- staged for review.
+
+## 2026-08-17 -- Task 7 (E3 Level 2) review: four real gaps, each confirmed with a failing repro first
+
+A review of the entry above found four real issues, each confirmed with a direct
+failing reproduction before any fix was written (per the instruction: "confirm each
+with a failing reproduction before fixing").
+
+**1. Interruption crashed instead of halting cleanly, and `main("run")` ignored the
+matrix's halt status entirely.** Confirmed with a direct repro: an adapter raising
+`KeyboardInterrupt` on its very first `.complete()` call -- before `run_document`'s
+phase-1 `write_document_run` has run -- made `_execute_one`'s un-guarded
+`read_document_run(p.run_dir)` raise an uncaught `FileNotFoundError`, since `run_dir`
+existed (created by `write_run_config`, which runs before `run_document` is called)
+but `document.json` did not yet. Separately confirmed by inspection:
+`main()`'s `run` subcommand called `run_matrix(prepared)` and discarded its return
+value entirely, always returning `EXIT_SUCCESS` regardless of what actually happened.
+Fixed: `_execute_one` now returns immediately on `EXIT_INTERRUPTED` (folded into the
+same early-return branch `EXIT_CONFIG_ERROR` already used, since both mean "nothing
+useful to read or summarize, stop here"), before `read_document_run` is ever called.
+`run_matrix` now returns `(status, summaries)` instead of just `summaries` -- `status`
+is `EXIT_SUCCESS` if every prepared execution ran (a per-document `EXIT_STAGE_ERRORS`,
+e.g. the forced-failure scenario, is expected DATA, not a driver failure), or the
+halting code (`EXIT_INTERRUPTED`/`EXIT_CONFIG_ERROR`) otherwise. `main()` propagates
+`status` directly.
+
+**2. `build_report` could describe a partial or corrupted summary set as if it were the
+complete matrix.** Confirmed with a direct repro: `build_report` given a single
+summary still printed "30 document executions" and "identical across all repeats, per
+scenario: True" (vacuously true with nothing to disagree with). Fixed:
+`_validate_summaries_complete` (called first, unconditionally, inside `build_report`)
+requires exactly `REPEATS * len(SCENARIOS)` (30) summaries; every `(repeat, scenario)`
+pair present exactly once (a dict keyed by the pair catches missing, duplicate, AND
+extra pairs in one check); and, per scenario, all 5 fingerprints identical. Refuses
+(raises `ValueError`, caught by `main()`'s `report` subcommand and reported as a
+config error) otherwise. Mutation-tested: five independent mutations of a genuine
+30-entry set (wrong count via one entry removed; the realistic "only repeat 1
+finished" partial-matrix shape; a duplicate pair with count held at exactly 30 so the
+count check alone can't catch it; an extra/unexpected pair, same isolation; fingerprint
+drift within one scenario, count and pair-set both otherwise correct) -- each
+independently trips the gate, proving no single check is silently covering for another.
+
+**3. Nothing mechanically enforced the frozen matrix against what was actually on
+disk.** `Scenario` carried no requirement-id field at all -- a fixture silently edited
+or swapped for a different document would have passed preflight unnoticed, discovered
+(if at all) only as an unexplained requirement id in a result. Confirmed by
+inspection and a constructed repro (a fixture built with a wrong id passed preflight
+with the pre-fix code). Fixed: `Scenario` gains `expected_requirement_ids`, populated
+from the approved table; `_assert_scenario_fixtures_match_frozen_ids` (called from
+`prepare_and_preflight`, before any config is generated) loads every fixture once and
+requires an exact set match against its scenario's declared ids, plus exactly 10
+unique ids across the whole matrix (a requirement id accidentally reused across two
+scenarios would silently corrupt any per-requirement aggregation). Also added
+`_assert_templates_differ_only_by_forced_failure`, proving
+`failure_template.yaml` diverges from `normal_template.yaml` by EXACTLY the two
+pre-registered differences (`consistency_checker`'s model override, the extra
+fake-model `rate_limits` entry) and nothing else -- normalizes those two fields (plus
+`run_id`/`output_dir`, both unused placeholders overwritten by `_generate_config`
+regardless, the same reason `_config_fingerprint` already excludes them) and requires
+the remaining parsed YAML to compare equal. Both checks mutation-tested: a mismatched
+fixture id, a requirement id reused across two scenarios, an unregistered template
+divergence (a stray temperature edit alongside the two registered ones), and a failure
+template that dropped its override entirely (would otherwise be silently normalized
+into "no difference" and accepted) all independently raise.
+
+**4. Generated configs contained machine-specific absolute paths, and the self-test
+wrote real files into the tracked source tree.** Confirmed directly: an earlier
+`_generate_config` wrote `prompts` entries as absolute paths (e.g.
+`C:\Users\<name>\...\orchestrator\example_prompts\...`), which would not resolve on a
+different machine or even a different checkout location on the SAME machine, and
+would not commit as reproducible. Separately confirmed: the self-test's "generate and
+preflight the real 30-item matrix" check (added in the prior entry specifically to
+exercise the real matrix) called `prepare_and_preflight()` with no override, so
+running `--self-test` had the side effect of writing 30 real files into
+`docs/superpowers/e3-configs/generated/` on every run. Fixed: `_generate_config` now
+resolves each prompt path to absolute (anchored at the TEMPLATE's own directory, where
+its relative paths are authored relative to), then re-expresses it as a path relative
+to the GENERATED file's own directory via `os.path.relpath` -- `resolve_run_config`
+already interprets a relative `prompts` entry relative to the config file's own
+directory (the exact mechanism the templates themselves already rely on), so this
+resolves correctly from any location inside any clone of this repo, as long as the
+generated file's relative offset to `orchestrator/example_prompts/` is preserved (true
+for any checkout). `prepare_and_preflight` gained a `generated_dir` parameter
+(defaults to the real, tracked directory) specifically so the self-test can point it
+at a temporary directory instead; the self-test now asserts the real tracked directory
+is provably untouched (`glob` before/after, must be equal) by the offline check that
+exercises the real matrix.
+
+**Decision recorded (asked for, not yet resolved by user): are the 30 generated
+configs (a) committed pre-registration artifacts, or (b) generated and committed
+during the later freeze step immediately before paid execution?** Not settled by this
+entry -- flagged for the user. What IS settled: whichever the answer, they must never
+be committed with machine-specific absolute paths (fixed above), and the stale
+absolute-path files that had already been written into the tracked-but-uncommitted
+working tree by an earlier `--self-test` run were regenerated (via `prepare`, offline,
+no adapter) with the portable relative-path logic before this entry was written, so
+nothing machine-specific remains on disk either way.
+
+**No batch-resume support, documented explicitly rather than silently implied.**
+`prepare_and_preflight`'s docstring and `_validate_prepared`'s "run directory already
+exists" error message both now state plainly: re-running `prepare`/`run` after a
+partially-executed matrix FAILS at preflight (an existing `run_dir` is refused, by the
+same check `orchestrator/cli.py`'s own `_do_run` already applies to one run at a time,
+surfaced across all 30 up front instead). Recovering a partial matrix is a manual
+decision (move the partial `generated_dir`/`runs` aside, or discard and restart) --
+`prepare + run` must never be described as able to continue a partial matrix, and
+nothing in this fix adds that capability; it only stops the tool from crashing or
+lying about status when a matrix is interrupted mid-run.
+
+**Impact:** self-test grew from 27 to 46 checks (offline, no network, ~1.7s wall
+time -- one run hit a 120s+ outlier, almost certainly antivirus scanning freshly
+written tempfiles on Windows rather than a real slowdown; re-run measured 1.7s
+cleanly). All nine `orchestrator`/`design` suites unchanged and green: schemas 351,
+arch diagrams 88, harness 489, CLI 65, stages 163, stage_fns 67, config 101, rotation
+18. All six `evaluation` suites unchanged and green: runner 145, mechanical 57,
+blinding 50, config_parity 26, pricing 21, arm_p_report 13. Level 1 unchanged, 11/11.
+`git diff --check` clean. No API call made -- `GEMINI_API_KEY`/`GEMINI_API_KEYS`/
+`GROQ_API_KEY`/`GROQ_API_KEYS`/`GEMINI_API_KEY_PAID` confirmed unset throughout. The
+real 30-execution paid run remains not started. Not committed -- staged for review.
+
 ## 2026-08-17 -- Task 6 review round 4: two direct-call gaps, one documentation correction
 
 A fourth review found two code gaps in round 3's own fixes and one place round 3's own

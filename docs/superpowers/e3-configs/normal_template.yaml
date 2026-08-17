@@ -1,0 +1,62 @@
+# E3 Level 2 (repeat-run support) normal-scenario TEMPLATE -- current ten-stage
+# schema, based on orchestrator/runs_gemini.yaml (the config evaluation/config_parity.py
+# treats as "the frozen arm-P config"), with prompt_version corrected to v2: the
+# underlying orchestrator/example_prompts/*.txt files were edited to v2 content in
+# place (no v1/v2 file split exists -- prompt_version is a provenance label, not a
+# file selector), so runs_gemini.yaml's own "v1" label is stale relative to what it
+# actually serves. This template restates the label correctly rather than propagating
+# the stale one.
+#
+# NEVER passed to `_run()` directly -- run_id/output_dir below are placeholders.
+# docs/superpowers/e3_level2_repeat_runs.py reads this file, overrides run_id and
+# output_dir per (repeat, scenario), and writes the result as a concrete, persisted
+# YAML file under docs/superpowers/e3-configs/generated/ -- THAT file, not this one,
+# is what preflight validates and what `_run()` actually executes (see the module
+# docstring's "wiring correction" note for why the two must be the same file).
+#
+# API keys are never in this file, by design -- GeminiAdapter.from_env() reads
+# GEMINI_API_KEY from the environment only.
+
+run_id: TEMPLATE-DO-NOT-RUN-normal
+output_dir: TEMPLATE-DO-NOT-RUN
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v2
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  consistency_checker: {}
+  dependency_mapper: {}
+  consistency_checker_refined: {}
+  dependency_mapper_refined: {}
+
+prompts:
+  classifier: ../../../orchestrator/example_prompts/classifier.txt
+  quality_checker: ../../../orchestrator/example_prompts/quality_checker.txt
+  refiner_questioner: ../../../orchestrator/example_prompts/refiner_questioner.txt
+  refiner_rewriter: ../../../orchestrator/example_prompts/refiner_rewriter.txt
+  strategy_selector: ../../../orchestrator/example_prompts/strategy_selector.txt
+  test_generator: ../../../orchestrator/example_prompts/test_generator.txt
+  consistency_checker: ../../../orchestrator/example_prompts/consistency_checker.txt
+  dependency_mapper: ../../../orchestrator/example_prompts/dependency_mapper.txt
+  consistency_checker_refined: ../../../orchestrator/example_prompts/consistency_checker_refined.txt
+  dependency_mapper_refined: ../../../orchestrator/example_prompts/dependency_mapper_refined.txt

@@ -1,0 +1,62 @@
+# E3 Level 2 (repeat-run support) FORCED-FAILURE-scenario TEMPLATE -- identical to
+# normal_template.yaml in this same directory except the two lines marked below: this
+# is the pre-registered document-stage-failure stratum (docs/superpowers/plans/
+# 2026-08-15-CLAUDE-CODE-HANDOVER.md Task 7 / docs/EVALUATION_PROTOCOL.md section 4,
+# "a document-stage failure"). Same override pattern as
+# docs/superpowers/results/2026-08-11-behavior-scenarios/configs/scn-13-degraded.yaml
+# (2026-08-11, the only DEGRADED DocumentOutcome on record anywhere in this repo),
+# ported onto the current ten-stage schema at v2.
+#
+# NEVER passed to `_run()` directly -- see normal_template.yaml's docstring; the same
+# generate-then-persist-then-execute-the-persisted-file rule applies here.
+
+run_id: TEMPLATE-DO-NOT-RUN-failure
+output_dir: TEMPLATE-DO-NOT-RUN
+max_revisions: 3
+
+retry:
+  max_attempts: 3
+  initial_delay_seconds: 2.0
+  multiplier: 2.0
+
+rate_limits:
+  gemini/gemini-3.6-flash: {requests_per_minute: 15, tokens_per_minute: null}
+  # Deliberately unthrottled -- this model never succeeds, so a real rate matters to
+  # no one (same reasoning and same value as scn-13-degraded.yaml).
+  gemini/gemini-nonexistent-model-x9: {requests_per_minute: null, tokens_per_minute: null}
+
+defaults:
+  provider: gemini
+  model: gemini-3.6-flash
+  prompt_version: v2
+  temperature: 1.0
+  timeout_seconds: 30
+  output_mode: text
+
+stages:
+  classifier: {}
+  quality_checker: {}
+  refiner_questioner: {}
+  refiner_rewriter: {}
+  strategy_selector: {}
+  test_generator: {}
+  # Only override in this template vs normal_template.yaml, alongside the extra
+  # rate_limits entry above: nonexistent model name, adapter must fail fatally on
+  # the real call. Forces DocumentOutcome.DEGRADED (consistency_checker never
+  # succeeds; dependency_mapper does; pass A still runs normally per requirement).
+  consistency_checker: {model: gemini-nonexistent-model-x9}
+  dependency_mapper: {}
+  consistency_checker_refined: {}
+  dependency_mapper_refined: {}
+
+prompts:
+  classifier: ../../../orchestrator/example_prompts/classifier.txt
+  quality_checker: ../../../orchestrator/example_prompts/quality_checker.txt
+  refiner_questioner: ../../../orchestrator/example_prompts/refiner_questioner.txt
+  refiner_rewriter: ../../../orchestrator/example_prompts/refiner_rewriter.txt
+  strategy_selector: ../../../orchestrator/example_prompts/strategy_selector.txt
+  test_generator: ../../../orchestrator/example_prompts/test_generator.txt
+  consistency_checker: ../../../orchestrator/example_prompts/consistency_checker.txt
+  dependency_mapper: ../../../orchestrator/example_prompts/dependency_mapper.txt
+  consistency_checker_refined: ../../../orchestrator/example_prompts/consistency_checker_refined.txt
+  dependency_mapper_refined: ../../../orchestrator/example_prompts/dependency_mapper_refined.txt

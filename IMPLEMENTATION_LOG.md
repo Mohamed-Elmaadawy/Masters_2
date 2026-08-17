@@ -26,6 +26,100 @@ say exactly that and name the measurement that would settle it.
 
 ---
 
+## 2026-08-17 — Task 7 (E3 Level 2 repeat runs): frozen matrix, offline machinery, no paid run yet
+
+**Changed:** new `docs/superpowers/e3-configs/normal_template.yaml` and
+`failure_template.yaml` (current ten-stage schema, `prompt_version: v2`, based on
+`orchestrator/runs_gemini.yaml`'s structure; the failure template additionally
+overrides `consistency_checker`'s model to the same nonexistent-model name
+`docs/superpowers/results/2026-08-11-behavior-scenarios/configs/scn-13-degraded.yaml`
+used); new `docs/superpowers/e3_level2_repeat_runs.py` (generates and persists 30
+concrete YAML configs from the two templates, one per (repeat, scenario), preflights
+all 30 — fingerprint/stage-set/collision — against those exact persisted files before
+any adapter is constructed, then executes each via `orchestrator.cli._run()`
+unmodified, timing every call with `time.perf_counter()` and persisting a per-document
+summary atomically right after).
+
+**Why:** Task 7 / E3 Level 2
+(`docs/superpowers/plans/2026-08-15-CLAUDE-CODE-HANDOVER.md`;
+`docs/EVALUATION_PROTOCOL.md` section 4) — design/DESIGN_NOTES.md's new entry, "Task 7
+(E3 Level 2 repeat runs): frozen six-scenario matrix, offline machinery only", records
+the full scoping trail: the operational definition (5 repeats × 6-scenario/
+10-requirement matrix = 30 document executions, never flattened into one
+`RequirementSet`), the verified incompatibility of the historical `-v2-live` YAML
+configs with the current ten-stage resolver, and the wiring correction that made
+preflight validate the SAME persisted file `_run()` later executes rather than an
+in-memory copy of it.
+
+**Impact:** both templates verified against the real resolver (all ten stages, every
+prompt file present) before anything was built around them. New driver's self-test:
+27/27 checks, offline, no network, well under 1 second — including a real (not toy)
+`prepare_and_preflight()` call against the actual frozen 30-execution matrix, which
+persisted the 30 real generated configs under `docs/superpowers/e3-configs/generated/`
+and confirmed they resolve, never collide, and fingerprint identically per scenario
+across all 5 repeats. One bug caught and fixed during self-test construction, not in
+the driver itself: the scripted happy-path fixture's `TestCase.id` didn't follow
+`orchestrator/pipeline.py::test_case_id_prefix`'s required format, which surfaced as a
+confusing unrelated-looking failure two calls later — fixed by importing and calling
+the real function instead of restating its format by hand. All nine `orchestrator`/
+`design` suites unchanged and green (schemas 351, arch diagrams 88, harness 489, CLI
+65, stages 163, stage_fns 67, config 101, rotation 18); all six `evaluation` suites
+unchanged and green (runner 145, mechanical 57, blinding 50, config_parity 26, pricing
+21, arm_p_report 13); Level 1's own harness unchanged, 11/11
+(`docs/superpowers/quality_checker_stability.py --self-test`). `git diff --check`
+clean. No API call made — `GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/
+`GROQ_API_KEYS`/`GEMINI_API_KEY_PAID` confirmed unset throughout. **The real
+30-execution paid run itself was not started** — `python
+docs/superpowers/e3_level2_repeat_runs.py run` was never invoked; that remains a
+separate, explicit, budgeted action for later. Not committed — staged for review.
+
+## 2026-08-17 — Task 7 (E3 Level 2) review: four real gaps, each confirmed with a failing repro first
+
+**Changed:** `docs/superpowers/e3_level2_repeat_runs.py` — `_execute_one` returns
+immediately on `EXIT_INTERRUPTED` (folded into the existing `EXIT_CONFIG_ERROR`
+early-return branch), before `read_document_run` is called; `run_matrix` now returns
+`(status, summaries)` instead of just `summaries`, and `main()`'s `run` subcommand
+propagates `status` instead of hardcoding `EXIT_SUCCESS`; new
+`_validate_summaries_complete`, called unconditionally at the top of `build_report`,
+refuses (raises `ValueError`, caught by `main()`'s `report` subcommand) unless given
+exactly the 30-entry complete matrix; `Scenario` gains `expected_requirement_ids`,
+populated for all six scenarios; new `_assert_scenario_fixtures_match_frozen_ids` and
+`_assert_templates_differ_only_by_forced_failure`, both called from
+`prepare_and_preflight` before any config is generated; `_generate_config` now writes
+`prompts` as paths relative to the generated file's own directory instead of absolute
+machine-specific paths; `prepare_and_preflight` gained a `generated_dir` parameter so
+the self-test no longer writes into the real tracked directory. Self-test grew from 27
+to 46 checks, each new fix accompanied by a mutation/repro test. Also regenerated the
+30 real (but uncommitted) files under `docs/superpowers/e3-configs/generated/` via
+`prepare` — an earlier `--self-test` run had already written them with absolute
+machine-specific paths before this fix existed; they now carry portable relative paths.
+
+**Why:** a review of the prior entry ("Task 7 (E3 Level 2 repeat runs): frozen
+six-scenario matrix, offline machinery only") found four real issues — see
+`design/DESIGN_NOTES.md`'s new entry, "Task 7 (E3 Level 2) review: four real gaps,
+each confirmed with a failing repro first", for the full reproduction of each before
+any fix was written: (1) an interrupted execution crashed with an uncaught
+`FileNotFoundError` rather than halting cleanly, and `main("run")` silently discarded
+the matrix's halt status, always reporting success; (2) `build_report` could describe
+a single summary as "30 document executions" with fingerprint stability "True"; (3)
+nothing mechanically enforced the frozen matrix's requirement ids or the
+forced-failure template's diff scope against what was actually on disk; (4) generated
+configs embedded a machine-specific absolute path, and the self-test had the side
+effect of writing real files into the tracked source tree.
+
+**Impact:** self-test 46/46 (was 27), offline, no network, ~1.7s. All nine
+`orchestrator`/`design` suites unchanged and green (schemas 351, arch diagrams 88,
+harness 489, CLI 65, stages 163, stage_fns 67, config 101, rotation 18); all six
+`evaluation` suites unchanged and green (runner 145, mechanical 57, blinding 50,
+config_parity 26, pricing 21, arm_p_report 13); Level 1 unchanged, 11/11. `git diff
+--check` clean. No API call made — `GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/
+`GROQ_API_KEYS`/`GEMINI_API_KEY_PAID` confirmed unset throughout. One open decision
+flagged for the user, not resolved by this entry: whether the 30 generated configs are
+committed as pre-registration artifacts now, or generated and committed at the later
+freeze step immediately before paid execution — either way they must never carry
+machine-specific paths again, which this entry fixes. The real 30-execution paid run
+remains not started. Not committed — staged for review.
+
 ## 2026-08-17 — Task 6 review round 4: two direct-call gaps, one documentation correction
 
 **Changed:** `evaluation/runner.py` (`run_b2_resume` now compares
