@@ -4630,3 +4630,428 @@ Suites after these fixes: schemas 351, generate_diagrams 13, arch diagrams 88, h
 --check` clean (pre-existing CRLF notices only). No historical
 `docs/superpowers/results/` file modified; no API call made. Not committed -- reported
 for review first.
+
+## 2026-08-17 -- Task 6 (E2 baseline arms) offline machinery, and a review round that found seven real gaps in it
+
+`evaluation/` (new package, sibling to `orchestrator/`/`design/`/`tools/`, per the
+handover doc's own instruction to keep evaluation tooling separate from production
+pipeline behavior): B1/B2 prompts, a runner making exactly 1 (B1) or 2 (B2) LLM calls
+per document, the Part A mechanical checks (`docs/EVALUATION_PROTOCOL.md` section 6.1),
+and the blinding tool. Built offline, no API calls, reviewed before any real execution
+per the handover's own "write the B1/B2 prompts and the runner for review before
+executing anything." A first pass was reviewed and seven gaps were found and fixed, all
+recorded here so the reasoning survives the fix, not just the diff.
+
+**Decisions kept from the first pass, reconfirmed correct on review:**
+
+- `BaselineTestCaseBatch` (a flat `list[TestCase]`) instead of forcing B1/B2 output
+  into per-requirement `TestPlan` wrappers -- `TestPlan.requirement_id` and its
+  `_cases_cover_this_requirement` validator are shaped around arm P's
+  one-call-per-requirement Test Case Generator, and B1/B2 see the whole set in one
+  call by design. Forcing that shape would fabricate a "requirement_id" a baseline
+  call never actually had.
+- B2 may legitimately ask zero clarifying questions -- the prompt explicitly tells the
+  model not to invent one it doesn't need, so "found nothing worth asking" is a real
+  outcome, not a parse failure.
+- `--answers-json` positional replay stays scripted/offline-only, documented as
+  distinct from `--interactive` (the live path) -- question ids are minted by the
+  model per run, unlike the pipeline's fixed transcript, so they cannot be pre-keyed.
+
+**Gap 1 -- A2 was scoring every arm against arm P's own Classifier output, not an
+independent reference.** The Classifier's accuracy is itself a thing this evaluation
+measures (`docs/EVALUATION_PROTOCOL.md` section 6: "Classifier: accuracy against the
+operator's label"). Scoring technique eligibility against it would silently launder
+Classifier error into every arm's eligibility rate equally, and a wrong Classifier call
+would corrupt A2 for all three arms identically -- invisible, because they'd all be
+wrong together. Fixed: `check_technique_eligibility` now takes
+`operator_system_type_by_requirement_id`, sourced from `RequirementRunRecord.
+operator_system_type` (S2, Task 1 of the handover) via the new
+`operator_system_type_map()`, never from `.classification.system_type`. A requirement
+id a pooled case names with NO entry at all in that mapping is a config error and
+raises; a requirement id present with value `None` (operator hasn't labeled it yet) is
+reported in `unlabeled_requirement_ids`, not silently skipped -- "missing" and
+"genuinely unlabeled" are different findings and must not collapse into one.
+
+**Gap 2 -- A5 only emitted `(arm, requirement_id)` entries that had >=1 case.** A
+baseline that silently omitted an entire requirement -- arguably A5's single most
+important finding -- was indistinguishable from "this combination was never checked."
+Fixed: `volume_per_requirement` now pre-populates every combination in
+`{P, B1, B2} x known_requirement_ids` to zero before counting, so an omission stays a
+visible zero rather than a missing key.
+
+**Gap 3 -- the blinding tool had no operational writer, only in-memory pooling.**
+Added `write_blinding_result`: separate `scoring_path`/`mapping_path` required to
+differ (rejected before any write happens if they're the same file); both written via
+a shared `evaluation/atomic_io.atomic_write_json` (write to `.tmp`, `os.replace` into
+place, so a reader never observes a half-written file, on POSIX or Windows); the
+shuffle seed recorded ONLY in the mapping file's metadata, never the scoring file;
+`pool_and_blind` now rejects a duplicate case id within one arm before blinding
+(ambiguous `original_case_id` otherwise); `BlindingResult`'s own validator already
+rejected mismatched scoring/mapping cardinality and disjoint blind-id sets, now also
+covers a mapping-side internal duplicate, not just the scoring side. A CLI
+(`python -m evaluation.blinding POOLED.json --scoring-output ... --mapping-output ...
+--seed N`) was added, `--seed` required (no default) so every real run is
+reproducible and the seed is always on record.
+
+**Gap 4 -- nothing enforced B1/B2 using arm P's actual frozen model/temperature/
+output_mode, and CLI flags could silently diverge.** New `evaluation/config_parity.py`:
+`frozen_arm_p_config()` reads the real values out of `orchestrator/runs_gemini.yaml`
+(not hand-copied constants that could drift from the shipped file);
+`enforce_fair_config()` compares candidate vs. frozen on provider/model/temperature/
+output_mode (deliberately NOT `timeout_seconds` -- a client-side transport setting, not
+part of the experiment) and names every mismatch in one error. `BaselineCallConfig`
+(moved from `evaluation/runner.py` to `evaluation/schemas.py` so `config_parity.py`
+doesn't have to import back into `runner.py`) changed from a bare `NamedTuple` to a
+`BaseModel` with the same `temperature` (0.0-2.0) / `timeout_seconds` (>0) bounds as
+`orchestrator/config.py`'s `ResolvedStageConfig`, so an invalid value is rejected at
+construction. `runner.py`'s CLI now loads the frozen config first (so un-overridden
+flags default to matching it automatically), builds and validates `BaselineCallConfig`
+via `enforce_fair_config`, and constructs the provider adapter only after both pass --
+proven with a spy adapter factory (`evaluation/test_config_parity.py`) that raises if
+ever called, confirming a rejected config never reaches provider access.
+
+**Gap 5 -- no pricing snapshot or cost was persisted, and nothing accounted for
+partial-attempt tokens.** New `evaluation/pricing.py`: `FROZEN_PRICING_SNAPSHOT`, a
+hand-recorded constant (this project's own already-used rate, `docs/superpowers/
+results/2026-08-11-behavior-scenarios/RESULTS.md`, $1.50/1M input, $7.50/1M output) --
+never fetched live (the module imports no HTTP client at all, verified by the test
+itself grepping its own source for one). `compute_cost()` sums tokens across every
+attempt with `result` in `("success", "partial")` -- a partial attempt still spent
+billable tokens even though its output didn't parse/validate -- and separately counts
+`("failed", "fatal")` attempts, which never reached a billable response
+(`BaselineAttempt`'s own validator already guarantees those carry no tokens). The CLI
+writes a sibling `<output>.cost.json` alongside every run's result, embedding the
+pricing snapshot used.
+
+**Gap 6 -- B2 had no interruption safety: an `answer_fn` failure (EOF on stdin,
+malformed answers, anything) propagated as an uncaught exception and discarded the
+already-successful questions call's tokens/wall-clock/questions.** Fixed two ways:
+(a) `run_b2` gained an optional `checkpoint_fn`, called exactly once, right after the
+questions call succeeds and BEFORE `answer_fn` runs, with a partial `BaselineRunOutput`
+(`failed=True`, carrying the questions and that call's attempt) -- so a hard crash
+during answering still leaves that work recoverable; (b) `answer_fn`'s call and the
+existing `_validate_answers_cover_questions` check are now wrapped in `try/except
+Exception`, converting any answer-source failure into a well-formed `failed=True`
+return (new `BaselineRunOutput.failure_reason` field records what happened) instead of
+an uncaught exception -- the questions call's `attempts`/tokens/wall-clock and the
+`questions` list are still on the returned object, not lost. No new path to a second
+questions call exists anywhere in this recovery branch: the generate call is simply
+never reached, same as before.
+
+**Gap 7 -- A3's placeholder check flagged ANY square-bracket span, which is a real
+false-positive generator (`[0,1]`, `[Ctrl+C]`, `[REQ-1]`, a literal array `[1, 2, 3]`
+all matched).** `docs/EVALUATION_PROTOCOL.md` section 6.1 says Part A must be
+"mechanical and unarguable" -- a check that flags a keystroke shortcut is arguable, and
+arguable defeats the entire point of a mechanical check. Replaced with a pre-registered
+keyword list (`tbd`, `todo`, `fixme`, `configurable`, `placeholder`), matched only
+inside brackets, case-insensitive. Traded away on purpose: a placeholder shaped like
+`[specified user needs]` (a real observed instance, Known Limitation 11) contains none
+of these keywords and is no longer caught -- stated as a known, accepted precision-
+over-recall tradeoff, not silently dropped. `evaluation/test_mechanical_checks.py` has
+an explicit test asserting this specific shape is now NOT flagged, so the gap stays
+visible in the suite rather than being rediscovered later as a surprise.
+
+**Verification.** All five `evaluation/` suites green (72 runner + 51 mechanical + 40
+blinding + 22 config_parity + 20 pricing = 205 checks) and all nine existing suites
+unchanged (schemas 351, arch diagrams 88, harness 489, CLI 65, stages 163, stage_fns 67,
+config 101, rotation 18). Four guarantees mutation-tested (broke each on purpose,
+confirmed the associated test went red, reverted, confirmed green again): A5's
+zero-count pre-population, A2's missing-key rejection, `enforce_fair_config`'s
+temperature comparison, and `write_blinding_result`'s same-path rejection. `git diff
+--check` clean. No API call made anywhere (`GEMINI_API_KEY`/`GEMINI_API_KEYS`/
+`GROQ_API_KEY`/`GROQ_API_KEYS` all confirmed unset before and after). No frozen
+evaluation input, historical result, or `docs/EVALUATION_PROTOCOL.md` touched. Not
+committed -- reported for another review.
+
+## 2026-08-17 -- Task 6 review round 2: eight more edge cases in the first fix round itself
+
+A second review of the previous entry's fixes found eight real edge cases -- several
+introduced BY the first round's own fixes, not missed by the original build. Recorded
+here so the corrections are traceable to what they correct, not just described in
+isolation.
+
+**Finding 1 -- A1 and A2 fought each other.** Round 1's A2 fix (independent operator
+label) required an entry in `operator_system_type_by_requirement_id` for EVERY id a
+pooled case named, including ids A1 already reports as unknown -- forcing a caller to
+invent an operator label for a requirement that was never real just to avoid A2's
+rejection. Fixed: `check_technique_eligibility` now takes `known_requirement_ids` too,
+and skips any id not in that set entirely -- no label required, no violation, no
+`unlabeled_requirement_ids` entry either. A1 owns "this id doesn't exist"; A2 only
+speaks about ids that do.
+
+**Finding 2 -- A3 traded away the one real placeholder it was built to catch.** The
+round-1 keyword rule fixed the false-positive problem but, as a side effect, stopped
+catching `[specified user needs]` (the actual historical instance motivating A3 in the
+first place) since that phrase shares no keyword with `tbd`/`todo`/`fixme`/
+`configurable`/`placeholder`. Fixed: a second, separate pre-registered list,
+`_PLACEHOLDER_EXACT_PHRASES`, matches specific known bracket-content phrases by exact
+text (case-insensitive) rather than keyword -- `[specified user needs]` is now
+registered there by name. Still pre-registered, not a return to "any bracket": `[0,1]`/
+`[Ctrl+C]`/`[REQ-1]`/`[1, 2, 3]` match neither list and stay unflagged. A genuinely new,
+unregistered placeholder shape still isn't caught -- narrower gap, not zero.
+
+**Finding 3 -- blinding identity was `(arm, original_case_id)`, missing `doc_id`.**
+Round 1 already carried `doc_id` through the mapping for provenance, but the actual
+uniqueness check `pool_and_blind` enforced was keyed by arm alone -- two different
+documents pooled into the same arm and both containing a case id "TC-1" would have
+collided. Fixed: the key is `(arm, doc_id)`. New rule that falls out of this: pooling
+cases from more than one distinct `doc_id` now requires every entry to carry a real
+(non-`None`) `doc_id`, or the ambiguity is rejected up front -- a single-document pool
+(everything sharing one `doc_id`, including all sharing `None`) is unaffected.
+
+**Finding 4 -- the recorded seed could lie.** Round 1's `pool_and_blind(pooled_cases,
+rng: random.Random, ...)` took an already-built RNG, while `write_blinding_result`
+separately took its own `seed: int` argument -- nothing enforced the two matched, so a
+caller could shuffle with one seed and record a different one as "the" seed. Fixed:
+`pool_and_blind` now takes `seed: int` as its only randomness input, builds
+`random.Random(seed)` internally, and carries that exact `seed` on the returned
+`BlindingResult`; `write_blinding_result` lost its own `seed` parameter entirely and
+reads `result.seed`. There is exactly one seed value in the whole call chain now --
+"the mapping's seed is the exact seed that produced the shuffle" is true by
+construction, not by caller discipline.
+
+**Finding 5 -- a B2 checkpoint could be written but never actually resumed.** Round 1
+added `checkpoint_fn` (fires after the questions call, before the operator answers) but
+built no path back INTO a checkpoint -- interruption safety without a recovery
+mechanism is half a feature. Fixed: `_b2_answer_and_generate` is now the shared tail of
+both `run_b2` (after a live questions call) and the new `run_b2_resume` (after loading
+a checkpoint) -- `run_b2_resume` has no `questions_prompt_path` parameter and no
+reference to the questions prompt file anywhere in its body, so "never asks the
+question again" holds structurally, not by discipline. The CLI gained a `b2-resume`
+subcommand that rejects, before constructing any adapter: a checkpoint with the wrong
+`arm`, a checkpoint produced under a different `(provider, model, temperature,
+output_mode)` than the one being resumed with, a checkpoint for a different `doc_id`
+than the requirement set given now, and a checkpoint whose recorded `b2_questions`
+prompt hash no longer matches the current prompt file's content. `main()` also now
+catches `KeyboardInterrupt` around the whole dispatch (EOF is already an `Exception`,
+caught inside `_b2_answer_and_generate` since round 1) and returns exit code 1 -- the
+same convention every other failure path already uses -- printing the resume command
+rather than a raw traceback; any checkpoint already written survives, since it happens
+before `answer_fn` runs.
+
+**A gap this uncovered, fixed alongside it:** `--answers-json`'s file was read
+(`_positional_answers_from_file`) AFTER the adapter was already constructed in `main()`
+-- a missing or malformed answers file would only surface after the questions call had
+already run (and, on a real provider, been paid for). Moved to before adapter
+construction, alongside the other input/config/checkpoint checks.
+
+**Finding 6 -- destinations weren't validated, and the final write wasn't atomic.**
+New `_validate_output_destinations` (parent-directory existence, checked for `--output`
+and its derived `.cost.json` path) runs before adapter construction, alongside every
+other pre-flight check. The final run-output write changed from a plain
+`Path.write_text` to `atomic_write_json` -- a successful, possibly paid, call's result
+can no longer be lost to an interrupted write or a missing directory discovered only
+after the call already happened.
+
+**Finding 7 -- `BaselineRunOutput` recorded only 3 of 5 config scalars.** Added
+`timeout_seconds`/`output_mode` fields -- the complete effective `BaselineCallConfig`
+is now on every run record, not just provider/model/temperature. A freeze record with
+a silent gap in its own provenance was the actual defect; this closes it.
+
+**Finding 8 -- `frozen_arm_p_config` picked one stage's config without checking every
+stage agreed.** `orchestrator/config.py`'s `StageOverride` legitimately allows a
+per-stage override, and "resolves cleanly" (what `orchestrator/test_config.py` checks)
+says nothing about uniformity. Fixed: `frozen_arm_p_config` now computes the
+`(provider, model, temperature, output_mode)` tuple for every resolved stage and
+raises, naming the diverging stage(s), if they don't all match -- rather than silently
+returning `reference_stage`'s value while a different stage quietly used something
+else. New test builds a real temporary run-config YAML (real prompt files, real
+`resolve_run_config` call) with one stage's temperature overridden and confirms
+rejection.
+
+**Verification.** All five `evaluation/` suites green -- runner 109 (was 72), mechanical
+57 (was 51), blinding 50 (was 40), config_parity 26 (was 22), pricing 21 (was 20); 263
+total, up from 205. All nine existing suites unchanged and green (schemas 351, arch
+diagrams 88, harness 489, CLI 65, stages 163, stage_fns 67, config 101, rotation 18).
+Six guarantees mutation-tested this round (A1/A2 coexistence, cross-document blinding
+identity, seed truthfulness, no-second-question resume, atomic destination preflight,
+all-stage config parity): each broken on purpose, confirmed the associated test went
+red -- three as explicit assertion failures, three as an uncaught exception/
+`AssertionError` from a spy adapter, both counted as valid red -- reverted, confirmed
+green again. `git diff --check` clean. No API call made
+(`GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/`GROQ_API_KEYS` confirmed unset). No
+frozen evaluation input, historical result, or `docs/EVALUATION_PROTOCOL.md` touched.
+Not committed -- staged for another review.
+
+## 2026-08-17 -- Task 6 review round 3: five findings, kept thesis-scale on purpose
+
+A third review found five more real gaps. Scope was explicitly bounded mid-review to
+"the smallest local solution" for research software, not production infrastructure --
+recorded here since it shaped which fix was chosen for finding 3 specifically.
+
+**Finding 1 -- a completed or differently-failed B2 output could be resumed and
+generate again.** `b2-resume`'s checks (round 2) verified arm/config/doc_id/prompt hash
+but never proved the FILE was actually the pre-answer checkpoint state -- a final
+`BaselineRunOutput` (with its own `b2_generate` attempt, answers, test_cases) passes
+every one of those checks and would silently re-run generation, corrupting the
+one-questions-call/one-generate-call design. Fixed with the smallest structural marker
+that closes it: `BaselineRunOutput` gains `checkpoint_phase: Optional[Literal[
+"awaiting_answers"]]`, set ONLY at `run_b2`'s `checkpoint_fn` call site, nowhere else in
+the codebase. A single new model validator (`_awaiting_answers_checkpoint_is_valid`)
+enforces every property the finding listed -- B2 arm, `failed=True`, no answers/
+test_cases yet, only `b2_questions` attempts, a valid 1..N retry sequence ending in
+exactly one success with nothing after it, only the `b2_questions` prompt hash --
+so an invalid "awaiting_answers"-tagged object cannot even be constructed or loaded,
+not just discouraged by convention. `run_b2_resume` checks the marker itself (defense
+in depth); `main`'s `b2-resume` path checks it first, before any of the other
+checkpoint checks, and before any adapter. One field, one validator, one check at each
+of two call sites -- no new state machine, no separate checkpoint type hierarchy.
+
+**Finding 2 -- `doc_id` matching does not prove the requirement TEXT is unchanged, and
+`doc_id` can be `None` on both sides.** A resumed run could generate against requirement
+text that differs from what the questions were actually asked about, silently,
+whenever `doc_id` happened to still match (or both were `None`). Fixed with one new
+required field: `BaselineRunOutput.requirement_set_hash`, a sha256-hex-prefix of
+`RequirementSet.model_dump_json()` (pydantic v2's stable field order makes this
+deterministic), computed once by a new `_requirement_set_hash()` helper -- same
+one-hash-field pattern this module already uses for `prompt_hash`, not a new concept.
+`main`'s `b2-resume` path compares it before constructing an adapter, in addition to
+(not instead of) the `doc_id` check, since `doc_id` still gives a clearer error message
+for the common case.
+
+**Finding 3 -- arm P had no persisted cost or wall-clock, and `docs/EVALUATION_
+PROTOCOL.md` section 3 requires both for all three arms.** Checked whether an existing
+mechanism already covers this before building anything, per the review's explicit
+instruction: it does not -- `orchestrator/cli.py` prints a raw token total but never
+converts it to cost, and `design/schemas.py`'s `StageAttempt`/`DocumentStageAttempt`
+record tokens but no wall-clock duration at all; `RunMetadata.started_at` is the only
+timestamp anywhere in the pipeline schema, one value for the whole run, not per call --
+confirmed by reading the schema, not assumed. **Cost is recoverable from already-
+persisted data**, so the smallest fix that closes it was built: `evaluation/
+arm_p_report.py`, two functions, no new schema, no new persistence -- `compute_arm_p_cost`
+reuses `evaluation/pricing.py`'s exact `FROZEN_PRICING_SNAPSHOT`/accounting rule over a
+real `DocumentRunRecord`'s `attempts` + every `requirement_records[*].attempts`.
+**Wall-clock is genuinely not recoverable** -- not a pipeline-schema change (out of
+scope for evaluation-side tooling) and not reconstructible for an already-completed
+run regardless, since the data was simply never recorded. Per the review's own
+allowance ("a clear limitation or documented manual procedure is acceptable when
+automation would be disproportionate"), `arm_p_wall_clock_seconds` returns `None`,
+always, with the reason in its own docstring -- an honest, explicit "unavailable" a
+P/B1/B2 comparison table can display, not a fabricated number, an approximation from
+token counts, or a silent omission of arm P from the table entirely. Verified against
+one real historical run directory (`docs/superpowers/results/2026-08-10-first-real-run/
+groq`, read-only, never modified) as a smoke test, not just a synthetic fixture.
+
+**Finding 4 -- resume's five-field config claim was actually a four-field comparison.**
+`BaselineRunOutput` carries the complete effective config since round 2 (finding 7:
+provider/model/temperature/timeout_seconds/output_mode), but `main`'s `b2-resume`
+comparison tuple only ever checked four of the five -- `timeout_seconds` was omitted,
+so a checkpoint whose questions call used one timeout and whose resumed generate call
+used another would pass silently. One-line fix: `timeout_seconds` added to the tuple
+on both sides, per the review's own stated preference ("the simpler expected fix is
+exact five-field equality") over the alternative (persisting per-call configuration).
+
+**Finding 5 -- no check stopped an output from overwriting an input.**
+`_validate_output_destinations` (round 2) only checked that parent directories exist,
+never that a file about to be WRITTEN wasn't also a file the run needed to READ FROM.
+One new function, `_validate_no_path_collisions`, checked before adapter construction
+alongside every other pre-flight check: rejects if any output artifact
+(`--output`, the derived `.cost.json`, and for `b2` the derived `.checkpoint.json`)
+resolves (`Path.resolve()`, so relative-vs-absolute spelling of the same file still
+collides) to the same file as any input (the `RequirementSet`, `--answers-json`, or
+the resume `--checkpoint`). Deliberately does NOT check output-to-output reuse across
+two SEPARATE invocations -- `--output out.json` naming the SAME file on an initial `b2`
+run and a later `b2-resume` run is the one intentional overwrite this CLI supports
+(the later run's final result replacing the earlier partial/failed one), and it never
+appears as a same-invocation collision in the first place, so no special case was
+needed to preserve it -- stated explicitly in the function's own docstring and in a
+dedicated (trivial) test, per the review's instruction to justify any preserved
+overwrite behavior rather than leave it implicit.
+
+**A masking bug found and fixed while writing these tests, not a sixth finding:**
+several new CLI-level tests pointed `--answers-json` at a nonexistent file
+(`unused.json`), relying on an EARLIER checkpoint check to reject first. When mutation-
+testing the content-hash and path-collision guarantees, this masked the mutation --
+the missing-answers-file error fired instead and the test still reported the expected
+exit code, for the wrong reason. Fixed by writing a real, valid, empty answers file at
+every such call site (six in total) so each test can only pass for the reason it
+claims to. Recorded because it is exactly the kind of test-suite gap mutation testing
+exists to catch, and it did.
+
+**Scope, stated explicitly.** No checkpoint framework, workflow engine, storage
+abstraction, or migration system was introduced. Finding 1 is one field plus one
+validator; finding 2 is one field plus one helper function; finding 3 is one new
+two-function module that computes what is computable and honestly declines what is
+not; finding 4 is a one-line comparison fix; finding 5 is one function. All five reuse
+existing patterns already established in rounds 1-2 (`_prompt_hash`'s hash-field
+convention, `FROZEN_PRICING_SNAPSHOT`'s reuse-not-reinvent precedent, the
+before-any-adapter pre-flight check list) rather than introducing new ones.
+
+**Verification.** All six `evaluation/` suites green -- runner 137 (was 109), mechanical
+57, blinding 50, config_parity 26, pricing 21 (all unchanged from round 2), plus new
+arm_p_report 13; 304 total, up from 263. All nine existing suites unchanged and green
+(schemas 351, arch diagrams 88, harness 489, CLI 65, stages 163, stage_fns 67, config
+101, rotation 18). Four central guarantees mutation-tested (checkpoint structural
+validity, requirement-set content-hash binding, timeout comparison, path-collision
+check): each broken on purpose, confirmed the associated test(s) went red -- including
+one case (the checkpoint attempts-shape check) where the FIRST mutation attempt was
+masked by a redundant check and passed green, caught only by writing a properly
+isolated test after noticing the false pass -- reverted, confirmed green again. `git
+diff --check` clean. No API call made anywhere
+(`GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/`GROQ_API_KEYS` confirmed unset
+throughout). No frozen evaluation input, historical result, or
+`docs/EVALUATION_PROTOCOL.md` touched (the one real historical run directory used in
+`test_arm_p_report.py` was only ever read). Not committed -- staged for another review.
+
+## 2026-08-17 -- Task 6 review round 4: two direct-call gaps, one documentation correction
+
+A fourth review found two code gaps in round 3's own fixes and one place round 3's own
+write-up overclaimed what it had actually done. Kept to the same thesis-scale
+constraint as round 3 -- no new framework, two small direct checks and one tightened
+condition.
+
+**Finding 1 -- `run_b2_resume` called directly bypassed the requirement-set/config
+checks entirely.** Round 3 added these checks to `main`'s `b2-resume` CLI path, but
+`run_b2_resume` itself only ever checked `arm`/`checkpoint_phase` -- a caller invoking
+the function directly (not through `main`) could combine an old checkpoint's questions
+with a `requirement_set` whose text had since changed, or a different `config`, and
+nothing would stop it. Confirmed with a direct repro before fixing: a mismatched-hash
+call went through and made a real (fake-adapter) call. Fixed: `run_b2_resume` now
+compares `checkpoint.requirement_set_hash` against `_requirement_set_hash(
+requirement_set)` and all five checkpoint config fields against `config`, both BEFORE
+calling `_b2_answer_and_generate` -- so before any `adapter.complete` call, for any
+caller, not just ones going through `main`. `main`'s own checks are unchanged (they
+still reject before adapter CONSTRUCTION, which `run_b2_resume` -- receiving an
+already-built adapter -- structurally cannot do); the two layers are now genuinely
+redundant defense in depth rather than the CLI being the only real gate.
+
+**Finding 2 -- the retry-sequence check accepted an impossible-but-uncaught shape.**
+The round-3 validator rejected "success" anywhere before the final attempt, but not
+"fatal" -- so a `fatal`-then-`success` sequence passed, even though `_call_once`
+(`evaluation/runner.py`) can never actually produce it: a `StageCallFatal` short-
+circuits immediately, recording exactly one attempt and returning, never retrying.
+Confirmed with a direct repro before fixing: constructing that exact shape succeeded.
+Tightened to require every attempt before the last be `"failed"` or `"partial"` --
+the only two results `_call_once` ever retries after -- which rejects both `"success"`
+and `"fatal"` in that position with one condition instead of one. Guards against a
+hand-edited or corrupted checkpoint file carrying the impossible shape, even though no
+code path in this repository can produce it live.
+
+**Finding 3 -- round 3's finding-3 write-up read as resolved; it was only half
+resolved.** `evaluation/arm_p_report.py`'s docstring is corrected (not the code -- this
+finding asked for no new infrastructure) to state explicitly: arm-P cost is genuinely
+recoverable and computed; historical arm-P wall-clock is genuinely NOT recoverable and
+`arm_p_wall_clock_seconds` returning `None` must never be read as satisfying
+`docs/EVALUATION_PROTOCOL.md` section 3's three-arm wall-clock requirement; and before
+the real (frozen, paid) evaluation run, arm P's wall-clock must be measured externally
+(a start/end timestamp around the one real run, five-second manual subtraction) and
+persisted alongside its cost report, the same way `BaselineRunOutput.
+total_wall_clock_seconds` already sits next to B1/B2's cost. A five-step manual
+checklist is now in the module docstring. No pipeline-schema change, no timing
+infrastructure -- a one-time manual step for the one real arm-P run this evaluation
+needs, which is what the review asked to confirm before building anything larger.
+
+**Verification.** `evaluation.test_runner` grew from 137 to 145 checks (four new: two
+proving the direct-call `run_b2_resume` rejections with a spy adapter, one confirming a
+matching direct call still succeeds -- not over-rejected, two for the tightened
+retry-sequence check -- fatal-then-success rejected, partial-then-success still
+accepted). All other `evaluation/` suites unchanged: mechanical 57, blinding 50,
+config_parity 26, pricing 21, arm_p_report 13. All nine existing suites unchanged and
+green. Both new code guarantees mutation-tested (the direct-call requirement-set-hash
+check, the tightened retry-sequence check): each broken on purpose -- one crashed with
+`IndexError: pop from empty list` (the spy adapter's `.complete()` was actually
+reached), one produced an explicit assertion failure -- reverted, confirmed green
+again. `git diff --check` clean. No API call made anywhere
+(`GEMINI_API_KEY`/`GEMINI_API_KEYS`/`GROQ_API_KEY`/`GROQ_API_KEYS` confirmed unset). No
+frozen evaluation input, historical result, or `docs/EVALUATION_PROTOCOL.md` touched.
+Not committed -- staged for another review.
